@@ -1,0 +1,16 @@
+function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Página Login</h1>
+        <p className="text-gray-600 mb-6">Esta é a rota de login</p>
+        <div className="space-x-4">
+          <a href="/Login" className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Login</a>
+          <a href="/Register" className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">Cadastrar</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default LoginPage;
