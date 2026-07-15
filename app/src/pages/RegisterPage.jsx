@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { register } from '../services/authService';
 
 function Field({ label, children }) {
   return (
@@ -11,92 +13,147 @@ function Field({ label, children }) {
   );
 }
 
-function RegisterPage() {
+export default function RegisterPage() {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    nome: '',
+    email: '',
+    senha: '',
+    setor: '',
+  });
+
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+    setLoading(true);
+
+    try {
+      const user = await register(form);
+      setSuccess(true);
+      console.log('Conta criada:', user);
+
+      // Opcional: redirecionar para login após 2s
+      setTimeout(() => navigate('/Login'), 2000);
+    } catch (err) {
+      if (err.code === 'EMAIL_JA_CADASTRADO') {
+        setError('Este e-mail já está cadastrado.');
+      } else if (err.code === 'VALIDATION_ERROR') {
+        const messages = Object.entries(err.details || {})
+          .map(([campo, msg]) => `${campo}: ${msg}`)
+          .join(' | ');
+        setError(messages || err.message);
+      } else {
+        setError(err.message || 'Não foi possível criar a conta.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-      <div className="min-h-screen bg-gray-100">
-        <nav className="border-b border-gray-200 bg-white px-6 py-3">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Link to="/Login" className="flex items-center gap-2">
-              <div className="size-8 bg-green-700 flex items-center justify-center">
-                <span className="text-white font-serif font-bold italic">
-                  M</span>
-              </div>
-              <span className="font-serif font-bold text-lg tracking-tight uppercase">
-                Malibru <span className="text-green-500"> Portal</span>
-              </span>
-            </Link>
-            <Link to="/Login">
-              <span className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-green-700">
-                Já tenho conta
-              </span>
-            </Link>
-          </div>
-        </nav>
-        <main className="max-w-2xl mx-auto p-6 md:p-12">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-3">
-               Novo Cadastro</p>
-            <h1 className="font-serif italic text-4xl text-green-700">Criar sua conta</h1>
-            <p className="mt-2 text-sm text-gray-600 max-w-md">
-               Preencha os dados abaixo. Após validação, você terá acesso ao painel.
-            </p>
-          </div>
-          <form action="" className="mt-10 bg-white border border-gray-200 p-6 md:p-8 shadow-sm space-y-5">
-             <div className="grid md:grid-cols-2 gap-5">
+    <div className="min-h-screen bg-gray-100">
+      <main className="max-w-2xl mx-auto p-6 md:p-12">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-3">
+            Novo Cadastro
+          </p>
+          <h1 className="font-serif italic text-4xl text-green-700">Criar sua conta</h1>
+          <p className="mt-2 text-sm text-gray-600 max-w-md">
+            Preencha os dados abaixo. Após validação, você terá acesso ao painel.
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-10 bg-white border border-gray-200 p-6 md:p-8 shadow-sm space-y-5"
+        >
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-sm">
+              Conta criada com sucesso! Aguarde ativação ou faça login quando liberada.
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 gap-5">
             <Field label="E-mail corporativo">
               <input
                 type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
                 required
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-light placeholder:text-gray-400"
                 placeholder="voce@empresa.com.br"
               />
-            </Field> 
+            </Field>
+
             <Field label="Senha">
               <input
                 type="password"
+                name="senha"
+                value={form.senha}
+                onChange={handleChange}
                 required
+                minLength={6}
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
                 placeholder="Mínimo 6 caracteres"
               />
-            </Field> 
-            <Field label="CPF"> 
+            </Field>
+
+            <Field label="Nome">
               <input
                 type="text"
+                name="nome"
+                value={form.nome}
+                onChange={handleChange}
                 required
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-mono placeholder:text-gray-400"
-                placeholder="000.000.000-00"
+                placeholder="Nome Completo"
               />
-             </Field> 
+            </Field>
 
+            <Field label="Setor">
+              <input
+                type="text"
+                name="setor"
+                value={form.setor}
+                onChange={handleChange}
+                className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-mono placeholder:text-gray-400"
+                placeholder="Setor"
+              />
+            </Field>
           </div>
 
           <div className="pt-4 border-t border-gray-200">
             <button
               type="submit"
-              className="w-full md:w-auto bg-green-700 text-white py-3 px-8 text-xs font-bold uppercase tracking-[0.2em] hover:bg-green-800 transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+              disabled={loading}
+              className="w-full md:w-auto bg-green-700 text-white py-3 px-8 text-xs font-bold uppercase tracking-[0.2em] hover:bg-green-800 transition-colors inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
-              Criar conta
+              {loading ? 'Criando...' : 'Criar conta'}
             </button>
             <p className="mt-4 text-[11px] text-gray-500">
               Ao criar sua conta você aceita os termos de uso do Malibru Portal.
             </p>
           </div>
-          </form> 
-        </main>
-      </div>
-
-
-    // <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    //   <div className="text-center">
-    //     <h1 className="text-4xl font-bold text-gray-800 mb-4">Página Cadastro</h1>
-    //     <p className="text-gray-600 mb-6">Esta é a rota de cadastro</p>
-    //     <div className="space-x-4">
-    //       <a href="/Login" className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Login</a>
-    //       <a href="/" className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">Home</a>
-    //     </div>
-    //   </div>
-    // </div>
+        </form>
+      </main>
+    </div>
   );
 }
-
-export default RegisterPage;
