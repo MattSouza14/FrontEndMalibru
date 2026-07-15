@@ -1,41 +1,34 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '../context/AuthContext';
+import PrivateRoute from '../components/PrivateRoute';
 import Register from '../pages/RegisterPage';
 import Login from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
-// import NotFound from './pages/NotFoundPage';
+import InitialPage from '../pages/InitialPage';
 import Layout from '../pages/Layout';
-// import PrivateRoute from './components/PrivateRoute';
 
 function AppRoutes() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          {/* Rotas públicas */}
-          <Route path="/" element={<HomePage />} />
-          {/* <Route path="/sobre" element={<Sobre />} /> */}
-          <Route path="/Register" element={<Register />} />
-          <Route path="/Login" element={<Login />} />
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            {/* Rotas públicas */}
+            <Route path="/" element={<InitialPage />} />
+            <Route path="/Register" element={<Register />} />
+            <Route path="/Login" element={<Login />} />
 
-          {/* Rota privada (requer autenticação) */}
-          {/* <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route> */}
+            {/* Rotas privadas — exige login */}
+            <Route element={<PrivateRoute />}>
+              <Route path="/HomePage" element={<HomePage />} />
+            </Route>
 
-          {/* Redirecionamento para rotas inexistentes */}
-          {/* <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} /> */}
-        </Routes>
-      </Layout>
-    </Router>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </AuthProvider>
   );
 }
 
 export default AppRoutes;
-
-// Exemplo de componente PrivateRoute para proteger rotas
-// import { Navigate, Outlet } from 'react-router-dom';
-// function PrivateRoute() {
-//   const isAuthenticated = localStorage.getItem('token') ? true : false;
-//   return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
-// }

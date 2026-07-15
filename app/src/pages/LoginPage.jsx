@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { loginSuccess } = useAuth();
 
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -19,11 +21,9 @@ export default function LoginPage() {
     try {
       const data = await login({ email, senha });
     
-      const storage = manterConectado ? localStorage : sessionStorage;
-      storage.setItem('token', data.token);
-      storage.setItem('user', JSON.stringify(data.user));
+       loginSuccess(data, manterConectado);  
+       navigate('/HomePage');
 
-      navigate('/'); 
     } catch (err) {
       if (err.code === 'CREDENCIAIS_INVALIDAS') {
         setError('E-mail ou senha incorretos.');
@@ -129,7 +129,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-sm text-muted-foreground">
             Não tem conta?{' '}
-            <Link to="/register" className="text-primary hover:underline font-medium">
+            <Link to="/Register" className="text-primary hover:underline font-medium">
               Criar conta
             </Link>
           </p>
