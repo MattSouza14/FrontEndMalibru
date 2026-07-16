@@ -1,0 +1,25 @@
+export function getApiErrorMessage(err, fallback) {
+  if (err.status === 401 || err.code === 'CREDENCIAIS_INVALIDAS') {
+    return 'Sessão expirada. Faça login novamente.';
+  }
+  if (err.code === 'VALIDATION_ERROR') {
+    if (err.details) {
+      return Object.values(err.details).join(' ');
+    }
+    return err.message || 'Dados inválidos.';
+  }
+  if (err.code === 'REQUISICAO_INVALIDA') {
+    return err.message || 'Preencha nome e e-mail corretamente.';
+  }
+  if (err.code === 'EMAIL_JA_CADASTRADO') {
+    return 'Este e-mail já está em uso por outra conta.';
+  }
+  if (err.code === 'ERRO_INTERNO') {
+    return 'Erro no servidor. Tente novamente em instantes.';
+  }
+  return err.message || fallback;
+}
+
+export function isUnauthorized(err) {
+  return err.status === 401 || err.code === 'CREDENCIAIS_INVALIDAS';
+}

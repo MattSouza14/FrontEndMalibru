@@ -1,16 +1,28 @@
-// src/context/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import { apiRequest } from '../services/api';
+import {
+  clearAuth,
+  getToken,
+  saveAuth,
+  saveUser,
+} from '../services/authStorage';
 
 const AuthContext = createContext(null);
+
+function toUsuarioResponde(profile) {
+  return {
+    id: profile.id,
+    nome: profile.nome,
+    email: profile.email,
+    setor: profile.setor ?? null,
+    role: profile.role,
+    enabled: profile.enabled,
+  };
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  function getToken() {
-    return localStorage.getItem('token') || sessionStorage.getItem('token');
-  }
 
   async function loadUser() {
     const token = getToken();
@@ -25,28 +37,29 @@ export function AuthProvider({ children }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(data);
+      saveUser(data);
     } catch {
-      localStorage.removeItem('token');
-      sessionStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('user');
+      clearAuth();
       setUser(null);
     } finally {
       setLoading(false);
     }
   }
 
-  function loginSuccess({ token, user }, manterConectado = false) {
-    const storage = manterConectado ? localStorage : sessionStorage;
-    storage.setItem('token', token);
-    storage.setItem('user', JSON.stringify(user));
-    setUser(user);
+  function loginSuccess({ token, user: loggedUser }, manterConectado = false) {
+    saveAuth({ token, user: loggedUser }, manterConectado);
+    setUser(loggedUser);
   }
 
   function logout() {
-    localStorage.clear();
-    sessionStorage.clear();
+    clearAuth();
     setUser(null);
+  }
+
+  function updateUser(profile) {
+    const nextUser = toUsuarioResponde(profile);
+    setUser(nextUser);
+    saveUser(nextUser);
   }
 
   useEffect(() => {
@@ -54,7 +67,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginSuccess, logout, getToken }}>
+    <AuthContext.Provider value={{ user, loading, loginSuccess, logout, getToken, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -5,6 +5,7 @@ import Register from '../pages/RegisterPage';
 import Login from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
 import InitialPage from '../pages/InitialPage';
+import ProfilePage from '../pages/ProfilePage';
 import Layout from '../pages/Layout';
 
 function AppRoutes() {
@@ -21,6 +22,7 @@ function AppRoutes() {
             {/* Rotas privadas — exige login */}
             <Route element={<PrivateRoute />}>
               <Route path="/HomePage" element={<HomePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
