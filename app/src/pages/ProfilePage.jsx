@@ -10,7 +10,9 @@ const EMPTY_FORM = {
   setor: "",
   role: "",
   enabled: false,
-};function Loader2() {
+};
+
+function Loader2() {
   return (
     <svg className="size-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
@@ -269,6 +271,15 @@ function ProfilePage() {
                   <IdCardIcon />
                   <span>{form.enabled ? "Acesso Ativo" : "Aguardando ativação"}</span>
                 </div>
+                {form.role === "ADMIN" && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/admin")}
+                    className="mt-4 w-full bg-green-700 hover:bg-green-800 text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Painel Admin
+                  </button>
+                )}
               </div>
             </div>
           </aside>

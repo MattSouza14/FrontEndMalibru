@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import PrivateRoute from '../components/PrivateRoute';
+import AdminRoute from '../components/AdminRoute';
 import Register from '../pages/RegisterPage';
 import Login from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
 import InitialPage from '../pages/InitialPage';
 import ProfilePage from '../pages/ProfilePage';
+import AdminPage from '../pages/AdminPage';
 import Layout from '../pages/Layout';
 
 function AppRoutes() {
@@ -23,6 +25,9 @@ function AppRoutes() {
             <Route element={<PrivateRoute />}>
               <Route path="/HomePage" element={<HomePage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminPage />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

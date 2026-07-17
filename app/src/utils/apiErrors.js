@@ -14,6 +14,12 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'EMAIL_JA_CADASTRADO') {
     return 'Este e-mail já está em uso por outra conta.';
   }
+  if (err.code === 'ACESSO_NEGADO') {
+    return 'Você não tem permissão para acessar esta área.';
+  }
+  if (err.code === 'USUARIO_NAO_ENCONTRADO') {
+    return 'Usuário não encontrado.';
+  }
   if (err.code === 'ERRO_INTERNO') {
     return 'Erro no servidor. Tente novamente em instantes.';
   }
