@@ -20,6 +20,15 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'USUARIO_NAO_ENCONTRADO') {
     return 'Usuário não encontrado.';
   }
+  if (err.code === 'OFFICE_LICENSE_NAO_ENCONTRADA') {
+    return 'Licença Office não encontrada.';
+  }
+  if (err.code === 'LICENCA_LOTADA') {
+    return 'Esta licença já atingiu o limite de 5 usuários.';
+  }
+  if (err.code === 'USUARIO_JA_VINCULADO') {
+    return 'Este usuário já possui uma licença vinculada.';
+  }
   if (err.code === 'ERRO_INTERNO') {
     return 'Erro no servidor. Tente novamente em instantes.';
   }

@@ -61,31 +61,6 @@ function ShieldIcon() {
   );
 }
 
-// Simple TopNav component
-function TopNav({ onBackHome }) {
-  return (
-    <nav className="border-b border-gray-200 bg-white px-6 py-3">
-      <div className="max-w-4xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="size-8 bg-green-700 flex items-center justify-center">
-            <span className="text-white font-serif font-bold italic">M</span>
-          </div>
-          <span className="font-serif font-bold text-lg tracking-tight uppercase">
-            Malibru <span className="text-green-500"> Portal</span>
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={onBackHome}
-          className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-green-700 transition-colors"
-        >
-          Voltar para Home
-        </button>
-      </div>
-    </nav>
-  );
-}
-
 function profileToForm(profile) {
   return {
     nome: profile.nome ?? "",
@@ -218,16 +193,14 @@ function ProfilePage() {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center">
+      <div className="p-8 flex items-center justify-center min-h-[50vh]">
         <p className="text-sm text-gray-500">Carregando perfil...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
-      <TopNav onBackHome={() => navigate("/HomePage")} />
-      <main className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="p-6 lg:p-8 space-y-6 max-w-4xl">
         <header>
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
             Conta
@@ -271,15 +244,6 @@ function ProfilePage() {
                   <IdCardIcon />
                   <span>{form.enabled ? "Acesso Ativo" : "Aguardando ativação"}</span>
                 </div>
-                {form.role === "ADMIN" && (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/admin")}
-                    className="mt-4 w-full bg-green-700 hover:bg-green-800 text-white px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-colors"
-                  >
-                    Painel Admin
-                  </button>
-                )}
               </div>
             </div>
           </aside>
@@ -322,7 +286,6 @@ function ProfilePage() {
             </form>
           </section>
         </div>
-      </main>
     </div>
   );
 }

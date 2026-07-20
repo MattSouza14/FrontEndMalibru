@@ -17,30 +17,6 @@ function Loader2() {
   );
 }
 
-function TopNav({ onBackProfile }) {
-  return (
-    <nav className="border-b border-gray-200 bg-white px-6 py-3">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="size-8 bg-green-700 flex items-center justify-center">
-            <span className="text-white font-serif font-bold italic">M</span>
-          </div>
-          <span className="font-serif font-bold text-lg tracking-tight uppercase">
-            Malibru <span className="text-green-500"> Admin</span>
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={onBackProfile}
-          className="text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-green-700 transition-colors"
-        >
-          Voltar ao Perfil
-        </button>
-      </div>
-    </nav>
-  );
-}
-
 function formatDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('pt-BR', {
@@ -146,17 +122,14 @@ export default function AdminPage() {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center">
+      <div className="p-8 flex items-center justify-center min-h-[50vh]">
         <p className="text-sm text-gray-500">Carregando usuários...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
-      <TopNav onBackProfile={() => navigate('/profile')} />
-
-      <main className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
         <header>
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
             Administração
@@ -296,7 +269,6 @@ export default function AdminPage() {
             </table>
           </div>
         </div>
-      </main>
     </div>
   );
 }
