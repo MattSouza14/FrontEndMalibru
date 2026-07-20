@@ -85,6 +85,9 @@ export default function AppSidebar() {
             <NavItem to="/admin/office-licenses">
               Licenças Office
             </NavItem>
+            <NavItem to="/admin/certificates">
+              Certificados
+            </NavItem>
             <NavItem to="/admin/equipamentos">
               Equipamentos
             </NavItem>

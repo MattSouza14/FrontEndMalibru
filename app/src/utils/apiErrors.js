@@ -23,6 +23,9 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'OFFICE_LICENSE_NAO_ENCONTRADA') {
     return 'Licença Office não encontrada.';
   }
+  if (err.code === 'CERTIFICADO_NAO_ENCONTRADO') {
+    return 'Certificado não encontrado.';
+  }
   if (err.code === 'LICENCA_LOTADA') {
     return 'Esta licença já atingiu o limite de 5 usuários.';
   }

@@ -1,5 +1,10 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ExpiringPanel, { DateCell, ExpiryStatusCell } from '../components/ExpiringPanel';
+import { listCertificates } from '../services/certificateService';
+import { listOfficeLicenses } from '../services/officeLicenseService';
+import { daysUntil, getTopExpiring } from '../utils/expiry';
 
 function DashboardPanel({ title, description, badge, onClick, disabled = false }) {
   return (
@@ -37,8 +42,51 @@ function DashboardPanel({ title, description, badge, onClick, disabled = false }
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const [loading, setLoading] = useState(false);
+  const [expiringLicenses, setExpiringLicenses] = useState([]);
+  const [expiringCertificates, setExpiringCertificates] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    async function loadExpiringItems() {
+      const token = getToken();
+      if (!token) return;
+
+      setLoading(true);
+      try {
+        const [licensesData, certificatesData] = await Promise.all([
+          listOfficeLicenses(token),
+          listCertificates(token),
+        ]);
+
+        const licenses = Array.isArray(licensesData) ? licensesData : [];
+        const certificates = Array.isArray(certificatesData) ? certificatesData : [];
+
+        setExpiringLicenses(getTopExpiring(licenses, 'vencimento'));
+        setExpiringCertificates(getTopExpiring(certificates, 'dataVencimento'));
+      } catch {
+        setExpiringLicenses([]);
+        setExpiringCertificates([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadExpiringItems();
+  }, [isAdmin]);
+
+  const urgentLicenses = useMemo(
+    () => expiringLicenses.filter((l) => daysUntil(l.vencimento) <= 7).length,
+    [expiringLicenses],
+  );
+
+  const urgentCertificates = useMemo(
+    () => expiringCertificates.filter((c) => daysUntil(c.dataVencimento) <= 7).length,
+    [expiringCertificates],
+  );
 
   return (
     <div className="p-6 lg:p-8 space-y-8 max-w-6xl">
@@ -71,6 +119,84 @@ export default function HomePage() {
         </div>
       </div>
 
+      {isAdmin && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <ExpiringPanel
+            title="Licenças Office"
+            loading={loading}
+            emptyMessage="Nenhuma licença cadastrada."
+            items={expiringLicenses}
+            dateField="vencimento"
+            linkTo="/admin/office-licenses"
+            urgentCount={urgentLicenses}
+            urgentLabel={`${urgentLicenses} licença(s) vence(m) em até 7 dias`}
+            columns={[
+              {
+                key: 'email',
+                label: 'E-mail',
+                render: (item) => (
+                  <span className="font-medium text-gray-900">{item.email}</span>
+                ),
+              },
+              {
+                key: 'vencimento',
+                label: 'Vencimento',
+                render: (item) => <DateCell value={item.vencimento} />,
+              },
+              {
+                key: 'status',
+                label: 'Situação',
+                render: (_item, days) => <ExpiryStatusCell days={days} />,
+              },
+              {
+                key: 'vagas',
+                label: 'Vagas',
+                render: (item) => (
+                  <span className="text-gray-600">{item.vagasRestantes ?? 0} / 5</span>
+                ),
+              },
+            ]}
+          />
+
+          <ExpiringPanel
+            title="Certificados"
+            loading={loading}
+            emptyMessage="Nenhum certificado cadastrado."
+            items={expiringCertificates}
+            dateField="dataVencimento"
+            linkTo="/admin/certificates"
+            urgentCount={urgentCertificates}
+            urgentLabel={`${urgentCertificates} certificado(s) vence(m) em até 7 dias`}
+            columns={[
+              {
+                key: 'nome',
+                label: 'Nome',
+                render: (item) => (
+                  <span className="font-medium text-gray-900">{item.nome}</span>
+                ),
+              },
+              {
+                key: 'empresa',
+                label: 'Empresa',
+                render: (item) => (
+                  <span className="text-gray-600">{item.empresa || '—'}</span>
+                ),
+              },
+              {
+                key: 'dataVencimento',
+                label: 'Vencimento',
+                render: (item) => <DateCell value={item.dataVencimento} />,
+              },
+              {
+                key: 'status',
+                label: 'Situação',
+                render: (_item, days) => <ExpiryStatusCell days={days} />,
+              },
+            ]}
+          />
+        </div>
+      )}
+
       <section className="space-y-4">
         <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
           Acesso rápido
@@ -89,7 +215,7 @@ export default function HomePage() {
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
             Painéis administrativos
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <DashboardPanel
               title="Usuários"
               description="Ative ou desative contas e gerencie acessos ao portal."
@@ -98,13 +224,19 @@ export default function HomePage() {
             />
             <DashboardPanel
               title="Licenças Office"
-              description="Cadastre, edite e exclua licenças Microsoft Office da organização."
+              description="Cadastre, edite e exclua licenças Microsoft Office."
               badge="Admin"
               onClick={() => navigate('/admin/office-licenses')}
             />
             <DashboardPanel
+              title="Certificados"
+              description="Gerencie certificados digitais e datas de vencimento."
+              badge="Admin"
+              onClick={() => navigate('/admin/certificates')}
+            />
+            <DashboardPanel
               title="Equipamentos"
-              description="Controle de equipamentos corporativos e vínculos com usuários."
+              description="Controle de equipamentos corporativos e vínculos."
               badge="Admin"
               onClick={() => navigate('/admin/equipamentos')}
             />

@@ -10,10 +10,11 @@ import InitialPage from '../pages/InitialPage';
 import ProfilePage from '../pages/ProfilePage';
 import AdminPage from '../pages/AdminPage';
 import OfficeLicensesPage from '../pages/OfficeLicensesPage';
+import CertificatesPage from '../pages/CertificatesPage';
 import EquipmentsPage from '../pages/EquipmentsPage';
 import Layout from '../pages/Layout';
 
-function AppRoutes() {
+export default function AppRoutes() {
   return (
     <AuthProvider>
       <Router>
@@ -30,10 +31,11 @@ function AppRoutes() {
                 <Route path="/HomePage" element={<HomePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route element={<AdminRoute />}>
-                  <Route path="/admin" element={<AdminPage />} />
-                  <Route path="/admin/office-licenses" element={<OfficeLicensesPage />} />
-                  <Route path="/admin/equipamentos" element={<EquipmentsPage />} />
-                </Route>
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/office-licenses" element={<OfficeLicensesPage />} />
+                <Route path="/admin/certificates" element={<CertificatesPage />} />
+                <Route path="/admin/equipamentos" element={<EquipmentsPage />} />
+               </Route>
               </Route>
             </Route>
 
@@ -45,4 +47,3 @@ function AppRoutes() {
   );
 }
 
-export default AppRoutes;
