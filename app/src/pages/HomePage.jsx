@@ -5,7 +5,8 @@ import ExpiringPanel, { DateCell, ExpiryStatusCell } from '../components/Expirin
 import { listCertificates } from '../services/certificateService';
 import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
-import { daysUntil, getTopExpiring } from '../utils/expiry';
+import { getMyEquipments, getMyOfficeLicense } from '../services/userResourcesService';
+import { daysUntil, expiryBadgeClass, expiryLabel, formatDate, getTopExpiring } from '../utils/expiry';
 
 function DashboardPanel({ title, description, badge, onClick, disabled = false }) {
   return (
@@ -49,6 +50,37 @@ export default function HomePage() {
   const [expiringLicenses, setExpiringLicenses] = useState([]);
   const [expiringCertificates, setExpiringCertificates] = useState([]);
   const [openChamadosCount, setOpenChamadosCount] = useState(0);
+  const [resourcesLoading, setResourcesLoading] = useState(true);
+  const [myOfficeLicense, setMyOfficeLicense] = useState(null);
+  const [myEquipments, setMyEquipments] = useState([]);
+
+  useEffect(() => {
+    async function loadMyResources() {
+      const token = getToken();
+      if (!token) return;
+
+      setResourcesLoading(true);
+      try {
+        const [licenseData, equipmentsData] = await Promise.all([
+          getMyOfficeLicense(token).catch((err) => {
+            if (err.code === 'LICENCA_NAO_VINCULADA' || err.status === 404) return null;
+            throw err;
+          }),
+          getMyEquipments(token),
+        ]);
+
+        setMyOfficeLicense(licenseData);
+        setMyEquipments(Array.isArray(equipmentsData) ? equipmentsData : []);
+      } catch {
+        setMyOfficeLicense(null);
+        setMyEquipments([]);
+      } finally {
+        setResourcesLoading(false);
+      }
+    }
+
+    loadMyResources();
+  }, [getToken]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -124,6 +156,65 @@ export default function HomePage() {
           </p>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+          Meus recursos
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-200 p-6">
+            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              Licença Office
+            </p>
+            {resourcesLoading ? (
+              <p className="text-sm text-gray-500 mt-3">Carregando...</p>
+            ) : myOfficeLicense ? (
+              <div className="mt-3 space-y-2">
+                <p className="font-medium text-gray-900">{myOfficeLicense.email}</p>
+                <p className="text-sm text-gray-600">
+                  Vencimento: {formatDate(myOfficeLicense.vencimento)}
+                </p>
+                <span
+                  className={`inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(myOfficeLicense.diasParaVencer)}`}
+                >
+                  {expiryLabel(myOfficeLicense.diasParaVencer)}
+                </span>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 mt-3">
+                Nenhuma licença Office vinculada à sua conta.
+              </p>
+            )}
+          </div>
+
+          <div className="bg-white border border-gray-200 p-6">
+            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              Equipamentos
+            </p>
+            {resourcesLoading ? (
+              <p className="text-sm text-gray-500 mt-3">Carregando...</p>
+            ) : myEquipments.length === 0 ? (
+              <p className="text-sm text-gray-500 mt-3">
+                Nenhum equipamento vinculado à sua conta.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {myEquipments.map((equipment) => (
+                  <li key={equipment.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                    <p className="font-medium text-gray-900">{equipment.nome}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Patrimônio: {equipment.patrimonio || '—'}
+                    </p>
+                    {equipment.descricao && (
+                      <p className="text-sm text-gray-600 mt-1">{equipment.descricao}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
 
       {isAdmin && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">

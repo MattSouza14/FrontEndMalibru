@@ -10,7 +10,8 @@ export async function apiRequest(endpoint, options = {}) {
       ...headers,
     },
   });
-  const data = await response.json().catch(() => null);
+  const data =
+    response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
     throw {
       status: response.status,

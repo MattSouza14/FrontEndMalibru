@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import { getApiErrorMessage } from '../utils/apiErrors';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -27,12 +28,8 @@ export default function LoginPage() {
     } catch (err) {
       if (err.code === 'CREDENCIAIS_INVALIDAS') {
         setError('E-mail ou senha incorretos.');
-      } else if (err.code === 'CONTA_NAO_ATIVADA') {
-        setError('Sua conta ainda não foi ativada. Aguarde a validação.');
-      } else if (err.code === 'VALIDATION_ERROR') {
-        setError('Preencha e-mail e senha corretamente.');
       } else {
-        setError(err.message || 'Não foi possível acessar o sistema.');
+        setError(getApiErrorMessage(err, 'Não foi possível acessar o sistema.'));
       }
     } finally {
       setLoading(false);

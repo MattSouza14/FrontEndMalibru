@@ -77,7 +77,7 @@ export default function RegisterPage() {
           </p>
           <h1 className="font-serif italic text-4xl text-green-700">Criar sua conta</h1>
           <p className="mt-2 text-sm text-gray-600 max-w-md">
-            Preencha os dados abaixo. Após validação, você terá acesso ao painel.
+            Preencha os dados abaixo. Após o cadastro, você receberá um e-mail para ativar sua conta.
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
           {success && (
             <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-sm">
-              Conta criada com sucesso! Aguarde ativação ou faça login quando liberada.
+              Conta criada! Verifique seu e-mail para ativar. Redirecionando para o login...
             </div>
           )}
 

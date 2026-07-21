@@ -13,6 +13,7 @@ import OfficeLicensesPage from '../pages/OfficeLicensesPage';
 import CertificatesPage from '../pages/CertificatesPage';
 import ChamadosPage from '../pages/ChamadosPage';
 import AdminChamadosPage from '../pages/AdminChamadosPage';
+import ActivateAccountPage from '../pages/ActivateAccountPage';
 import EquipmentsPage from '../pages/EquipmentsPage';
 import Layout from '../pages/Layout';
 
@@ -26,6 +27,7 @@ export default function AppRoutes() {
             <Route path="/" element={<InitialPage />} />
             <Route path="/Register" element={<Register />} />
             <Route path="/Login" element={<Login />} />
+            <Route path="/ativar-conta" element={<ActivateAccountPage />} />
 
             {/* Rotas privadas — exige login */}
             <Route element={<PrivateRoute />}>

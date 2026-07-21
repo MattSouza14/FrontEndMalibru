@@ -16,6 +16,12 @@ export async function getOfficeLicense(token, id) {
   });
 }
 
+export async function listOfficeLicenseUsers(token, licenseId) {
+  return apiRequest(`/api/admin/office-licenses/${licenseId}/usuarios`, {
+    headers: authHeaders(token),
+  });
+}
+
 export async function createOfficeLicense(token, payload) {
   return apiRequest('/api/admin/office-licenses', {
     method: 'POST',
@@ -35,6 +41,21 @@ export async function updateOfficeLicense(token, id, payload) {
 export async function deleteOfficeLicense(token, id) {
   return apiRequest(`/api/admin/office-licenses/${id}`, {
     method: 'DELETE',
+    headers: authHeaders(token),
+  });
+}
+
+export async function linkOfficeLicenseToUser(token, usuarioId, officeLicenseId) {
+  return apiRequest(`/api/admin/office-licenses/usuarios/${usuarioId}/vincular`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ officeLicenseId }),
+  });
+}
+
+export async function unlinkOfficeLicenseFromUser(token, usuarioId) {
+  return apiRequest(`/api/admin/office-licenses/usuarios/${usuarioId}/desvincular`, {
+    method: 'POST',
     headers: authHeaders(token),
   });
 }

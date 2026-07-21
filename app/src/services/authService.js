@@ -13,3 +13,10 @@ export async function login({ email, senha }) {
     body: JSON.stringify({ email, senha }),
   });
 }
+
+export async function activateAccount(token) {
+  return apiRequest('/api/auth/ativar', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
+}
