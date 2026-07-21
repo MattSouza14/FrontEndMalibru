@@ -11,6 +11,8 @@ import ProfilePage from '../pages/ProfilePage';
 import AdminPage from '../pages/AdminPage';
 import OfficeLicensesPage from '../pages/OfficeLicensesPage';
 import CertificatesPage from '../pages/CertificatesPage';
+import ChamadosPage from '../pages/ChamadosPage';
+import AdminChamadosPage from '../pages/AdminChamadosPage';
 import EquipmentsPage from '../pages/EquipmentsPage';
 import Layout from '../pages/Layout';
 
@@ -30,8 +32,10 @@ export default function AppRoutes() {
               <Route element={<DashboardLayout />}>
                 <Route path="/HomePage" element={<HomePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/chamados" element={<ChamadosPage />} />
                 <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/chamados" element={<AdminChamadosPage />} />
                 <Route path="/admin/office-licenses" element={<OfficeLicensesPage />} />
                 <Route path="/admin/certificates" element={<CertificatesPage />} />
                 <Route path="/admin/equipamentos" element={<EquipmentsPage />} />

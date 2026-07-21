@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/authService';
+import { getApiErrorMessage } from '../utils/apiErrors';
+import { validateRegisterForm } from '../utils/validation';
 
 function Field({ label, children }) {
   return (
@@ -24,38 +26,43 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
+    const errors = validateRegisterForm(form);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const user = await register(form);
+      const payload = {
+        nome: form.nome.trim(),
+        email: form.email.trim(),
+        senha: form.senha,
+        setor: form.setor.trim() || undefined,
+      };
+      const user = await register(payload);
       setSuccess(true);
       console.log('Conta criada:', user);
 
-      // Opcional: redirecionar para login após 2s
       setTimeout(() => navigate('/Login'), 2000);
     } catch (err) {
-      if (err.code === 'EMAIL_JA_CADASTRADO') {
-        setError('Este e-mail já está cadastrado.');
-      } else if (err.code === 'VALIDATION_ERROR') {
-        const messages = Object.entries(err.details || {})
-          .map(([campo, msg]) => `${campo}: ${msg}`)
-          .join(' | ');
-        setError(messages || err.message);
-      } else {
-        setError(err.message || 'Não foi possível criar a conta.');
-      }
+      setError(getApiErrorMessage(err, 'Não foi possível criar a conta.'));
     } finally {
       setLoading(false);
     }
@@ -97,10 +104,13 @@ export default function RegisterPage() {
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                required
+                maxLength={150}
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-light placeholder:text-gray-400"
                 placeholder="voce@empresa.com.br"
               />
+              {fieldErrors.email && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+              )}
             </Field>
 
             <Field label="Senha">
@@ -109,11 +119,13 @@ export default function RegisterPage() {
                 name="senha"
                 value={form.senha}
                 onChange={handleChange}
-                required
-                minLength={6}
+                maxLength={100}
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
                 placeholder="Mínimo 6 caracteres"
               />
+              {fieldErrors.senha && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.senha}</p>
+              )}
             </Field>
 
             <Field label="Nome">
@@ -122,10 +134,13 @@ export default function RegisterPage() {
                 name="nome"
                 value={form.nome}
                 onChange={handleChange}
-                required
+                maxLength={150}
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-mono placeholder:text-gray-400"
                 placeholder="Nome Completo"
               />
+              {fieldErrors.nome && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.nome}</p>
+              )}
             </Field>
 
             <Field label="Setor">
@@ -134,9 +149,13 @@ export default function RegisterPage() {
                 name="setor"
                 value={form.setor}
                 onChange={handleChange}
+                maxLength={100}
                 className="w-full px-4 py-3.5 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm font-mono placeholder:text-gray-400"
                 placeholder="Setor"
               />
+              {fieldErrors.setor && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.setor}</p>
+              )}
             </Field>
           </div>
 

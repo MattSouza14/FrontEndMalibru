@@ -73,12 +73,18 @@ export default function AppSidebar() {
         <NavItem to="/profile">
           Meu Perfil
         </NavItem>
+        <NavItem to="/chamados">
+          Meus Chamados
+        </NavItem>
 
         {isAdmin && (
           <>
             <p className="px-5 pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-400 font-bold">
               Administração
             </p>
+            <NavItem to="/admin/chamados">
+              Atender Chamados
+            </NavItem>
             <NavItem to="/admin">
               Usuários
             </NavItem>

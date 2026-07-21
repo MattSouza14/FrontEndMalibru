@@ -9,7 +9,10 @@ export function getApiErrorMessage(err, fallback) {
     return err.message || 'Dados inválidos.';
   }
   if (err.code === 'REQUISICAO_INVALIDA') {
-    return err.message || 'Preencha nome e e-mail corretamente.';
+    return err.message || 'Dados inválidos. Verifique as informações e tente novamente.';
+  }
+  if (err.code === 'CONTA_NAO_ATIVADA') {
+    return 'Sua conta ainda não foi ativada. Aguarde a liberação de um administrador.';
   }
   if (err.code === 'EMAIL_JA_CADASTRADO') {
     return 'Este e-mail já está em uso por outra conta.';
@@ -25,6 +28,9 @@ export function getApiErrorMessage(err, fallback) {
   }
   if (err.code === 'CERTIFICADO_NAO_ENCONTRADO') {
     return 'Certificado não encontrado.';
+  }
+  if (err.code === 'CHAMADO_NAO_ENCONTRADO') {
+    return 'Chamado não encontrado.';
   }
   if (err.code === 'LICENCA_LOTADA') {
     return 'Esta licença já atingiu o limite de 5 usuários.';

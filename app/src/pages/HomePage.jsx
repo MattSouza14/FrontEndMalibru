@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpiringPanel, { DateCell, ExpiryStatusCell } from '../components/ExpiringPanel';
 import { listCertificates } from '../services/certificateService';
+import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
 import { daysUntil, getTopExpiring } from '../utils/expiry';
 
@@ -47,6 +48,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [expiringLicenses, setExpiringLicenses] = useState([]);
   const [expiringCertificates, setExpiringCertificates] = useState([]);
+  const [openChamadosCount, setOpenChamadosCount] = useState(0);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -57,26 +59,30 @@ export default function HomePage() {
 
       setLoading(true);
       try {
-        const [licensesData, certificatesData] = await Promise.all([
+        const [licensesData, certificatesData, chamadosData] = await Promise.all([
           listOfficeLicenses(token),
           listCertificates(token),
+          listAdminChamados(token, 'ABERTO'),
         ]);
 
         const licenses = Array.isArray(licensesData) ? licensesData : [];
         const certificates = Array.isArray(certificatesData) ? certificatesData : [];
+        const chamados = Array.isArray(chamadosData) ? chamadosData : [];
 
         setExpiringLicenses(getTopExpiring(licenses, 'vencimento'));
         setExpiringCertificates(getTopExpiring(certificates, 'dataVencimento'));
+        setOpenChamadosCount(chamados.length);
       } catch {
         setExpiringLicenses([]);
         setExpiringCertificates([]);
+        setOpenChamadosCount(0);
       } finally {
         setLoading(false);
       }
     }
 
     loadExpiringItems();
-  }, [isAdmin]);
+  }, [isAdmin, getToken]);
 
   const urgentLicenses = useMemo(
     () => expiringLicenses.filter((l) => daysUntil(l.vencimento) <= 7).length,
@@ -207,15 +213,65 @@ export default function HomePage() {
             description="Visualize e atualize suas informações pessoais, e-mail e setor."
             onClick={() => navigate('/profile')}
           />
+          <DashboardPanel
+            title={isAdmin ? 'Abrir Chamado' : 'Suporte Técnico'}
+            description={
+              isAdmin
+                ? 'Registre um chamado de suporte como administrador.'
+                : 'Abra um chamado de suporte técnico e acompanhe o andamento.'
+            }
+            badge={isAdmin ? 'Admin' : undefined}
+            onClick={() => navigate(isAdmin ? '/admin/chamados?novo=1' : '/chamados?novo=1')}
+          />
         </div>
       </section>
 
       {isAdmin && (
         <section className="space-y-4">
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+            Suporte
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DashboardPanel
+              title="Atender Chamados"
+              description={
+                openChamadosCount > 0
+                  ? `${openChamadosCount} chamado(s) aguardando atendimento.`
+                  : 'Visualize e atualize o status dos chamados de suporte.'
+              }
+              badge="Admin"
+              onClick={() => navigate('/admin/chamados')}
+            />
+            <DashboardPanel
+              title="Meus Chamados"
+              description="Consulte os chamados abertos por você."
+              onClick={() => navigate('/chamados')}
+            />
+          </div>
+        </section>
+      )}
+
+      {!isAdmin && (
+        <section className="space-y-4">
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+            Suporte
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DashboardPanel
+              title="Meus Chamados"
+              description="Veja o histórico e o status dos seus chamados abertos."
+              onClick={() => navigate('/chamados')}
+            />
+          </div>
+        </section>
+      )}
+
+      {isAdmin && (
+        <section className="space-y-4">
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
             Painéis administrativos
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             <DashboardPanel
               title="Usuários"
               description="Ative ou desative contas e gerencie acessos ao portal."

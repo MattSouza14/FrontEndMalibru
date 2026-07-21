@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getMyProfile, updateProfile } from "../services/profileService";
 import { getApiErrorMessage, isUnauthorized } from "../utils/apiErrors";
+import { validateProfileForm } from "../utils/validation";
 
 const EMPTY_FORM = {
   nome: "",
@@ -90,6 +91,8 @@ function Field({
   onChange,
   type = "text",
   placeholder,
+  maxLength,
+  error,
 }) {
   return (
     <label className="block group space-y-1.5">
@@ -102,8 +105,10 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        maxLength={maxLength}
         className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
       />
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </label>
   );
 }
@@ -117,6 +122,7 @@ function ProfilePage() {
   const [success, setSuccess] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [initialForm, setInitialForm] = useState(EMPTY_FORM);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     async function loadProfile() {
@@ -146,6 +152,7 @@ function ProfilePage() {
   }, []);
   function update(k, v) {
     setForm((f) => ({ ...f, [k]: v }));
+    setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
     setSuccess(null);
   }
 
@@ -154,15 +161,21 @@ function ProfilePage() {
     const token = getToken();
     if (!token) return;
 
-    const nome = form.nome.trim();
-    const email = form.email.trim();
+    const nextForm = {
+      ...form,
+      nome: form.nome.trim(),
+      email: form.email.trim(),
+      setor: form.setor,
+    };
 
-    if (!nome || !email) {
-      setError("Nome e e-mail são obrigatórios.");
+    const errors = validateProfileForm(nextForm);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError(null);
       return;
     }
 
-    const payload = buildPatchPayload(initialForm, { ...form, nome, email });
+    const payload = buildPatchPayload(initialForm, nextForm);
     if (Object.keys(payload).length === 0) {
       setError("Nenhuma alteração foi detectada.");
       return;
@@ -258,6 +271,8 @@ function ProfilePage() {
                 label="Nome completo"
                 value={form.nome || ""}
                 onChange={(v) => update("nome", v)}
+                maxLength={150}
+                error={fieldErrors.nome}
               />
               <Field
                 icon={<MailIcon />}
@@ -265,12 +280,16 @@ function ProfilePage() {
                 type="email"
                 value={form.email}
                 onChange={(v) => update("email", v)}
+                maxLength={150}
+                error={fieldErrors.email}
               />
               <Field
                 icon={<Building2Icon />}
                 label="Setor"
                 value={form.setor || ""}
                 onChange={(v) => update("setor", v)}
+                maxLength={100}
+                error={fieldErrors.setor}
               />
 
               <div className="pt-4 flex justify-end">
