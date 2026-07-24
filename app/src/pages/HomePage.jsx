@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpiringPanel, { DateCell, ExpiryStatusCell } from '../components/ExpiringPanel';
+import TablePagination from '../components/TablePagination';
 import { listCertificates } from '../services/certificateService';
 import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
 import { getMyEquipments, getMyOfficeLicense } from '../services/userResourcesService';
 import { daysUntil, expiryBadgeClass, expiryLabel, formatDate, getTopExpiring } from '../utils/expiry';
+import { clampPageAfterChange, paginateItems } from '../utils/pagination';
+
+const EQUIPMENTS_PAGE_SIZE = 4;
 
 function DashboardPanel({ title, description, badge, onClick, disabled = false }) {
   return (
@@ -53,6 +57,7 @@ export default function HomePage() {
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [myOfficeLicense, setMyOfficeLicense] = useState(null);
   const [myEquipments, setMyEquipments] = useState([]);
+  const [equipmentsPage, setEquipmentsPage] = useState(1);
 
   useEffect(() => {
     async function loadMyResources() {
@@ -126,6 +131,17 @@ export default function HomePage() {
     [expiringCertificates],
   );
 
+  const equipmentsPagination = useMemo(
+    () => paginateItems(myEquipments, equipmentsPage, EQUIPMENTS_PAGE_SIZE),
+    [myEquipments, equipmentsPage],
+  );
+
+  useEffect(() => {
+    setEquipmentsPage((current) =>
+      clampPageAfterChange(myEquipments.length, current, EQUIPMENTS_PAGE_SIZE),
+    );
+  }, [myEquipments.length]);
+
   return (
     <div className="p-6 lg:p-8 space-y-8 max-w-6xl">
       <header>
@@ -198,19 +214,31 @@ export default function HomePage() {
                 Nenhum equipamento vinculado à sua conta.
               </p>
             ) : (
-              <ul className="mt-3 space-y-3">
-                {myEquipments.map((equipment) => (
-                  <li key={equipment.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                    <p className="font-medium text-gray-900">{equipment.nome}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Patrimônio: {equipment.patrimonio || '—'}
-                    </p>
-                    {equipment.descricao && (
-                      <p className="text-sm text-gray-600 mt-1">{equipment.descricao}</p>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="mt-3 space-y-3">
+                  {equipmentsPagination.items.map((equipment) => (
+                    <li key={equipment.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                      <p className="font-medium text-gray-900">{equipment.nome}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patrimônio: {equipment.patrimonio || '—'}
+                      </p>
+                      {equipment.descricao && (
+                        <p className="text-sm text-gray-600 mt-1">{equipment.descricao}</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <TablePagination
+                  page={equipmentsPagination.page}
+                  totalPages={equipmentsPagination.totalPages}
+                  total={equipmentsPagination.total}
+                  pageSize={EQUIPMENTS_PAGE_SIZE}
+                  onPrev={() => setEquipmentsPage((p) => Math.max(1, p - 1))}
+                  onNext={() =>
+                    setEquipmentsPage((p) => Math.min(equipmentsPagination.totalPages, p + 1))
+                  }
+                />
+              </>
             )}
           </div>
         </div>

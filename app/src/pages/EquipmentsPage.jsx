@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import TablePagination from '../components/TablePagination';
 import { listUsers } from '../services/adminService';
 import {
   createEquipment,
@@ -11,6 +12,9 @@ import {
   updateEquipment,
 } from '../services/equipmentService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
+import { clampPageAfterChange, paginateItems } from '../utils/pagination';
+
+const PAGE_SIZE = 4;
 
 const EMPTY_FORM = {
   nome: '',
@@ -52,6 +56,7 @@ export default function EquipmentsPage() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [linkForm, setLinkForm] = useState({ usuarioId: '', equipamentoId: '' });
+  const [tablePage, setTablePage] = useState(1);
 
   async function loadData() {
     const token = getToken();
@@ -95,6 +100,15 @@ export default function EquipmentsPage() {
     () => equipments.filter((e) => !e.usuarioId),
     [equipments],
   );
+
+  const tablePagination = useMemo(
+    () => paginateItems(equipments, tablePage, PAGE_SIZE),
+    [equipments, tablePage],
+  );
+
+  useEffect(() => {
+    setTablePage((current) => clampPageAfterChange(equipments.length, current, PAGE_SIZE));
+  }, [equipments.length]);
 
   function openCreateForm() {
     setEditingId(null);
@@ -443,7 +457,7 @@ export default function EquipmentsPage() {
                 </td>
               </tr>
             ) : (
-              equipments.map((equipment) => {
+              tablePagination.items.map((equipment) => {
                 const linkedUser = equipment.usuarioId ? usersById[equipment.usuarioId] : null;
                 const unlinkKey = `${equipment.usuarioId}-${equipment.id}`;
 
@@ -496,6 +510,14 @@ export default function EquipmentsPage() {
             )}
           </tbody>
         </table>
+        <TablePagination
+          page={tablePagination.page}
+          totalPages={tablePagination.totalPages}
+          total={tablePagination.total}
+          pageSize={PAGE_SIZE}
+          onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
+          onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
+        />
       </div>
     </div>
   );

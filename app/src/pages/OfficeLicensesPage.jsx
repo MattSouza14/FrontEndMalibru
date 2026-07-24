@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import TablePagination from '../components/TablePagination';
 import { listUsers } from '../services/adminService';
 import {
   createOfficeLicense,
@@ -18,6 +19,9 @@ import {
   normalizeAdminUser,
   normalizeAdminUsers,
 } from '../utils/adminUser';
+import { clampPageAfterChange, paginateItems } from '../utils/pagination';
+
+const PAGE_SIZE = 5;
 
 const EMPTY_FORM = {
   email: '',
@@ -178,6 +182,7 @@ export default function OfficeLicensesPage() {
   const [selectedLicense, setSelectedLicense] = useState(null);
   const [modalUsers, setModalUsers] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
+  const [tablePage, setTablePage] = useState(1);
 
   async function resolveLicenseUsers(token, license, currentUsers) {
     const licenseId = Number(license.id);
@@ -305,6 +310,15 @@ export default function OfficeLicensesPage() {
     () => users.filter((u) => !getUserOfficeLicenseId(u)),
     [users],
   );
+
+  const tablePagination = useMemo(
+    () => paginateItems(licenses, tablePage, PAGE_SIZE),
+    [licenses, tablePage],
+  );
+
+  useEffect(() => {
+    setTablePage((current) => clampPageAfterChange(licenses.length, current, PAGE_SIZE));
+  }, [licenses.length]);
 
   function openCreateForm() {
     setEditingId(null);
@@ -680,7 +694,7 @@ export default function OfficeLicensesPage() {
                 </td>
               </tr>
             ) : (
-              licenses.map((license) => (
+              tablePagination.items.map((license) => (
                 <tr
                   key={license.id}
                   onClick={() => openLicenseModal(license)}
@@ -729,6 +743,14 @@ export default function OfficeLicensesPage() {
             )}
           </tbody>
         </table>
+        <TablePagination
+          page={tablePagination.page}
+          totalPages={tablePagination.totalPages}
+          total={tablePagination.total}
+          pageSize={PAGE_SIZE}
+          onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
+          onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
+        />
       </div>
 
       <LicenseUsersModal

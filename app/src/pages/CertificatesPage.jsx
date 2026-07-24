@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import TablePagination from '../components/TablePagination';
 import {
   createCertificate,
   deleteCertificate,
@@ -9,6 +10,9 @@ import {
 } from '../services/certificateService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDate } from '../utils/expiry';
+import { clampPageAfterChange, paginateItems } from '../utils/pagination';
+
+const PAGE_SIZE = 5;
 
 const EMPTY_FORM = {
   nome: '',
@@ -46,6 +50,16 @@ export default function CertificatesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [tablePage, setTablePage] = useState(1);
+
+  const tablePagination = useMemo(
+    () => paginateItems(certificates, tablePage, PAGE_SIZE),
+    [certificates, tablePage],
+  );
+
+  useEffect(() => {
+    setTablePage((current) => clampPageAfterChange(certificates.length, current, PAGE_SIZE));
+  }, [certificates.length]);
 
   async function loadCertificates() {
     const token = getToken();
@@ -306,7 +320,7 @@ export default function CertificatesPage() {
                 </td>
               </tr>
             ) : (
-              certificates.map((certificate) => (
+              tablePagination.items.map((certificate) => (
                 <tr key={certificate.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="px-6 py-4 font-medium text-gray-900">{certificate.nome}</td>
                   <td className="px-6 py-4 text-gray-600">{certificate.empresa || '—'}</td>
@@ -336,6 +350,14 @@ export default function CertificatesPage() {
             )}
           </tbody>
         </table>
+        <TablePagination
+          page={tablePagination.page}
+          totalPages={tablePagination.totalPages}
+          total={tablePagination.total}
+          pageSize={PAGE_SIZE}
+          onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
+          onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
+        />
       </div>
     </div>
   );
