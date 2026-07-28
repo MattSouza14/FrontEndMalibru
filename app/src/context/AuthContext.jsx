@@ -6,18 +6,20 @@ import {
   saveAuth,
   saveUser,
 } from '../services/authStorage';
+import { normalizeUser } from '../utils/roles';
 
 const AuthContext = createContext(null);
 
 function toUsuarioResponde(profile) {
-  return {
+  return normalizeUser({
     id: profile.id,
     nome: profile.nome,
     email: profile.email,
     setor: profile.setor ?? null,
+    roles: profile.roles,
     role: profile.role,
     enabled: profile.enabled,
-  };
+  });
 }
 
 export function AuthProvider({ children }) {
@@ -36,8 +38,9 @@ export function AuthProvider({ children }) {
       const data = await apiRequest('/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setUser(data);
-      saveUser(data);
+      const normalized = normalizeUser(data);
+      setUser(normalized);
+      saveUser(normalized);
     } catch {
       clearAuth();
       setUser(null);
@@ -47,10 +50,10 @@ export function AuthProvider({ children }) {
   }
 
   function loginSuccess({ token, user: loggedUser }, manterConectado = false) {
-    saveAuth({ token, user: loggedUser }, manterConectado);
-    setUser(loggedUser);
+    const normalized = normalizeUser(loggedUser);
+    saveAuth({ token, user: normalized }, manterConectado);
+    setUser(normalized);
   }
-
   function logout() {
     clearAuth();
     setUser(null);

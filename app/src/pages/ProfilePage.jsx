@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getMyProfile, updateProfile } from "../services/profileService";
 import { getApiErrorMessage, isUnauthorized } from "../utils/apiErrors";
+import { formatRoles, normalizeRoles } from "../utils/roles";
 import { validateProfileForm } from "../utils/validation";
 
 const EMPTY_FORM = {
   nome: "",
   email: "",
   setor: "",
-  role: "",
+  roles: [],
   enabled: false,
 };
 
@@ -67,7 +68,7 @@ function profileToForm(profile) {
     nome: profile.nome ?? "",
     email: profile.email ?? "",
     setor: profile.setor ?? "",
-    role: profile.role ?? "",
+    roles: normalizeRoles(profile),
     enabled: profile.enabled ?? false,
   };
 }
@@ -251,7 +252,7 @@ function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <ShieldIcon />
-                  <span>Perfil: {form.role || "—"}</span>
+                  <span>Roles: {formatRoles({ roles: form.roles }) || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <IdCardIcon />

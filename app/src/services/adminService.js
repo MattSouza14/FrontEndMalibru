@@ -23,3 +23,17 @@ export async function deactivateUser(token, id) {
     headers: authHeaders(token),
   });
 }
+
+export async function listAvailableRoles(token) {
+  return apiRequest('/api/admin/usuarios/roles', {
+    headers: authHeaders(token),
+  });
+}
+
+export async function updateUserRoles(token, id, roles) {
+  return apiRequest(`/api/admin/usuarios/${id}/roles`, {
+    method: 'PATCH',
+    headers: authHeaders(token),
+    body: JSON.stringify({ roles }),
+  });
+}

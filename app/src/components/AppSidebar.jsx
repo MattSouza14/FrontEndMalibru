@@ -1,5 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  canAccessChamadosAdmin,
+  canAccessTiModules,
+  formatRoles,
+  isAdmin,
+} from '../utils/roles';
 
 function NavItem({ to, end, children }) {
   return (
@@ -22,7 +28,9 @@ function NavItem({ to, end, children }) {
 export default function AppSidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const showAdminUsers = isAdmin(user);
+  const showChamadosAdmin = canAccessChamadosAdmin(user);
+  const showTiModules = canAccessTiModules(user);
   const initial = (user?.nome || user?.email || 'U')[0]?.toUpperCase();
 
   function handleLogout() {
@@ -57,7 +65,7 @@ export default function AppSidebar() {
             <p className="font-medium text-gray-900 text-sm truncate">{user?.nome}</p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 bg-gray-100 text-gray-600">
-              {user?.role}
+              {formatRoles(user)}
             </span>
           </div>
         </div>
@@ -77,26 +85,37 @@ export default function AppSidebar() {
           Meus Chamados
         </NavItem>
 
-        {isAdmin && (
+        {(showChamadosAdmin || showTiModules || showAdminUsers) && (
           <>
             <p className="px-5 pt-4 pb-2 text-[10px] uppercase tracking-widest text-gray-400 font-bold">
               Administração
             </p>
-            <NavItem to="/admin/chamados">
-              Atender Chamados
-            </NavItem>
-            <NavItem to="/admin">
-              Usuários
-            </NavItem>
-            <NavItem to="/admin/office-licenses">
-              Licenças Office
-            </NavItem>
-            <NavItem to="/admin/certificates">
-              Certificados
-            </NavItem>
-            <NavItem to="/admin/equipamentos">
-              Equipamentos
-            </NavItem>
+            {showChamadosAdmin && (
+              <NavItem to="/admin/chamados">
+                Atender Chamados
+              </NavItem>
+            )}
+            {showAdminUsers && (
+              <NavItem to="/admin">
+                Usuários
+              </NavItem>
+            )}
+            {showTiModules && (
+              <>
+                <NavItem to="/admin/office-licenses">
+                  Licenças Office
+                </NavItem>
+                <NavItem to="/admin/software-licenses">
+                  Licenças de Software
+                </NavItem>
+                <NavItem to="/admin/certificates">
+                  Certificados
+                </NavItem>
+                <NavItem to="/admin/equipamentos">
+                  Equipamentos
+                </NavItem>
+              </>
+            )}
           </>
         )}
       </nav>

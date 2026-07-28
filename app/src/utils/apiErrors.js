@@ -41,6 +41,9 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'CERTIFICADO_NAO_ENCONTRADO') {
     return 'Certificado não encontrado.';
   }
+  if (err.code === 'SOFTWARE_LICENSE_NAO_ENCONTRADA') {
+    return 'Licença de software não encontrada.';
+  }
   if (err.code === 'CHAMADO_NAO_ENCONTRADO') {
     return 'Chamado não encontrado.';
   }
@@ -58,6 +61,12 @@ export function getApiErrorMessage(err, fallback) {
   }
   if (err.code === 'PATRIMONIO_JA_CADASTRADO') {
     return 'Já existe um equipamento com este patrimônio.';
+  }
+  if (err.code === 'ROLE_INVALIDA') {
+    return 'Uma ou mais roles informadas são inválidas.';
+  }
+  if (err.code === 'ULTIMO_ADMIN') {
+    return 'Não é possível remover a role ADMIN do único administrador do sistema.';
   }
   if (err.code === 'ERRO_INTERNO') {
     return 'Erro no servidor. Tente novamente em instantes.';

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { activateUser, deactivateUser, listUsers } from '../services/adminService';
+import { activateUser, deactivateUser, listAvailableRoles, listUsers, updateUserRoles } from '../services/adminService';
 import {
   linkOfficeLicenseToUser,
   listOfficeLicenses,
@@ -9,6 +9,7 @@ import {
 } from '../services/officeLicenseService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { getUserOfficeLicenseId, normalizeAdminUser, normalizeAdminUsers } from '../utils/adminUser';
+import { normalizeRoles } from '../utils/roles';
 
 function Loader2() {
   return (
@@ -47,6 +48,9 @@ export default function AdminPage() {
   const [actionId, setActionId] = useState(null);
   const [licenseActionId, setLicenseActionId] = useState(null);
   const [licenseSelect, setLicenseSelect] = useState({});
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [roleEdits, setRoleEdits] = useState({});
+  const [rolesActionId, setRolesActionId] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -58,12 +62,14 @@ export default function AdminPage() {
     setError(null);
 
     try {
-      const [usersData, licensesData] = await Promise.all([
+      const [usersData, licensesData, rolesData] = await Promise.all([
         listUsers(token),
         listOfficeLicenses(token),
+        listAvailableRoles(token),
       ]);
       setUsers(normalizeAdminUsers(usersData));
       setLicenses(Array.isArray(licensesData) ? licensesData : []);
+      setAvailableRoles(Array.isArray(rolesData) ? rolesData : []);
     } catch (err) {
       if (isUnauthorized(err)) {
         handleAuthFailure(logout, navigate);
@@ -131,7 +137,7 @@ export default function AdminPage() {
         ? await deactivateUser(token, targetUser.id)
         : await activateUser(token, targetUser.id);
 
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)));
       setSuccess(
         updated.enabled
           ? `Conta de ${updated.nome} ativada com sucesso.`
@@ -182,6 +188,66 @@ export default function AdminPage() {
       setError(getApiErrorMessage(err, 'Não foi possível vincular a licença.'));
     } finally {
       setLicenseActionId(null);
+    }
+  }
+
+  function startRoleEdit(targetUser) {
+    setRoleEdits((prev) => ({
+      ...prev,
+      [targetUser.id]: [...normalizeRoles(targetUser)],
+    }));
+    setError(null);
+    setSuccess(null);
+  }
+
+  function cancelRoleEdit(userId) {
+    setRoleEdits((prev) => {
+      const next = { ...prev };
+      delete next[userId];
+      return next;
+    });
+  }
+
+  function toggleRoleEdit(userId, role) {
+    setRoleEdits((prev) => {
+      const current = prev[userId] ?? [];
+      const nextRoles = current.includes(role)
+        ? current.filter((item) => item !== role)
+        : [...current, role];
+
+      return { ...prev, [userId]: nextRoles };
+    });
+  }
+
+  async function handleSaveRoles(targetUser) {
+    const token = getToken();
+    if (!token) return;
+
+    const roles = roleEdits[targetUser.id] ?? [];
+    if (roles.length === 0) {
+      setError('Selecione ao menos uma role para o usuário.');
+      return;
+    }
+
+    setRolesActionId(targetUser.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const updated = await updateUserRoles(token, targetUser.id, roles);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)),
+      );
+      cancelRoleEdit(targetUser.id);
+      setSuccess(`Roles de ${updated.nome} atualizadas com sucesso.`);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível atualizar as roles.'));
+    } finally {
+      setRolesActionId(null);
     }
   }
 
@@ -289,7 +355,7 @@ export default function AdminPage() {
                 <th className="px-6 py-3 font-bold">Nome</th>
                 <th className="px-6 py-3 font-bold">E-mail</th>
                 <th className="px-6 py-3 font-bold">Setor</th>
-                <th className="px-6 py-3 font-bold">Perfil</th>
+                <th className="px-6 py-3 font-bold">Roles</th>
                 <th className="px-6 py-3 font-bold">Status</th>
                 <th className="px-6 py-3 font-bold">Licença Office</th>
                 <th className="px-6 py-3 font-bold">Cadastro</th>
@@ -317,16 +383,71 @@ export default function AdminPage() {
                       <td className="px-6 py-4 font-medium text-gray-900">{u.nome}</td>
                       <td className="px-6 py-4 text-gray-600">{u.email}</td>
                       <td className="px-6 py-4 text-gray-600">{u.setor || '—'}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
-                            u.role === 'ADMIN'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {u.role}
-                        </span>
+                      <td className="px-6 py-4 min-w-[220px]">
+                        {roleEdits[u.id] ? (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              {availableRoles.map((role) => (
+                                <label
+                                  key={role}
+                                  className="inline-flex items-center gap-1.5 text-xs text-gray-700"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={roleEdits[u.id].includes(role)}
+                                    onChange={() => toggleRoleEdit(u.id, role)}
+                                    className="accent-green-700"
+                                  />
+                                  {role}
+                                </label>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={rolesActionId === u.id}
+                                onClick={() => handleSaveRoles(u)}
+                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-green-700 hover:bg-green-800 text-white disabled:opacity-50 inline-flex items-center gap-2"
+                              >
+                                {rolesActionId === u.id && <Loader2 />}
+                                Salvar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => cancelRoleEdit(u.id)}
+                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-1">
+                              {normalizeRoles(u).map((role) => (
+                                <span
+                                  key={role}
+                                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
+                                    role === 'ADMIN'
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {role}
+                                </span>
+                              ))}
+                            </div>
+                            {!isSelf && (
+                              <button
+                                type="button"
+                                onClick={() => startRoleEdit(u)}
+                                className="text-[10px] font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
+                              >
+                                Editar roles
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span

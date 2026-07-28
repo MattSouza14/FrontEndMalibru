@@ -15,3 +15,9 @@ export async function getMyEquipments(token) {
     headers: authHeaders(token),
   });
 }
+
+export async function getMySoftwareLicenses(token) {
+  return apiRequest('/api/usuarios/me/software-licenses', {
+    headers: authHeaders(token),
+  });
+}

@@ -6,9 +6,16 @@ import TablePagination from '../components/TablePagination';
 import { listCertificates } from '../services/certificateService';
 import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
-import { getMyEquipments, getMyOfficeLicense } from '../services/userResourcesService';
+import { listSoftwareLicenses, listSoftwareLicensesByUser } from '../services/softwareLicenseService';
+import { getMyEquipments, getMyOfficeLicense, getMySoftwareLicenses } from '../services/userResourcesService';
 import { daysUntil, expiryBadgeClass, expiryLabel, formatDate, getTopExpiring } from '../utils/expiry';
 import { clampPageAfterChange, paginateItems } from '../utils/pagination';
+import {
+  canAccessChamadosAdmin,
+  canAccessTiModules,
+  formatRoles,
+  hasAnyRole,
+} from '../utils/roles';
 
 const EQUIPMENTS_PAGE_SIZE = 4;
 
@@ -49,15 +56,19 @@ function DashboardPanel({ title, description, badge, onClick, disabled = false }
 export default function HomePage() {
   const navigate = useNavigate();
   const { user, getToken } = useAuth();
-  const isAdmin = user?.role === 'ADMIN';
+  const showTiAlerts = canAccessTiModules(user);
+  const showChamadosAdmin = canAccessChamadosAdmin(user);
   const [loading, setLoading] = useState(false);
   const [expiringLicenses, setExpiringLicenses] = useState([]);
+  const [expiringSoftwareLicenses, setExpiringSoftwareLicenses] = useState([]);
   const [expiringCertificates, setExpiringCertificates] = useState([]);
   const [openChamadosCount, setOpenChamadosCount] = useState(0);
   const [resourcesLoading, setResourcesLoading] = useState(true);
   const [myOfficeLicense, setMyOfficeLicense] = useState(null);
+  const [mySoftwareLicenses, setMySoftwareLicenses] = useState([]);
   const [myEquipments, setMyEquipments] = useState([]);
   const [equipmentsPage, setEquipmentsPage] = useState(1);
+  const [expiringTab, setExpiringTab] = useState('office');
 
   useEffect(() => {
     async function loadMyResources() {
@@ -65,30 +76,47 @@ export default function HomePage() {
       if (!token) return;
 
       setResourcesLoading(true);
-      try {
-        const [licenseData, equipmentsData] = await Promise.all([
-          getMyOfficeLicense(token).catch((err) => {
-            if (err.code === 'LICENCA_NAO_VINCULADA' || err.status === 404) return null;
-            throw err;
-          }),
-          getMyEquipments(token),
-        ]);
 
-        setMyOfficeLicense(licenseData);
-        setMyEquipments(Array.isArray(equipmentsData) ? equipmentsData : []);
-      } catch {
+      const [officeResult, softwareResult, equipmentsResult] = await Promise.allSettled([
+        getMyOfficeLicense(token),
+        getMySoftwareLicenses(token),
+        getMyEquipments(token),
+      ]);
+
+      if (officeResult.status === 'fulfilled') {
+        setMyOfficeLicense(officeResult.value);
+      } else {
         setMyOfficeLicense(null);
-        setMyEquipments([]);
-      } finally {
-        setResourcesLoading(false);
       }
+
+      let softwareLicenses = [];
+      if (softwareResult.status === 'fulfilled') {
+        softwareLicenses = Array.isArray(softwareResult.value) ? softwareResult.value : [];
+      } else if (hasAnyRole(user, ['ADMIN', 'TI']) && user?.id) {
+        try {
+          const adminData = await listSoftwareLicensesByUser(token, user.id);
+          softwareLicenses = Array.isArray(adminData) ? adminData : [];
+        } catch {
+          softwareLicenses = [];
+        }
+      }
+      setMySoftwareLicenses(softwareLicenses);
+
+      if (equipmentsResult.status === 'fulfilled') {
+        const data = equipmentsResult.value;
+        setMyEquipments(Array.isArray(data) ? data : []);
+      } else {
+        setMyEquipments([]);
+      }
+
+      setResourcesLoading(false);
     }
 
     loadMyResources();
-  }, [getToken]);
+  }, [getToken, user]);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!showTiAlerts) return;
 
     async function loadExpiringItems() {
       const token = getToken();
@@ -96,40 +124,196 @@ export default function HomePage() {
 
       setLoading(true);
       try {
-        const [licensesData, certificatesData, chamadosData] = await Promise.all([
+        const [licensesData, softwareLicensesData, certificatesData] = await Promise.all([
           listOfficeLicenses(token),
+          listSoftwareLicenses(token),
           listCertificates(token),
-          listAdminChamados(token, 'ABERTO'),
         ]);
 
         const licenses = Array.isArray(licensesData) ? licensesData : [];
+        const softwareLicenses = Array.isArray(softwareLicensesData) ? softwareLicensesData : [];
         const certificates = Array.isArray(certificatesData) ? certificatesData : [];
-        const chamados = Array.isArray(chamadosData) ? chamadosData : [];
 
         setExpiringLicenses(getTopExpiring(licenses, 'vencimento'));
+        setExpiringSoftwareLicenses(getTopExpiring(softwareLicenses, 'dataVencimento'));
         setExpiringCertificates(getTopExpiring(certificates, 'dataVencimento'));
-        setOpenChamadosCount(chamados.length);
       } catch {
         setExpiringLicenses([]);
+        setExpiringSoftwareLicenses([]);
         setExpiringCertificates([]);
-        setOpenChamadosCount(0);
       } finally {
         setLoading(false);
       }
     }
 
     loadExpiringItems();
-  }, [isAdmin, getToken]);
+  }, [showTiAlerts, getToken]);
+
+  useEffect(() => {
+    if (!showChamadosAdmin) return;
+
+    async function loadOpenChamados() {
+      const token = getToken();
+      if (!token) return;
+
+      try {
+        const chamadosData = await listAdminChamados(token, 'ABERTO');
+        const chamados = Array.isArray(chamadosData) ? chamadosData : [];
+        setOpenChamadosCount(chamados.length);
+      } catch {
+        setOpenChamadosCount(0);
+      }
+    }
+
+    loadOpenChamados();
+  }, [showChamadosAdmin, getToken]);
 
   const urgentLicenses = useMemo(
     () => expiringLicenses.filter((l) => daysUntil(l.vencimento) <= 7).length,
     [expiringLicenses],
   );
 
+  const urgentSoftwareLicenses = useMemo(
+    () => expiringSoftwareLicenses.filter((l) => daysUntil(l.dataVencimento) <= 7).length,
+    [expiringSoftwareLicenses],
+  );
+
   const urgentCertificates = useMemo(
     () => expiringCertificates.filter((c) => daysUntil(c.dataVencimento) <= 7).length,
     [expiringCertificates],
   );
+
+  const totalUrgentExpiring = urgentLicenses + urgentSoftwareLicenses + urgentCertificates;
+
+  const expiringTabConfig = useMemo(
+    () => ({
+      office: {
+        title: 'Licenças Office',
+        loading,
+        emptyMessage: 'Nenhuma licença cadastrada.',
+        items: expiringLicenses,
+        dateField: 'vencimento',
+        linkTo: '/admin/office-licenses',
+        urgentCount: urgentLicenses,
+        urgentLabel: `${urgentLicenses} licença(s) Office vence(m) em até 7 dias`,
+        columns: [
+          {
+            key: 'email',
+            label: 'E-mail',
+            render: (item) => (
+              <span className="font-medium text-gray-900">{item.email}</span>
+            ),
+          },
+          {
+            key: 'vencimento',
+            label: 'Vencimento',
+            render: (item) => <DateCell value={item.vencimento} />,
+          },
+          {
+            key: 'status',
+            label: 'Situação',
+            render: (_item, days) => <ExpiryStatusCell days={days} />,
+          },
+          {
+            key: 'vagas',
+            label: 'Vagas',
+            render: (item) => (
+              <span className="text-gray-600">{item.vagasRestantes ?? 0} / 5</span>
+            ),
+          },
+        ],
+      },
+      software: {
+        title: 'Licenças de Software',
+        loading,
+        emptyMessage: 'Nenhuma licença de software cadastrada.',
+        items: expiringSoftwareLicenses,
+        dateField: 'dataVencimento',
+        linkTo: '/admin/software-licenses',
+        urgentCount: urgentSoftwareLicenses,
+        urgentLabel: `${urgentSoftwareLicenses} licença(s) de software vence(m) em até 7 dias`,
+        columns: [
+          {
+            key: 'nome',
+            label: 'Software',
+            render: (item) => (
+              <span className="font-medium text-gray-900">{item.nome}</span>
+            ),
+          },
+          {
+            key: 'usuario',
+            label: 'Usuário',
+            render: (item) => (
+              <span className="text-gray-600">{item.usuarioNome || '—'}</span>
+            ),
+          },
+          {
+            key: 'dataVencimento',
+            label: 'Vencimento',
+            render: (item) => <DateCell value={item.dataVencimento} />,
+          },
+          {
+            key: 'status',
+            label: 'Situação',
+            render: (_item, days) => <ExpiryStatusCell days={days} />,
+          },
+        ],
+      },
+      certificates: {
+        title: 'Certificados',
+        loading,
+        emptyMessage: 'Nenhum certificado cadastrado.',
+        items: expiringCertificates,
+        dateField: 'dataVencimento',
+        linkTo: '/admin/certificates',
+        urgentCount: urgentCertificates,
+        urgentLabel: `${urgentCertificates} certificado(s) vence(m) em até 7 dias`,
+        columns: [
+          {
+            key: 'nome',
+            label: 'Nome',
+            render: (item) => (
+              <span className="font-medium text-gray-900">{item.nome}</span>
+            ),
+          },
+          {
+            key: 'empresa',
+            label: 'Empresa',
+            render: (item) => (
+              <span className="text-gray-600">{item.empresa || '—'}</span>
+            ),
+          },
+          {
+            key: 'dataVencimento',
+            label: 'Vencimento',
+            render: (item) => <DateCell value={item.dataVencimento} />,
+          },
+          {
+            key: 'status',
+            label: 'Situação',
+            render: (_item, days) => <ExpiryStatusCell days={days} />,
+          },
+        ],
+      },
+    }),
+    [
+      loading,
+      expiringLicenses,
+      expiringSoftwareLicenses,
+      expiringCertificates,
+      urgentLicenses,
+      urgentSoftwareLicenses,
+      urgentCertificates,
+    ],
+  );
+
+  const expiringTabs = [
+    { id: 'office', label: 'Licenças Office', urgentCount: urgentLicenses },
+    { id: 'software', label: 'Licenças de Software', urgentCount: urgentSoftwareLicenses },
+    { id: 'certificates', label: 'Certificados', urgentCount: urgentCertificates },
+  ];
+
+  const activeExpiringPanel = expiringTabConfig[expiringTab];
 
   const equipmentsPagination = useMemo(
     () => paginateItems(myEquipments, equipmentsPage, EQUIPMENTS_PAGE_SIZE),
@@ -163,7 +347,7 @@ export default function HomePage() {
         </div>
         <div className="bg-white border border-gray-200 p-5">
           <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Perfil</p>
-          <p className="text-lg font-medium text-gray-900 mt-1">{user?.role}</p>
+          <p className="text-lg font-medium text-gray-900 mt-1">{formatRoles(user)}</p>
         </div>
         <div className="bg-white border border-gray-200 p-5">
           <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Conta</p>
@@ -180,26 +364,65 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-white border border-gray-200 p-6">
             <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Licença Office
+              Minhas licenças
             </p>
             {resourcesLoading ? (
               <p className="text-sm text-gray-500 mt-3">Carregando...</p>
-            ) : myOfficeLicense ? (
-              <div className="mt-3 space-y-2">
-                <p className="font-medium text-gray-900">{myOfficeLicense.email}</p>
-                <p className="text-sm text-gray-600">
-                  Vencimento: {formatDate(myOfficeLicense.vencimento)}
-                </p>
-                <span
-                  className={`inline-block text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(myOfficeLicense.diasParaVencer)}`}
-                >
-                  {expiryLabel(myOfficeLicense.diasParaVencer)}
-                </span>
-              </div>
-            ) : (
+            ) : !myOfficeLicense && mySoftwareLicenses.length === 0 ? (
               <p className="text-sm text-gray-500 mt-3">
-                Nenhuma licença Office vinculada à sua conta.
+                Nenhuma licença vinculada à sua conta.
               </p>
+            ) : (
+              <div className="mt-3 space-y-4">
+                {myOfficeLicense && (
+                  <div className="border-b border-gray-100 pb-4">
+                    <p className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">
+                      Microsoft Office
+                    </p>
+                    <p className="font-medium text-gray-900">{myOfficeLicense.email}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Vencimento: {formatDate(myOfficeLicense.vencimento)}
+                    </p>
+                    <span
+                      className={`inline-block mt-2 text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(myOfficeLicense.diasParaVencer)}`}
+                    >
+                      {expiryLabel(myOfficeLicense.diasParaVencer)}
+                    </span>
+                  </div>
+                )}
+
+                {mySoftwareLicenses.length > 0 && (
+                  <ul className="space-y-3">
+                    {mySoftwareLicenses.map((license) => {
+                      const days = daysUntil(license.dataVencimento);
+
+                      return (
+                        <li
+                          key={license.id}
+                          className="border-b border-gray-100 pb-3 last:border-0 last:pb-0"
+                        >
+                          <p className="font-medium text-gray-900">{license.nome}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Vencimento: {formatDate(license.dataVencimento)}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(days)}`}
+                            >
+                              {expiryLabel(days)}
+                            </span>
+                            {(license.qtdLicencas ?? 1) > 1 && (
+                              <span className="text-xs text-gray-500">
+                                {license.qtdLicencas} licenças
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
             )}
           </div>
 
@@ -244,82 +467,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {isAdmin && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <ExpiringPanel
-            title="Licenças Office"
-            loading={loading}
-            emptyMessage="Nenhuma licença cadastrada."
-            items={expiringLicenses}
-            dateField="vencimento"
-            linkTo="/admin/office-licenses"
-            urgentCount={urgentLicenses}
-            urgentLabel={`${urgentLicenses} licença(s) vence(m) em até 7 dias`}
-            columns={[
-              {
-                key: 'email',
-                label: 'E-mail',
-                render: (item) => (
-                  <span className="font-medium text-gray-900">{item.email}</span>
-                ),
-              },
-              {
-                key: 'vencimento',
-                label: 'Vencimento',
-                render: (item) => <DateCell value={item.vencimento} />,
-              },
-              {
-                key: 'status',
-                label: 'Situação',
-                render: (_item, days) => <ExpiryStatusCell days={days} />,
-              },
-              {
-                key: 'vagas',
-                label: 'Vagas',
-                render: (item) => (
-                  <span className="text-gray-600">{item.vagasRestantes ?? 0} / 5</span>
-                ),
-              },
-            ]}
-          />
+      {showTiAlerts && (
+        <section className="space-y-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+              Alertas administrativos
+            </p>
+            <h2 className="font-serif text-2xl text-green-700 mt-1">Próximos do vencimento</h2>
+            {totalUrgentExpiring > 0 && (
+              <p className="text-xs text-amber-700 mt-1">
+                {totalUrgentExpiring} item(ns) vence(m) em até 7 dias
+              </p>
+            )}
+          </div>
 
-          <ExpiringPanel
-            title="Certificados"
-            loading={loading}
-            emptyMessage="Nenhum certificado cadastrado."
-            items={expiringCertificates}
-            dateField="dataVencimento"
-            linkTo="/admin/certificates"
-            urgentCount={urgentCertificates}
-            urgentLabel={`${urgentCertificates} certificado(s) vence(m) em até 7 dias`}
-            columns={[
-              {
-                key: 'nome',
-                label: 'Nome',
-                render: (item) => (
-                  <span className="font-medium text-gray-900">{item.nome}</span>
-                ),
-              },
-              {
-                key: 'empresa',
-                label: 'Empresa',
-                render: (item) => (
-                  <span className="text-gray-600">{item.empresa || '—'}</span>
-                ),
-              },
-              {
-                key: 'dataVencimento',
-                label: 'Vencimento',
-                render: (item) => <DateCell value={item.dataVencimento} />,
-              },
-              {
-                key: 'status',
-                label: 'Situação',
-                render: (_item, days) => <ExpiryStatusCell days={days} />,
-              },
-            ]}
-          />
-        </div>
+          <div className="flex flex-wrap gap-2">
+            {expiringTabs.map((tab) => {
+              const isActive = expiringTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setExpiringTab(tab.id)}
+                  className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest border transition-colors inline-flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-green-700 text-white border-green-700'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-green-700 hover:text-green-700'
+                  }`}
+                >
+                  {tab.label}
+                  {tab.urgentCount > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {tab.urgentCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <ExpiringPanel embedded {...activeExpiringPanel} />
+        </section>
       )}
 
       <section className="space-y-4">
@@ -333,19 +526,19 @@ export default function HomePage() {
             onClick={() => navigate('/profile')}
           />
           <DashboardPanel
-            title={isAdmin ? 'Abrir Chamado' : 'Suporte Técnico'}
+            title={showChamadosAdmin ? 'Abrir Chamado' : 'Suporte Técnico'}
             description={
-              isAdmin
-                ? 'Registre um chamado de suporte como administrador.'
+              showChamadosAdmin
+                ? 'Registre um chamado de suporte pela área de atendimento.'
                 : 'Abra um chamado de suporte técnico e acompanhe o andamento.'
             }
-            badge={isAdmin ? 'Admin' : undefined}
-            onClick={() => navigate(isAdmin ? '/admin/chamados?novo=1' : '/chamados?novo=1')}
+            badge={showChamadosAdmin ? 'Suporte' : undefined}
+            onClick={() => navigate(showChamadosAdmin ? '/admin/chamados?novo=1' : '/chamados?novo=1')}
           />
         </div>
       </section>
 
-      {isAdmin && (
+      {showChamadosAdmin && (
         <section className="space-y-4">
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
             Suporte
@@ -358,7 +551,7 @@ export default function HomePage() {
                   ? `${openChamadosCount} chamado(s) aguardando atendimento.`
                   : 'Visualize e atualize o status dos chamados de suporte.'
               }
-              badge="Admin"
+              badge="Suporte"
               onClick={() => navigate('/admin/chamados')}
             />
             <DashboardPanel
@@ -370,7 +563,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {!isAdmin && (
+      {!showChamadosAdmin && (
         <section className="space-y-4">
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
             Suporte
@@ -385,39 +578,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {isAdmin && (
-        <section className="space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-            Painéis administrativos
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            <DashboardPanel
-              title="Usuários"
-              description="Ative ou desative contas e gerencie acessos ao portal."
-              badge="Admin"
-              onClick={() => navigate('/admin')}
-            />
-            <DashboardPanel
-              title="Licenças Office"
-              description="Cadastre, edite e exclua licenças Microsoft Office."
-              badge="Admin"
-              onClick={() => navigate('/admin/office-licenses')}
-            />
-            <DashboardPanel
-              title="Certificados"
-              description="Gerencie certificados digitais e datas de vencimento."
-              badge="Admin"
-              onClick={() => navigate('/admin/certificates')}
-            />
-            <DashboardPanel
-              title="Equipamentos"
-              description="Controle de equipamentos corporativos e vínculos."
-              badge="Admin"
-              onClick={() => navigate('/admin/equipamentos')}
-            />
-          </div>
-        </section>
-      )}
     </div>
   );
 }

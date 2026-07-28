@@ -14,8 +14,15 @@ export function getUserOfficeLicenseId(user) {
 }
 
 export function normalizeAdminUser(user) {
+  const roles = Array.isArray(user.roles)
+    ? user.roles
+    : user.role
+      ? [user.role]
+      : ['USER'];
+
   return {
     ...user,
+    roles,
     officeLicenseId: getUserOfficeLicenseId(user),
   };
 }

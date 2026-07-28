@@ -16,30 +16,11 @@ export default function ExpiringPanel({
   columns,
   urgentCount,
   urgentLabel,
+  embedded = false,
 }) {
   const navigate = useNavigate();
 
-  return (
-    <section className="space-y-4">
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-            {title}
-          </p>
-          <h2 className="font-serif text-2xl text-green-700 mt-1">Próximos do vencimento</h2>
-          {urgentCount > 0 && (
-            <p className="text-xs text-amber-700 mt-1">{urgentLabel}</p>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate(linkTo)}
-          className="text-xs font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
-        >
-          Ver todos →
-        </button>
-      </div>
-
+  const tableBlock = (
       <div className="bg-white border border-gray-200 overflow-x-auto">
         {loading ? (
           <p className="px-6 py-10 text-center text-sm text-gray-500">Carregando...</p>
@@ -79,6 +60,49 @@ export default function ExpiringPanel({
           </table>
         )}
       </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className="space-y-3">
+        {urgentCount > 0 && (
+          <p className="text-xs text-amber-700">{urgentLabel}</p>
+        )}
+        {tableBlock}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => navigate(linkTo)}
+            className="text-xs font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
+          >
+            Ver todos de {title} →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+            {title}
+          </p>
+          <h2 className="font-serif text-2xl text-green-700 mt-1">Próximos do vencimento</h2>
+          {urgentCount > 0 && (
+            <p className="text-xs text-amber-700 mt-1">{urgentLabel}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(linkTo)}
+          className="text-xs font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
+        >
+          Ver todos →
+        </button>
+      </div>
+      {tableBlock}
     </section>
   );
 }
