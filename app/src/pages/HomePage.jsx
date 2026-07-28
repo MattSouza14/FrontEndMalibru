@@ -500,7 +500,7 @@ export default function HomePage() {
                   {tab.urgentCount > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                        isActive ? 'bg-white text-white' : 'bg-amber-100 text-amber-800'
                       }`}
                     >
                       {tab.urgentCount}

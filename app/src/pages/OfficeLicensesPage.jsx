@@ -698,7 +698,7 @@ export default function OfficeLicensesPage() {
                 <tr
                   key={license.id}
                   onClick={() => openLicenseModal(license)}
-                  className="border-b border-gray-100 hover:bg-green-50/40 cursor-pointer transition-colors"
+                  className="border-b border-gray-100 hover:bg-green-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 font-medium text-gray-900">{license.email}</td>
                   <td className="px-6 py-4 text-gray-600">{formatDate(license.vencimento)}</td>

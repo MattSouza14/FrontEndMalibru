@@ -37,8 +37,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-[440px] bg-white border border-primary/10 shadow-[0_15px_50px_-12px_rgba(6,78,59,0.08)] p-10 md:p-14 animate-reveal">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">      <div className="w-full max-w-[440px] bg-white border border-primary/10 shadow-[0_15px_50px_-12px_rgba(6,78,59,0.08)] p-10 md:p-14 animate-reveal">
         <div className="text-center mb-14">
           <div className="mb-4 inline-block">
             <div className="size-10 border border-primary/10 flex items-center justify-center">

@@ -1,4 +1,4 @@
-import { apiRequest } from './api';
+import { apiRequest, uploadApiRequest } from './api';
 
 function authHeaders(token) {
   return { Authorization: `Bearer ${token}` };
@@ -55,4 +55,11 @@ export async function unlinkEquipmentFromUser(token, usuarioId, equipamentoId) {
       headers: authHeaders(token),
     },
   );
+}
+
+export async function importEquipmentsCsv(token, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return uploadApiRequest('/api/admin/equipamentos/import', token, formData);
 }

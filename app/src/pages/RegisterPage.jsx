@@ -69,8 +69,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="max-w-2xl mx-auto p-6 md:p-12">
+    <div className="min-h-screen bg-gray-100">      <main className="max-w-2xl mx-auto p-6 md:p-12">
         <div>
           <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-3">
             Novo Cadastro

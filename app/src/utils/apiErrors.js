@@ -62,6 +62,9 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'PATRIMONIO_JA_CADASTRADO') {
     return 'Já existe um equipamento com este patrimônio.';
   }
+  if (err.code === 'IMPORTACAO_ARQUIVO_INVALIDA') {
+    return err.message || 'Arquivo de importação inválido. Envie um CSV UTF-8 com o formato correto.';
+  }
   if (err.code === 'ROLE_INVALIDA') {
     return 'Uma ou mais roles informadas são inválidas.';
   }

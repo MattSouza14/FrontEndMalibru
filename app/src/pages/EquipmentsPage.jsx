@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TablePagination from '../components/TablePagination';
+import CsvImportPanel from '../components/CsvImportPanel';
 import { listUsers } from '../services/adminService';
 import {
   createEquipment,
   deleteEquipment,
+  importEquipmentsCsv,
   linkEquipmentToUser,
   listEquipments,
   unlinkEquipmentFromUser,
@@ -57,6 +59,9 @@ export default function EquipmentsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [linkForm, setLinkForm] = useState({ usuarioId: '', equipamentoId: '' });
   const [tablePage, setTablePage] = useState(1);
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   async function loadData() {
     const token = getToken();
@@ -253,6 +258,34 @@ export default function EquipmentsPage() {
     }
   }
 
+  async function handleImportCsv(file) {
+    const token = getToken();
+    if (!token) return;
+
+    setImporting(true);
+    setError(null);
+    setSuccess(null);
+    setImportResult(null);
+
+    try {
+      const result = await importEquipmentsCsv(token, file);
+      setImportResult(result);
+      setSuccess(
+        `${result.importados ?? 0} equipamento(s) importado(s) com sucesso.` +
+          (result.ignorados > 0 ? ` ${result.ignorados} linha(s) ignorada(s).` : ''),
+      );
+      await loadData();
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível importar o arquivo.'));
+    } finally {
+      setImporting(false);
+    }
+  }
+
   async function handleUnlink(equipment) {
     const token = getToken();
     if (!token || !equipment.usuarioId) return;
@@ -300,13 +333,25 @@ export default function EquipmentsPage() {
             Cadastre equipamentos corporativos e vincule a usuários.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreateForm}
-          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-        >
-          Novo equipamento
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setShowImport((current) => !current);
+              setImportResult(null);
+            }}
+            className="border border-green-700 text-green-700 hover:bg-green-50 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
+          >
+            {showImport ? 'Fechar importação' : 'Importar CSV'}
+          </button>
+          <button
+            type="button"
+            onClick={openCreateForm}
+            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
+          >
+            Novo equipamento
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -317,6 +362,17 @@ export default function EquipmentsPage() {
         <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
           {success}
         </div>
+      )}
+
+      {showImport && (
+        <CsvImportPanel
+          title="Importar equipamentos"
+          description="Envie um CSV para cadastrar vários equipamentos de uma vez. Linhas válidas são gravadas; erros são listados sem interromper o restante."
+          templateFilename="modelo-equipamentos.csv"
+          importing={importing}
+          result={importResult}
+          onImport={handleImportCsv}
+        />
       )}
 
       <form
@@ -476,17 +532,17 @@ export default function EquipmentsPage() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{equipment.descricao || '—'}</td>
                     <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                      {equipment.usuarioId && (
+                      {equipment.usuarioId ? (
                         <button
                           type="button"
                           disabled={unlinkingKey === unlinkKey}
                           onClick={() => handleUnlink(equipment)}
                           className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-900 disabled:opacity-50 inline-flex items-center gap-2"
                         >
-                          {unlinkingKey === unlinkKey && <Loader2 />}
+                          {unlinkingKey === unlinkKey ? <Loader2 /> : null}
                           Desvincular
                         </button>
-                      )}
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => openEditForm(equipment)}
@@ -500,7 +556,7 @@ export default function EquipmentsPage() {
                         onClick={() => handleDelete(equipment)}
                         className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 inline-flex items-center gap-2"
                       >
-                        {deletingId === equipment.id && <Loader2 />}
+                        {deletingId === equipment.id ? <Loader2 /> : null}
                         Excluir
                       </button>
                     </td>
@@ -510,6 +566,7 @@ export default function EquipmentsPage() {
             )}
           </tbody>
         </table>
+
         <TablePagination
           page={tablePagination.page}
           totalPages={tablePagination.totalPages}
