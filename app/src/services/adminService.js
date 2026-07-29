@@ -1,4 +1,4 @@
-import { apiRequest } from './api';
+import { apiRequest, uploadApiRequest } from './api';
 
 function authHeaders(token) {
   return { Authorization: `Bearer ${token}` };
@@ -36,4 +36,11 @@ export async function updateUserRoles(token, id, roles) {
     headers: authHeaders(token),
     body: JSON.stringify({ roles }),
   });
+}
+
+export async function importUsersCsv(token, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return uploadApiRequest('/api/admin/usuarios/import', token, formData);
 }

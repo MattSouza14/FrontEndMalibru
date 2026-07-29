@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { activateUser, deactivateUser, listAvailableRoles, listUsers, updateUserRoles } from '../services/adminService';
+import CsvImportPanel from '../components/CsvImportPanel';
+import {
+  activateUser,
+  deactivateUser,
+  importUsersCsv,
+  listAvailableRoles,
+  listUsers,
+  updateUserRoles,
+} from '../services/adminService';
 import {
   linkOfficeLicenseToUser,
   listOfficeLicenses,
@@ -38,6 +46,19 @@ function handleAuthFailure(logout, navigate) {
   navigate('/Login', { replace: true });
 }
 
+const USERS_CSV_TEMPLATE = `nome,email,setor,roles,status
+João Silva,joao@email.com,TI,"USER,TI",ativo
+Maria Souza,maria@email.com,RH,SUPORTE,inativo
+Pedro Lima,pedro@email.com,Financeiro,USER,ativo
+`;
+
+const USERS_CSV_ERROR_COLUMNS = [
+  { key: 'linha', label: 'Linha' },
+  { key: 'nome', label: 'Nome' },
+  { key: 'email', label: 'E-mail' },
+  { key: 'motivo', label: 'Motivo' },
+];
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const { user, getToken, logout } = useAuth();
@@ -51,6 +72,9 @@ export default function AdminPage() {
   const [availableRoles, setAvailableRoles] = useState([]);
   const [roleEdits, setRoleEdits] = useState({});
   const [rolesActionId, setRolesActionId] = useState(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -279,6 +303,34 @@ export default function AdminPage() {
     }
   }
 
+  async function handleImportCsv(file) {
+    const token = getToken();
+    if (!token) return;
+
+    setImporting(true);
+    setError(null);
+    setSuccess(null);
+    setImportResult(null);
+
+    try {
+      const result = await importUsersCsv(token, file);
+      setImportResult(result);
+      setSuccess(
+        `${result.importados ?? 0} usuário(s) importado(s) com sucesso.` +
+          (result.ignorados > 0 ? ` ${result.ignorados} linha(s) ignorada(s).` : ''),
+      );
+      await loadData();
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível importar o arquivo.'));
+    } finally {
+      setImporting(false);
+    }
+  }
+
   if (pageLoading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[50vh]">
@@ -289,14 +341,26 @@ export default function AdminPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header>
-        <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-          Administração
-        </p>
-        <h1 className="font-serif italic text-4xl text-green-700">Painel de Usuários</h1>
-        <p className="text-sm text-gray-600 mt-2">
-          Gerencie contas, ativações e vínculos de licenças Office.
-        </p>
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
+            Administração
+          </p>
+          <h1 className="font-serif italic text-4xl text-green-700">Painel de Usuários</h1>
+          <p className="text-sm text-gray-600 mt-2">
+            Gerencie contas, ativações, roles e vínculos de licenças Office.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setShowImport((current) => !current);
+            setImportResult(null);
+          }}
+          className="border border-green-700 text-green-700 hover:bg-green-50 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors self-start sm:self-auto"
+        >
+          {showImport ? 'Fechar importação' : 'Importar CSV'}
+        </button>
       </header>
 
       {error && (
@@ -307,6 +371,19 @@ export default function AdminPage() {
         <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
           {success}
         </div>
+      )}
+
+      {showImport && (
+        <CsvImportPanel
+          title="Importar usuários"
+          description="Envie um CSV para cadastrar vários usuários de uma vez. Usuários inativos recebem e-mail de ativação; ativos já entram habilitados. Senha temporária é gerada automaticamente."
+          templateFilename="modelo-usuarios.csv"
+          templateContent={USERS_CSV_TEMPLATE}
+          errorColumns={USERS_CSV_ERROR_COLUMNS}
+          importing={importing}
+          result={importResult}
+          onImport={handleImportCsv}
+        />
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

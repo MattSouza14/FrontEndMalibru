@@ -1,10 +1,17 @@
 import { useRef, useState } from 'react';
 
-const CSV_TEMPLATE = `nome,patrimonio,descricao
+const DEFAULT_CSV_TEMPLATE = `nome,patrimonio,descricao
 Notebook Dell,12345,Core i5 16GB
 Monitor LG,12346,Tela 24 polegadas
 Impressora HP,,Multifuncional sala 2
 `;
+
+const DEFAULT_ERROR_COLUMNS = [
+  { key: 'linha', label: 'Linha' },
+  { key: 'nome', label: 'Nome' },
+  { key: 'patrimonio', label: 'Patrimônio' },
+  { key: 'motivo', label: 'Motivo' },
+];
 
 function Loader2() {
   return (
@@ -19,8 +26,8 @@ function Loader2() {
   );
 }
 
-function downloadTemplate(filename) {
-  const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' });
+function downloadTemplate(filename, content) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -29,16 +36,25 @@ function downloadTemplate(filename) {
   URL.revokeObjectURL(url);
 }
 
+function formatCellValue(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  return String(value);
+}
+
 export default function CsvImportPanel({
   title = 'Importar CSV',
   description,
   templateFilename = 'modelo-importacao.csv',
+  templateContent = DEFAULT_CSV_TEMPLATE,
+  previewContent,
+  errorColumns = DEFAULT_ERROR_COLUMNS,
   importing = false,
   result = null,
   onImport,
 }) {
   const inputRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const preview = previewContent ?? templateContent.trim();
 
   function handleFileChange(event) {
     const file = event.target.files?.[0] ?? null;
@@ -73,13 +89,11 @@ export default function CsvImportPanel({
           <code className="text-xs bg-white px-1 py-0.5 border border-gray-200">;</code> (Excel BR).
         </p>
         <pre className="text-xs bg-white border border-gray-200 p-3 overflow-x-auto text-gray-700">
-{`nome,patrimonio,descricao
-Notebook Dell,12345,Core i5 16GB
-Monitor LG,12346,Tela 24 polegadas`}
+          {preview}
         </pre>
         <button
           type="button"
-          onClick={() => downloadTemplate(templateFilename)}
+          onClick={() => downloadTemplate(templateFilename, templateContent)}
           className="text-xs font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
         >
           Baixar modelo CSV →
@@ -150,19 +164,26 @@ Monitor LG,12346,Tela 24 polegadas`}
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-                    <th className="px-4 py-3 font-bold">Linha</th>
-                    <th className="px-4 py-3 font-bold">Nome</th>
-                    <th className="px-4 py-3 font-bold">Patrimônio</th>
-                    <th className="px-4 py-3 font-bold">Motivo</th>
+                    {errorColumns.map((column) => (
+                      <th key={column.key} className="px-4 py-3 font-bold">
+                        {column.label}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {result.erros.map((item, index) => (
                     <tr key={`${item.linha}-${index}`} className="border-b border-gray-100">
-                      <td className="px-4 py-3 text-gray-600">{item.linha ?? '—'}</td>
-                      <td className="px-4 py-3 text-gray-900">{item.nome || '—'}</td>
-                      <td className="px-4 py-3 text-gray-600">{item.patrimonio || '—'}</td>
-                      <td className="px-4 py-3 text-red-700">{item.motivo || '—'}</td>
+                      {errorColumns.map((column) => (
+                        <td
+                          key={column.key}
+                          className={`px-4 py-3 ${
+                            column.key === 'motivo' ? 'text-red-700' : 'text-gray-600'
+                          }`}
+                        >
+                          {formatCellValue(item[column.key])}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>

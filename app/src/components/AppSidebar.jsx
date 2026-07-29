@@ -114,6 +114,9 @@ export default function AppSidebar() {
                 <NavItem to="/admin/equipamentos">
                   Equipamentos
                 </NavItem>
+                <NavItem to="/admin/termos-assinados">
+                  Termos Assinados
+                </NavItem>
               </>
             )}
           </>

@@ -32,6 +32,8 @@ import EquipmentsPage from '../pages/EquipmentsPage';
 
 import SoftwareLicensesPage from '../pages/SoftwareLicensesPage';
 
+import SignedTermsPage from '../pages/SignedTermsPage';
+
 import Layout from '../pages/Layout';
 
 
@@ -89,6 +91,8 @@ export default function AppRoutes() {
                   <Route path="/admin/certificates" element={<CertificatesPage />} />
 
                   <Route path="/admin/equipamentos" element={<EquipmentsPage />} />
+
+                  <Route path="/admin/termos-assinados" element={<SignedTermsPage />} />
 
                 </Route>
 

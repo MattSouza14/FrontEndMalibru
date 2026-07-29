@@ -65,6 +65,12 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'IMPORTACAO_ARQUIVO_INVALIDA') {
     return err.message || 'Arquivo de importação inválido. Envie um CSV UTF-8 com o formato correto.';
   }
+  if (err.code === 'ARQUIVO_INVALIDO') {
+    return err.message || 'Arquivo inválido. Envie JPEG, PNG, WebP, PDF, DOC ou DOCX (máx. 50 MB).';
+  }
+  if (err.code === 'TERMO_ASSINADO_NAO_ENCONTRADO') {
+    return 'Termo assinado não encontrado.';
+  }
   if (err.code === 'ROLE_INVALIDA') {
     return 'Uma ou mais roles informadas são inválidas.';
   }
