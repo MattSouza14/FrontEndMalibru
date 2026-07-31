@@ -101,7 +101,7 @@ function Field({
 }) {
   return (
     <label className="block group space-y-1.5">
-      <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold px-0.5 group-focus-within:text-green-700 transition-colors inline-flex items-center gap-1.5">
+      <span className="form-label px-0.5 group-focus-within:text-primary transition-colors inline-flex items-center gap-1.5">
         {icon}
         {label}
       </span>

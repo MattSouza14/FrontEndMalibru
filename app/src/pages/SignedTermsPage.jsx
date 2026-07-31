@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TablePagination from '../components/TablePagination';
+import AlertBanner from '../components/ui/AlertBanner';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import { listUsers } from '../services/adminService';
 import {
   deleteSignedTerm,
@@ -423,88 +427,63 @@ export default function SignedTermsPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando termos assinados...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando termos assinados...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Termos Assinados</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Envie e gerencie termos assinados (JPEG, PNG, WebP, PDF, DOC ou DOCX, máx. 50 MB).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openUploadForm}
-          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors self-start sm:self-auto"
-        >
-          Novo termo
-        </button>
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'TI', 'Termos Assinados']}
+        title="Termos Assinados"
+        subtitle="Envie e gerencie termos assinados (JPEG, PNG, WebP, PDF, DOC ou DOCX, máx. 50 MB)."
+        actions={
+          <button type="button" onClick={openUploadForm} className="btn-primary">
+            Novo termo
+          </button>
+        }
+      />
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
       {showUploadForm && (
-        <form
-          onSubmit={handleUploadSubmit}
-          className="bg-white border border-gray-200 p-6 space-y-4"
-        >
-          <h2 className="font-serif text-xl text-green-700">Enviar termo assinado</h2>
-
+        <SectionCard title="Enviar termo assinado">
+        <form onSubmit={handleUploadSubmit} className="space-y-4 -mt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Título
-              </span>
+              <span className="form-label">Título</span>
               <input
                 type="text"
                 required
                 value={uploadForm.titulo}
                 onChange={(e) => setUploadForm((prev) => ({ ...prev, titulo: e.target.value }))}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="form-input"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Data de assinatura
-              </span>
+              <span className="form-label">Data de assinatura</span>
               <input
                 type="date"
                 value={uploadForm.dataAssinatura}
                 onChange={(e) =>
                   setUploadForm((prev) => ({ ...prev, dataAssinatura: e.target.value }))
                 }
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="form-input"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Usuário (opcional)
-              </span>
+              <span className="form-label">Usuário (opcional)</span>
               <select
                 value={uploadForm.usuarioId}
                 onChange={(e) =>
                   setUploadForm((prev) => ({ ...prev, usuarioId: e.target.value }))
                 }
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="form-input"
               >
                 <option value="">Nenhum</option>
                 {users.map((user) => (
@@ -516,127 +495,110 @@ export default function SignedTermsPage() {
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Arquivo
-              </span>
+              <span className="form-label">Arquivo</span>
               <input
                 type="file"
                 accept={ACCEPTED_FILE_TYPES}
                 onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
-                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-green-700 file:text-white hover:file:bg-green-800"
+                className="file-input"
               />
             </label>
           </div>
 
           <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={closeUploadForm}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-            >
+            <button type="button" onClick={closeUploadForm} className="btn-cancel">
               Cancelar
             </button>
             <button
               type="submit"
               disabled={uploading}
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
+              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
               {uploading && <Loader2 />}
               Enviar
             </button>
           </div>
         </form>
+        </SectionCard>
       )}
 
       {editingId && (
-        <form
-          onSubmit={handleEditSubmit}
-          className="bg-white border border-gray-200 p-6 space-y-4"
-        >
-          <h2 className="font-serif text-xl text-green-700">Editar termo</h2>
+        <SectionCard title="Editar termo">
+          <form onSubmit={handleEditSubmit} className="space-y-4 -mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="block space-y-1.5">
+                <span className="form-label">Título</span>
+                <input
+                  type="text"
+                  required
+                  value={editForm.titulo}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, titulo: e.target.value }))}
+                  className="form-input"
+                />
+              </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Título
-              </span>
-              <input
-                type="text"
-                required
-                value={editForm.titulo}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, titulo: e.target.value }))}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
+              <label className="block space-y-1.5">
+                <span className="form-label">Data de assinatura</span>
+                <input
+                  type="date"
+                  value={editForm.dataAssinatura}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, dataAssinatura: e.target.value }))
+                  }
+                  className="form-input"
+                />
+              </label>
 
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Data de assinatura
-              </span>
-              <input
-                type="date"
-                value={editForm.dataAssinatura}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, dataAssinatura: e.target.value }))
-                }
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
+              <label className="block space-y-1.5">
+                <span className="form-label">Usuário</span>
+                <select
+                  value={editForm.usuarioId}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, usuarioId: e.target.value }))
+                  }
+                  className="form-input"
+                >
+                  <option value="">Nenhum</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.nome} ({user.email})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Usuário
-              </span>
-              <select
-                value={editForm.usuarioId}
-                onChange={(e) =>
-                  setEditForm((prev) => ({ ...prev, usuarioId: e.target.value }))
-                }
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={cancelEdit} className="btn-cancel">
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
               >
-                <option value="">Nenhum</option>
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.nome} ({user.email})
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={cancelEdit}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
-            >
-              {saving && <Loader2 />}
-              Salvar
-            </button>
-          </div>
-        </form>
+                {saving && <Loader2 />}
+                Salvar
+              </button>
+            </div>
+          </form>
+        </SectionCard>
       )}
 
-      <div className="bg-white border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <p className="text-sm text-gray-600">{termos.length} termo(s) encontrado(s)</p>
+      <SectionCard
+        title="Termos cadastrados"
+        subtitle={`${termos.length} termo(s) encontrado(s)`}
+        noPadding
+        bodyClassName="p-0"
+        action={
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Filtrar por usuário
-            </span>
+            <span className="form-label mb-0">Filtrar</span>
             <select
               value={filterUsuarioId}
               onChange={(e) => handleFilterChange(e.target.value)}
-              className="px-3 py-2 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-xs min-w-[200px]"
+              className="form-input py-2 text-xs min-w-[200px]"
             >
-              <option value="">Todos</option>
+              <option value="">Todos os usuários</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.nome}
@@ -644,24 +606,23 @@ export default function SignedTermsPage() {
               ))}
             </select>
           </label>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-                <th className="px-6 py-3 font-bold">Preview</th>
-                <th className="px-6 py-3 font-bold">Título</th>
-                <th className="px-6 py-3 font-bold">Usuário</th>
-                <th className="px-6 py-3 font-bold">Assinatura</th>
-                <th className="px-6 py-3 font-bold">Arquivo</th>
-                <th className="px-6 py-3 font-bold text-right">Ações</th>
-              </tr>
-            </thead>
+        }
+      >
+        <table className="data-table w-full">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Título</th>
+              <th>Usuário</th>
+              <th>Assinatura</th>
+              <th>Arquivo</th>
+              <th className="text-right">Ações</th>
+            </tr>
+          </thead>
             <tbody>
               {termos.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={6} className="text-center text-gray-500 py-10">
                     Nenhum termo assinado encontrado.
                   </td>
                 </tr>
@@ -670,47 +631,37 @@ export default function SignedTermsPage() {
                   const linkedUser = termo.usuarioId ? usersById[termo.usuarioId] : null;
 
                   return (
-                    <tr key={termo.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4">
+                    <tr key={termo.id}>
+                      <td>
                         <TermPreviewCell
                           termo={termo}
                           token={getToken()}
                           onOpenPreview={openPreview}
                         />
                       </td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{termo.titulo}</td>
-                      <td className="px-6 py-4 text-gray-600">
-                        {linkedUser ? linkedUser.nome : '—'}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
+                      <td className="font-medium text-gray-900">{termo.titulo}</td>
+                      <td className="text-gray-600">{linkedUser ? linkedUser.nome : '—'}</td>
+                      <td className="text-gray-600 tabular-nums">
                         {termo.dataAssinatura ? formatDate(termo.dataAssinatura) : '—'}
                       </td>
-                      <td className="px-6 py-4 text-gray-600">
+                      <td className="text-gray-600">
                         <p className="truncate max-w-[180px]" title={termo.nomeArquivo}>
                           {termo.nomeArquivo}
                         </p>
                         <p className="text-xs text-gray-400">{formatBytes(termo.tamanhoBytes)}</p>
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => openPreview(termo)}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
-                        >
+                      <td className="text-right space-x-2 whitespace-nowrap">
+                        <button type="button" onClick={() => openPreview(termo)} className="btn-secondary">
                           Abrir
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(termo)}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
-                        >
+                        <button type="button" onClick={() => openEditForm(termo)} className="btn-secondary">
                           Editar
                         </button>
                         <button
                           type="button"
                           disabled={deletingId === termo.id}
                           onClick={() => handleDelete(termo)}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 inline-flex items-center gap-2"
+                          className="btn-danger"
                         >
                           {deletingId === termo.id && <Loader2 />}
                           Excluir
@@ -721,8 +672,7 @@ export default function SignedTermsPage() {
                 })
               )}
             </tbody>
-          </table>
-        </div>
+        </table>
 
         <TablePagination
           page={tablePagination.page}
@@ -732,21 +682,17 @@ export default function SignedTermsPage() {
           onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
           onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
         />
-      </div>
+      </SectionCard>
 
       {previewTermo && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-4">
+          <div className="bg-white w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
               <div>
-                <h3 className="font-serif text-lg text-green-700">{previewTermo.titulo}</h3>
+                <h3 className="text-lg font-semibold text-slate-900">{previewTermo.titulo}</h3>
                 <p className="text-xs text-gray-500">{previewTermo.nomeArquivo}</p>
               </div>
-              <button
-                type="button"
-                onClick={closePreview}
-                className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-              >
+              <button type="button" onClick={closePreview} className="btn-secondary">
                 Fechar
               </button>
             </div>
@@ -773,7 +719,7 @@ export default function SignedTermsPage() {
                   <a
                     href={previewBlobUrl}
                     download={previewTermo.nomeArquivo || 'termo.docx'}
-                    className="inline-block bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest"
+                    className="btn-primary inline-block"
                   >
                     Baixar arquivo
                   </a>
@@ -785,6 +731,6 @@ export default function SignedTermsPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

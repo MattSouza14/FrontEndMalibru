@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TablePagination from '../components/TablePagination';
+import AlertBanner from '../components/ui/AlertBanner';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import { listUsers } from '../services/adminService';
 import {
   createOfficeLicense,
@@ -72,18 +76,16 @@ function LicenseUsersModal({
       role="presentation"
     >
       <div
-        className="bg-white border border-gray-200 w-full max-w-lg shadow-lg"
+        className="bg-white rounded-xl border border-gray-100 w-full max-w-lg shadow-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="license-users-title"
       >
-        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-200">
+        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-100">
           <div>
-            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Usuários vinculados
-            </p>
-            <h2 id="license-users-title" className="font-serif text-xl text-green-700 mt-1">
+            <p className="form-label">Usuários vinculados</p>
+            <h2 id="license-users-title" className="text-lg font-semibold text-slate-900 mt-1">
               {license.email}
             </h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -149,12 +151,8 @@ function LicenseUsersModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-          >
+        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+          <button type="button" onClick={onClose} className="btn-secondary">
             Fechar
           </button>
         </div>
@@ -513,183 +511,152 @@ export default function OfficeLicensesPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando licenças...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando licenças...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Licenças Office</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Cadastre licenças Microsoft Office e vincule a usuários (máx. 5 por licença).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openCreateForm}
-          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-        >
-          Nova licença
-        </button>
-      </header>
-
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
-
-      <form onSubmit={handleLink} className="bg-white border border-gray-200 p-6 space-y-4">
-        <h2 className="font-serif text-xl text-green-700">Vincular licença a usuário</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          <label className="block space-y-1.5">
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Usuário
-            </span>
-            <select
-              value={linkForm.usuarioId}
-              onChange={(e) => setLinkForm((prev) => ({ ...prev, usuarioId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-            >
-              <option value="">Selecione...</option>
-              {usersWithoutLicense.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.nome} ({user.email})
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block space-y-1.5">
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Licença com vagas
-            </span>
-            <select
-              value={linkForm.officeLicenseId}
-              onChange={(e) =>
-                setLinkForm((prev) => ({ ...prev, officeLicenseId: e.target.value }))
-              }
-              className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-            >
-              <option value="">Selecione...</option>
-              {availableLicenses.map((license) => (
-                <option key={license.id} value={license.id}>
-                  {license.email} · {license.vagasRestantes ?? 0} vaga(s)
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="submit"
-            disabled={linking || usersWithoutLicense.length === 0 || availableLicenses.length === 0}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {linking && <Loader2 />}
-            Vincular
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'TI', 'Licenças Office']}
+        title="Licenças Office"
+        subtitle="Cadastre licenças Microsoft Office e vincule a usuários (máx. 5 por licença)."
+        actions={
+          <button type="button" onClick={openCreateForm} className="btn-primary">
+            Nova licença
           </button>
-        </div>
-      </form>
+        }
+      />
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 p-6 space-y-4">
-          <h2 className="font-serif text-xl text-green-700">
-            {editingId ? 'Editar licença' : 'Cadastrar licença'}
-          </h2>
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <SectionCard title="Vincular licença a usuário">
+        <form onSubmit={handleLink} className="space-y-4 -mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                E-mail da licença
-              </span>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
+              <span className="form-label">Usuário</span>
+              <select
+                value={linkForm.usuarioId}
+                onChange={(e) => setLinkForm((prev) => ({ ...prev, usuarioId: e.target.value }))}
+                className="form-input"
+              >
+                <option value="">Selecione...</option>
+                {usersWithoutLicense.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.nome} ({user.email})
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Senha
-              </span>
-              <input
-                type="password"
-                value={form.senha}
-                onChange={(e) => updateField('senha', e.target.value)}
-                placeholder={editingId ? 'Informe a senha da licença' : 'Senha da conta Office'}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
+              <span className="form-label">Licença com vagas</span>
+              <select
+                value={linkForm.officeLicenseId}
+                onChange={(e) =>
+                  setLinkForm((prev) => ({ ...prev, officeLicenseId: e.target.value }))
+                }
+                className="form-input"
+              >
+                <option value="">Selecione...</option>
+                {availableLicenses.map((license) => (
+                  <option key={license.id} value={license.id}>
+                    {license.email} · {license.vagasRestantes ?? 0} vaga(s)
+                  </option>
+                ))}
+              </select>
             </label>
 
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Vencimento
-              </span>
-              <input
-                type="date"
-                required
-                value={form.vencimento}
-                onChange={(e) => updateField('vencimento', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={closeForm}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-            >
-              Cancelar
-            </button>
             <button
               type="submit"
-              disabled={saving}
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
+              disabled={linking || usersWithoutLicense.length === 0 || availableLicenses.length === 0}
+              className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {saving && <Loader2 />}
-              {editingId ? 'Salvar alterações' : 'Cadastrar'}
+              {linking && <Loader2 />}
+              Vincular
             </button>
           </div>
         </form>
+      </SectionCard>
+
+      {showForm && (
+        <SectionCard title={editingId ? 'Editar licença' : 'Cadastrar licença'}>
+          <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="block space-y-1.5">
+                <span className="form-label">E-mail da licença</span>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  className="form-input"
+                />
+              </label>
+
+              <label className="block space-y-1.5">
+                <span className="form-label">Senha</span>
+                <input
+                  type="password"
+                  value={form.senha}
+                  onChange={(e) => updateField('senha', e.target.value)}
+                  placeholder={editingId ? 'Informe a senha da licença' : 'Senha da conta Office'}
+                  className="form-input"
+                />
+              </label>
+
+              <label className="block space-y-1.5">
+                <span className="form-label">Vencimento</span>
+                <input
+                  type="date"
+                  required
+                  value={form.vencimento}
+                  onChange={(e) => updateField('vencimento', e.target.value)}
+                  className="form-input"
+                />
+              </label>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={closeForm} className="btn-cancel">
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+              >
+                {saving && <Loader2 />}
+                {editingId ? 'Salvar alterações' : 'Cadastrar'}
+              </button>
+            </div>
+          </form>
+        </SectionCard>
       )}
 
-      <div className="bg-white border border-gray-200 overflow-x-auto">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="font-serif text-lg text-green-700">Licenças cadastradas</h2>
-          <p className="text-xs text-gray-500 mt-1">
-            Clique em uma linha para ver os usuários vinculados.
-          </p>
-        </div>
-        <table className="w-full text-sm">
+      <SectionCard
+        title="Licenças cadastradas"
+        subtitle="Clique em uma linha para ver os usuários vinculados."
+        noPadding
+        bodyClassName="p-0"
+      >
+        <table className="data-table w-full">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-              <th className="px-6 py-3 font-bold">E-mail</th>
-              <th className="px-6 py-3 font-bold">Vencimento</th>
-              <th className="px-6 py-3 font-bold">Vinculados</th>
-              <th className="px-6 py-3 font-bold">Vagas</th>
-              <th className="px-6 py-3 font-bold text-right">Ações</th>
+            <tr>
+              <th>E-mail</th>
+              <th>Vencimento</th>
+              <th>Vinculados</th>
+              <th>Vagas</th>
+              <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {licenses.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={5} className="text-center text-gray-500 py-10">
                   Nenhuma licença cadastrada.
                 </td>
               </tr>
@@ -698,30 +665,30 @@ export default function OfficeLicensesPage() {
                 <tr
                   key={license.id}
                   onClick={() => openLicenseModal(license)}
-                  className="border-b border-gray-100 hover:bg-green-50 cursor-pointer transition-colors"
+                  className="cursor-pointer hover:bg-primary/5 transition-colors"
                 >
-                  <td className="px-6 py-4 font-medium text-gray-900">{license.email}</td>
-                  <td className="px-6 py-4 text-gray-600">{formatDate(license.vencimento)}</td>
-                  <td className="px-6 py-4 text-gray-600">{license.usuariosVinculados ?? 0}</td>
-                  <td className="px-6 py-4">
+                  <td className="font-medium text-gray-900">{license.email}</td>
+                  <td className="text-gray-600 tabular-nums">{formatDate(license.vencimento)}</td>
+                  <td className="text-gray-600">{license.usuariosVinculados ?? 0}</td>
+                  <td>
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
+                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md ${
                         (license.vagasRestantes ?? 0) > 0
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-emerald-100 text-emerald-800'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
                       {license.vagasRestantes ?? 0} restantes
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                  <td className="text-right space-x-2 whitespace-nowrap">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         openEditForm(license);
                       }}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      className="btn-secondary"
                     >
                       Editar
                     </button>
@@ -732,7 +699,7 @@ export default function OfficeLicensesPage() {
                         e.stopPropagation();
                         handleDelete(license);
                       }}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 inline-flex items-center gap-2"
+                      className="btn-danger"
                     >
                       {deletingId === license.id && <Loader2 />}
                       Excluir
@@ -751,7 +718,7 @@ export default function OfficeLicensesPage() {
           onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
           onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
         />
-      </div>
+      </SectionCard>
 
       <LicenseUsersModal
         license={selectedLicense}
@@ -761,6 +728,6 @@ export default function OfficeLicensesPage() {
         onClose={closeLicenseModal}
         onUnlink={handleUnlink}
       />
-    </div>
+    </PageContainer>
   );
 }

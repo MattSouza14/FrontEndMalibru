@@ -467,7 +467,7 @@ export default function AdminPage() {
                                 type="button"
                                 disabled={rolesActionId === u.id}
                                 onClick={() => handleSaveRoles(u)}
-                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-green-700 hover:bg-green-800 text-white disabled:opacity-50 inline-flex items-center gap-2"
+                                className="btn-primary inline-flex items-center gap-2 disabled:opacity-50 text-[10px] px-3 py-1.5"
                               >
                                 {rolesActionId === u.id && <Loader2 />}
                                 Salvar
@@ -501,7 +501,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => startRoleEdit(u)}
-                                className="text-[10px] font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
+                                className="btn-ghost text-[10px]"
                               >
                                 Editar roles
                               </button>
@@ -554,7 +554,7 @@ export default function AdminPage() {
                                         [u.id]: e.target.value,
                                       }))
                                     }
-                                    className="px-3 py-2 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-xs min-w-[160px]"
+                                    className="form-input text-xs min-w-[160px] py-2"
                                   >
                                     <option value="">Licença...</option>
                                     {availableLicenses.map((license) => (
@@ -571,7 +571,7 @@ export default function AdminPage() {
                                       !licenseSelect[u.id]
                                     }
                                     onClick={() => handleLinkLicense(u)}
-                                    className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-green-700 hover:bg-green-800 text-white disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                                    className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50 text-xs px-4 py-2"
                                   >
                                     {isLicenseLoading && <Loader2 />}
                                     Vincular
@@ -582,10 +582,10 @@ export default function AdminPage() {
                                 type="button"
                                 disabled={isStatusLoading}
                                 onClick={() => handleToggleStatus(u)}
-                                className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors inline-flex items-center gap-2 disabled:opacity-50 ${
+                                className={`transition-colors inline-flex items-center gap-2 disabled:opacity-50 ${
                                   u.enabled
-                                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                                    : 'bg-green-700 hover:bg-green-800 text-white'
+                                    ? 'btn-danger text-xs px-4 py-2'
+                                    : 'btn-primary text-xs px-4 py-2'
                                 }`}
                               >
                                 {isStatusLoading && <Loader2 />}

@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TablePagination from '../components/TablePagination';
+import AlertBanner from '../components/ui/AlertBanner';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import {
   createCertificate,
   deleteCertificate,
@@ -198,140 +202,113 @@ export default function CertificatesPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando certificados...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando certificados...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Certificados</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Gerencie certificados digitais e acompanhe datas de vencimento.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={openCreateForm}
-          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-        >
-          Novo certificado
-        </button>
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'TI', 'Certificados']}
+        title="Certificados"
+        subtitle="Gerencie certificados digitais e acompanhe datas de vencimento."
+        actions={
+          <button type="button" onClick={openCreateForm} className="btn-primary">
+            Novo certificado
+          </button>
+        }
+      />
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 p-6 space-y-4">
-          <h2 className="font-serif text-xl text-green-700">
-            {editingId ? 'Editar certificado' : 'Cadastrar certificado'}
-          </h2>
+        <SectionCard title={editingId ? 'Editar certificado' : 'Cadastrar certificado'}>
+          <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="block space-y-1.5">
+                <span className="form-label">Nome</span>
+                <input
+                  type="text"
+                  required
+                  value={form.nome}
+                  onChange={(e) => updateField('nome', e.target.value)}
+                  className="form-input"
+                />
+              </label>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Nome
-              </span>
-              <input
-                type="text"
-                required
-                value={form.nome}
-                onChange={(e) => updateField('nome', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
+              <label className="block space-y-1.5">
+                <span className="form-label">Empresa</span>
+                <input
+                  type="text"
+                  value={form.empresa}
+                  onChange={(e) => updateField('empresa', e.target.value)}
+                  placeholder="Opcional"
+                  className="form-input"
+                />
+              </label>
 
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Empresa
-              </span>
-              <input
-                type="text"
-                value={form.empresa}
-                onChange={(e) => updateField('empresa', e.target.value)}
-                placeholder="Opcional"
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
+              <label className="block space-y-1.5">
+                <span className="form-label">Vencimento</span>
+                <input
+                  type="date"
+                  required
+                  value={form.dataVencimento}
+                  onChange={(e) => updateField('dataVencimento', e.target.value)}
+                  className="form-input"
+                />
+              </label>
+            </div>
 
-            <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Vencimento
-              </span>
-              <input
-                type="date"
-                required
-                value={form.dataVencimento}
-                onChange={(e) => updateField('dataVencimento', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-              />
-            </label>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <button
-              type="button"
-              onClick={closeForm}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
-            >
-              {saving && <Loader2 />}
-              {editingId ? 'Salvar alterações' : 'Cadastrar'}
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={closeForm} className="btn-cancel">
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+              >
+                {saving && <Loader2 />}
+                {editingId ? 'Salvar alterações' : 'Cadastrar'}
+              </button>
+            </div>
+          </form>
+        </SectionCard>
       )}
 
-      <div className="bg-white border border-gray-200 overflow-x-auto">
-        <table className="w-full text-sm">
+      <SectionCard title="Certificados cadastrados" noPadding bodyClassName="p-0">
+        <table className="data-table w-full">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-              <th className="px-6 py-3 font-bold">Nome</th>
-              <th className="px-6 py-3 font-bold">Empresa</th>
-              <th className="px-6 py-3 font-bold">Vencimento</th>
-              <th className="px-6 py-3 font-bold text-right">Ações</th>
+            <tr>
+              <th>Nome</th>
+              <th>Empresa</th>
+              <th>Vencimento</th>
+              <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {certificates.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={4} className="text-center text-gray-500 py-10">
                   Nenhum certificado cadastrado.
                 </td>
               </tr>
             ) : (
               tablePagination.items.map((certificate) => (
-                <tr key={certificate.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{certificate.nome}</td>
-                  <td className="px-6 py-4 text-gray-600">{certificate.empresa || '—'}</td>
-                  <td className="px-6 py-4 text-gray-600">
+                <tr key={certificate.id}>
+                  <td className="font-medium text-gray-900">{certificate.nome}</td>
+                  <td className="text-gray-600">{certificate.empresa || '—'}</td>
+                  <td className="text-gray-600 tabular-nums">
                     {formatDate(certificate.dataVencimento)}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2">
+                  <td className="text-right space-x-2">
                     <button
                       type="button"
                       onClick={() => openEditForm(certificate)}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      className="btn-secondary"
                     >
                       Editar
                     </button>
@@ -339,7 +316,7 @@ export default function CertificatesPage() {
                       type="button"
                       disabled={deletingId === certificate.id}
                       onClick={() => handleDelete(certificate)}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 inline-flex items-center gap-2"
+                      className="btn-danger"
                     >
                       {deletingId === certificate.id && <Loader2 />}
                       Excluir
@@ -358,7 +335,7 @@ export default function CertificatesPage() {
           onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
           onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
         />
-      </div>
-    </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

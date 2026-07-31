@@ -9,8 +9,8 @@ export default function TablePagination({
   if (total <= pageSize) return null;
 
   return (
-    <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <p className="text-xs text-gray-500">
+    <div className="px-5 py-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <p className="text-xs text-gray-500 tabular-nums">
         Página {page} de {totalPages} · {total} registro(s)
       </p>
       <div className="flex items-center gap-2">
@@ -18,7 +18,7 @@ export default function TablePagination({
           type="button"
           disabled={page <= 1}
           onClick={onPrev}
-          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-secondary"
         >
           Anterior
         </button>
@@ -26,7 +26,7 @@ export default function TablePagination({
           type="button"
           disabled={page >= totalPages}
           onClick={onNext}
-          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-secondary"
         >
           Próxima
         </button>

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import AlertBanner from './ui/AlertBanner';
+import SectionCard from './ui/SectionCard';
 import { FERRAMENTAS_REMOTAS } from '../utils/chamadoStatus';
 import {
   formatBrazilianMobileInput,
@@ -70,118 +72,101 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 p-6 space-y-4">
-      <h2 className="font-serif text-xl text-green-700">Abrir chamado de suporte</h2>
-      <p className="text-xs text-gray-500">
-        O e-mail do chamado será o cadastrado no seu perfil. Certifique-se de que está correto antes
-        de abrir.
-      </p>
-
-      {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      <label className="block space-y-1.5">
-        <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-          Assunto
-        </span>
-        <input
-          type="text"
-          maxLength={200}
-          value={form.assunto}
-          onChange={(e) => updateField('assunto', e.target.value)}
-          className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-          placeholder="Ex.: Computador não liga"
-        />
-        <FieldError message={fieldErrors.assunto} />
-      </label>
-
-      <label className="block space-y-1.5">
-        <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-          Descrição
-        </span>
-        <textarea
-          rows={4}
-          value={form.descricao}
-          onChange={(e) => updateField('descricao', e.target.value)}
-          className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm resize-y"
-          placeholder="Descreva o problema com detalhes..."
-        />
-        <FieldError message={fieldErrors.descricao} />
-      </label>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <label className="block space-y-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Telefone de contato
-          </span>
-          <input
-            type="tel"
-            inputMode="numeric"
-            maxLength={16}
-            value={form.telefoneContato}
-            onChange={(e) => updateField('telefoneContato', formatBrazilianMobileInput(e.target.value))}
-            className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-            placeholder="(11) 98765-4321"
-          />
-          <p className="text-[11px] text-gray-400">Celular BR: DDD + 9 + 8 dígitos.</p>
-          <FieldError message={fieldErrors.telefoneContato} />
-        </label>
+    <SectionCard
+      title="Abrir chamado de suporte"
+      subtitle="O e-mail do chamado será o cadastrado no seu perfil. Certifique-se de que está correto antes de abrir."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
+        {error && <AlertBanner type="error">{error}</AlertBanner>}
 
         <label className="block space-y-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Ferramenta remota
-          </span>
-          <select
-            value={form.ferramentaRemota}
-            onChange={(e) => updateField('ferramentaRemota', e.target.value)}
-            className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-          >
-            {FERRAMENTAS_REMOTAS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Código de acesso remoto
-          </span>
+          <span className="form-label">Assunto</span>
           <input
             type="text"
-            inputMode="numeric"
-            maxLength={100}
-            value={form.codigoAcessoRemoto}
-            onChange={(e) => updateField('codigoAcessoRemoto', e.target.value.replace(/\D/g, ''))}
-            className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
-            placeholder="Somente números"
+            maxLength={200}
+            value={form.assunto}
+            onChange={(e) => updateField('assunto', e.target.value)}
+            className="form-input"
+            placeholder="Ex.: Computador não liga"
           />
-          <p className="text-[11px] text-gray-400">ID AnyDesk, TeamViewer ou RustDesk.</p>
-          <FieldError message={fieldErrors.codigoAcessoRemoto} />
+          <FieldError message={fieldErrors.assunto} />
         </label>
-      </div>
 
-      <div className="flex gap-3 justify-end">
-        {onCancel && (
+        <label className="block space-y-1.5">
+          <span className="form-label">Descrição</span>
+          <textarea
+            rows={4}
+            value={form.descricao}
+            onChange={(e) => updateField('descricao', e.target.value)}
+            className="form-input resize-y"
+            placeholder="Descreva o problema com detalhes..."
+          />
+          <FieldError message={fieldErrors.descricao} />
+        </label>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <label className="block space-y-1.5">
+            <span className="form-label">Telefone de contato</span>
+            <input
+              type="tel"
+              inputMode="numeric"
+              maxLength={16}
+              value={form.telefoneContato}
+              onChange={(e) => updateField('telefoneContato', formatBrazilianMobileInput(e.target.value))}
+              className="form-input"
+              placeholder="(11) 98765-4321"
+            />
+            <p className="text-[11px] text-gray-400">Celular BR: DDD + 9 + 8 dígitos.</p>
+            <FieldError message={fieldErrors.telefoneContato} />
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="form-label">Ferramenta remota</span>
+            <select
+              value={form.ferramentaRemota}
+              onChange={(e) => updateField('ferramentaRemota', e.target.value)}
+              className="form-input"
+            >
+              {FERRAMENTAS_REMOTAS.map((f) => (
+                <option key={f.value} value={f.value}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="form-label">Código de acesso remoto</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={100}
+              value={form.codigoAcessoRemoto}
+              onChange={(e) => updateField('codigoAcessoRemoto', e.target.value.replace(/\D/g, ''))}
+              className="form-input"
+              placeholder="Somente números"
+            />
+            <p className="text-[11px] text-gray-400">ID AnyDesk, TeamViewer ou RustDesk.</p>
+            <FieldError message={fieldErrors.codigoAcessoRemoto} />
+          </label>
+        </div>
+
+        <div className="flex gap-3 justify-end pt-2">
+          {onCancel && (
+            <button type="button" onClick={onCancel} className="btn-cancel">
+              Cancelar
+            </button>
+          )}
           <button
-            type="button"
-            onClick={onCancel}
-            className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
+            type="submit"
+            disabled={loading}
+            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
           >
-            Cancelar
+            {loading && <Loader2 />}
+            Abrir chamado
           </button>
-        )}
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading && <Loader2 />}
-          Abrir chamado
-        </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </SectionCard>
   );
 }

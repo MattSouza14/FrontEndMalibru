@@ -3,6 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ChamadoStatusBadge from '../components/ChamadoStatusBadge';
 import OpenChamadoForm from '../components/OpenChamadoForm';
+import AlertBanner from '../components/ui/AlertBanner';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import { listMyChamados, openChamado } from '../services/chamadoService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDateTime, getFerramentaLabel } from '../utils/chamadoStatus';
@@ -94,44 +98,29 @@ export default function ChamadosPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando chamados...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando chamados...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Suporte
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Meus Chamados</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Abra um chamado de suporte técnico e acompanhe o andamento.
-          </p>
-        </div>
-        {!showForm && (
-          <button
-            type="button"
-            onClick={openForm}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            Novo chamado
-          </button>
-        )}
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Conta', 'Meus Chamados']}
+        title="Meus Chamados"
+        subtitle="Abra um chamado de suporte técnico e acompanhe o andamento."
+        actions={
+          !showForm ? (
+            <button type="button" onClick={openForm} className="btn-primary">
+              Novo chamado
+            </button>
+          ) : null
+        }
+      />
 
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
-
-      {error && !showForm && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
+      {error && !showForm && <AlertBanner type="error">{error}</AlertBanner>}
 
       {showForm && (
         <OpenChamadoForm
@@ -142,37 +131,35 @@ export default function ChamadosPage() {
         />
       )}
 
-      <div className="bg-white border border-gray-200 overflow-x-auto">
-        <table className="w-full text-sm">
+      <SectionCard title="Histórico de chamados" noPadding bodyClassName="p-0">
+        <table className="data-table w-full">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-              <th className="px-6 py-3 font-bold">Assunto</th>
-              <th className="px-6 py-3 font-bold">Ferramenta</th>
-              <th className="px-6 py-3 font-bold">Status</th>
-              <th className="px-6 py-3 font-bold">Abertura</th>
+            <tr>
+              <th>Assunto</th>
+              <th>Ferramenta</th>
+              <th>Status</th>
+              <th>Abertura</th>
             </tr>
           </thead>
           <tbody>
             {chamados.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={4} className="text-center text-gray-500 py-10">
                   Você ainda não abriu nenhum chamado.
                 </td>
               </tr>
             ) : (
               chamados.map((chamado) => (
-                <tr key={chamado.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-6 py-4">
+                <tr key={chamado.id}>
+                  <td>
                     <p className="font-medium text-gray-900">{chamado.assunto}</p>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{chamado.descricao}</p>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {getFerramentaLabel(chamado.ferramentaRemota)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="text-gray-600">{getFerramentaLabel(chamado.ferramentaRemota)}</td>
+                  <td className="whitespace-nowrap">
                     <ChamadoStatusBadge status={chamado.status} />
                   </td>
-                  <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                  <td className="text-gray-600 whitespace-nowrap tabular-nums">
                     {formatDateTime(chamado.createdAt)}
                   </td>
                 </tr>
@@ -180,7 +167,7 @@ export default function ChamadosPage() {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

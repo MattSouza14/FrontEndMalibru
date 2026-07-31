@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { activateAccount } from '../services/authService';
 import { getApiErrorMessage } from '../utils/apiErrors';
+import AlertBanner from '../components/ui/AlertBanner';
 
 export default function ActivateAccountPage() {
   const navigate = useNavigate();
@@ -42,13 +43,16 @@ export default function ActivateAccountPage() {
   const isExpired = error?.includes('expirado');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-[440px] bg-white border border-gray-200 shadow-sm p-10 md:p-14">
+    <div className="min-h-screen flex items-center justify-center bg-surface-muted p-6">
+      <div className="w-full max-w-[440px] bg-white rounded-2xl border border-gray-100 shadow-card p-8 sm:p-10">
         <div className="text-center mb-8">
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-3">
+          <div className="size-12 bg-primary rounded-xl flex items-center justify-center font-bold text-white text-xl mx-auto mb-4">
+            M
+          </div>
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 mb-2">
             Ativação de conta
           </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Malibru Portal</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Malibru Portal</h1>
         </div>
 
         {loading && (
@@ -57,7 +61,7 @@ export default function ActivateAccountPage() {
 
         {!loading && error && (
           <div className="space-y-4">
-            <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
+            <AlertBanner type="error">{error}</AlertBanner>
             {isExpired && (
               <p className="text-sm text-gray-600">
                 Entre em contato com um administrador para solicitar uma nova ativação.
@@ -65,7 +69,7 @@ export default function ActivateAccountPage() {
             )}
             <Link
               to="/Login"
-              className="block text-center text-sm text-green-700 hover:underline font-medium"
+              className="block text-center text-sm text-primary hover:underline font-medium"
             >
               Ir para o login
             </Link>
@@ -74,12 +78,10 @@ export default function ActivateAccountPage() {
 
         {!loading && successMessage && (
           <div className="space-y-4">
-            <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-              {successMessage}
-            </div>
+            <AlertBanner type="success">{successMessage}</AlertBanner>
             <Link
               to="/Login"
-              className="block text-center text-sm text-green-700 hover:underline font-medium"
+              className="block text-center text-sm text-primary hover:underline font-medium"
             >
               Acessar agora
             </Link>

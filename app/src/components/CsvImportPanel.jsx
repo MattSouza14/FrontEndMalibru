@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react';
+import KpiCard from './ui/KpiCard';
+import SectionCard from './ui/SectionCard';
 
 const DEFAULT_CSV_TEMPLATE = `nome,patrimonio,descricao
 Notebook Dell,12345,Core i5 16GB
@@ -73,44 +75,35 @@ export default function CsvImportPanel({
   }
 
   return (
-    <section className="bg-white border border-gray-200 p-6 space-y-5">
-      <div>
-        <h2 className="font-serif text-xl text-green-700">{title}</h2>
-        {description && <p className="text-sm text-gray-600 mt-2">{description}</p>}
-      </div>
-
-      <div className="bg-gray-50 border border-gray-200 p-4 space-y-3">
-        <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-          Formato esperado
-        </p>
+    <SectionCard title={title} subtitle={description}>
+      <div className="rounded-lg bg-gray-50 border border-gray-100 p-4 space-y-3 -mt-2">
+        <p className="form-label">Formato esperado</p>
         <p className="text-sm text-gray-600">
           Arquivo <strong>.csv</strong> UTF-8 com cabeçalho na primeira linha. Separador{' '}
-          <code className="text-xs bg-white px-1 py-0.5 border border-gray-200">,</code> ou{' '}
-          <code className="text-xs bg-white px-1 py-0.5 border border-gray-200">;</code> (Excel BR).
+          <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">,</code> ou{' '}
+          <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">;</code> (Excel BR).
         </p>
-        <pre className="text-xs bg-white border border-gray-200 p-3 overflow-x-auto text-gray-700">
+        <pre className="text-xs bg-white border border-gray-100 rounded-lg p-3 overflow-x-auto text-gray-700">
           {preview}
         </pre>
         <button
           type="button"
           onClick={() => downloadTemplate(templateFilename, templateContent)}
-          className="text-xs font-bold uppercase tracking-widest text-green-700 hover:text-green-800"
+          className="btn-ghost"
         >
           Baixar modelo CSV →
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:items-end gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:items-end gap-4 mt-5">
         <label className="block space-y-1.5 flex-1">
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Arquivo
-          </span>
+          <span className="form-label">Arquivo</span>
           <input
             ref={inputRef}
             type="file"
             accept=".csv,text/csv"
             onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-green-700 file:text-white hover:file:bg-green-800"
+            className="file-input"
           />
         </label>
 
@@ -120,7 +113,7 @@ export default function CsvImportPanel({
               type="button"
               onClick={clearSelection}
               disabled={importing}
-              className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900 disabled:opacity-50"
+              className="btn-cancel disabled:opacity-50"
             >
               Limpar
             </button>
@@ -128,7 +121,7 @@ export default function CsvImportPanel({
           <button
             type="submit"
             disabled={!selectedFile || importing}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
+            className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
           >
             {importing && <Loader2 />}
             Importar
@@ -137,49 +130,30 @@ export default function CsvImportPanel({
       </form>
 
       {result && (
-        <div className="space-y-4 pt-2 border-t border-gray-200">
+        <div className="space-y-4 pt-5 mt-5 border-t border-gray-100">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="border border-gray-200 p-4">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Total de linhas
-              </p>
-              <p className="text-2xl font-serif text-green-700 mt-1">{result.totalLinhas ?? 0}</p>
-            </div>
-            <div className="border border-gray-200 p-4">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Importados
-              </p>
-              <p className="text-2xl font-serif text-green-700 mt-1">{result.importados ?? 0}</p>
-            </div>
-            <div className="border border-gray-200 p-4">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                Ignorados
-              </p>
-              <p className="text-2xl font-serif text-amber-600 mt-1">{result.ignorados ?? 0}</p>
-            </div>
+            <KpiCard label="Total de linhas" value={result.totalLinhas ?? 0} />
+            <KpiCard label="Importados" value={result.importados ?? 0} accent="green" />
+            <KpiCard label="Ignorados" value={result.ignorados ?? 0} accent="amber" />
           </div>
 
           {Array.isArray(result.erros) && result.erros.length > 0 && (
-            <div className="overflow-x-auto border border-gray-200">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-lg border border-gray-100">
+              <table className="data-table w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
+                  <tr>
                     {errorColumns.map((column) => (
-                      <th key={column.key} className="px-4 py-3 font-bold">
-                        {column.label}
-                      </th>
+                      <th key={column.key}>{column.label}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {result.erros.map((item, index) => (
-                    <tr key={`${item.linha}-${index}`} className="border-b border-gray-100">
+                    <tr key={`${item.linha}-${index}`}>
                       {errorColumns.map((column) => (
                         <td
                           key={column.key}
-                          className={`px-4 py-3 ${
-                            column.key === 'motivo' ? 'text-red-700' : 'text-gray-600'
-                          }`}
+                          className={column.key === 'motivo' ? 'text-red-700' : 'text-gray-600'}
                         >
                           {formatCellValue(item[column.key])}
                         </td>
@@ -192,6 +166,6 @@ export default function CsvImportPanel({
           )}
         </div>
       )}
-    </section>
+    </SectionCard>
   );
 }
