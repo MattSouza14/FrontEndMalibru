@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import CsvImportPanel from '../components/CsvImportPanel';
+import AlertBanner from '../components/ui/AlertBanner';
+import KpiCard from '../components/ui/KpiCard';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import {
   activateUser,
   deactivateUser,
@@ -333,45 +338,34 @@ export default function AdminPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando usuários...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando usuários...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Painel de Usuários</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Gerencie contas, ativações, roles e vínculos de licenças Office.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setShowImport((current) => !current);
-            setImportResult(null);
-          }}
-          className="border border-green-700 text-green-700 hover:bg-green-50 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors self-start sm:self-auto"
-        >
-          {showImport ? 'Fechar importação' : 'Importar CSV'}
-        </button>
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Administração', 'Usuários']}
+        title="Painel de Usuários"
+        subtitle="Gerencie contas, ativações, roles e vínculos de licenças Office."
+        actions={
+          <button
+            type="button"
+            onClick={() => {
+              setShowImport((current) => !current);
+              setImportResult(null);
+            }}
+            className="btn-outline"
+          >
+            {showImport ? 'Fechar importação' : 'Importar CSV'}
+          </button>
+        }
+      />
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
       {showImport && (
         <CsvImportPanel
@@ -387,24 +381,13 @@ export default function AdminPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Total</p>
-          <p className="text-2xl font-serif text-green-700 mt-1">{stats.total}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Pendentes
-          </p>
-          <p className="text-2xl font-serif text-amber-600 mt-1">{stats.pending}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Ativos</p>
-          <p className="text-2xl font-serif text-green-700 mt-1">{stats.active}</p>
-        </div>
+        <KpiCard label="Total" value={stats.total} accent="default" />
+        <KpiCard label="Pendentes" value={stats.pending} accent="amber" subtext="Aguardando ativação" />
+        <KpiCard label="Ativos" value={stats.active} accent="green" subtext="Contas habilitadas" />
       </div>
 
-      <div className="bg-white border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap gap-2">
+      <SectionCard title="Usuários cadastrados" noPadding bodyClassName="p-0">
+        <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'Todos' },
             { key: 'pending', label: 'Pendentes' },
@@ -414,9 +397,9 @@ export default function AdminPage() {
               key={key}
               type="button"
               onClick={() => setFilter(key)}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
                 filter === key
-                  ? 'bg-green-700 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -426,17 +409,17 @@ export default function AdminPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="data-table w-full">
             <thead>
-              <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-                <th className="px-6 py-3 font-bold">Nome</th>
-                <th className="px-6 py-3 font-bold">E-mail</th>
-                <th className="px-6 py-3 font-bold">Setor</th>
-                <th className="px-6 py-3 font-bold">Roles</th>
-                <th className="px-6 py-3 font-bold">Status</th>
-                <th className="px-6 py-3 font-bold">Licença Office</th>
-                <th className="px-6 py-3 font-bold">Cadastro</th>
-                <th className="px-6 py-3 font-bold text-right">Ações</th>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Setor</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Licença Office</th>
+                <th>Cadastro</th>
+                <th className="text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -456,10 +439,10 @@ export default function AdminPage() {
                     : null;
 
                   return (
-                    <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-900">{u.nome}</td>
-                      <td className="px-6 py-4 text-gray-600">{u.email}</td>
-                      <td className="px-6 py-4 text-gray-600">{u.setor || '—'}</td>
+                    <tr key={u.id}>
+                      <td className="font-medium text-gray-900">{u.nome}</td>
+                      <td className="text-gray-600">{u.email}</td>
+                      <td className="text-gray-600">{u.setor || '—'}</td>
                       <td className="px-6 py-4 min-w-[220px]">
                         {roleEdits[u.id] ? (
                           <div className="space-y-2">
@@ -622,7 +605,7 @@ export default function AdminPage() {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpiringPanel, { DateCell, ExpiryStatusCell } from '../components/ExpiringPanel';
 import TablePagination from '../components/TablePagination';
+import KpiCard from '../components/ui/KpiCard';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
+import { ExpiryProgressBar } from '../components/ui/ProgressBar';
 import { listCertificates } from '../services/certificateService';
 import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
@@ -19,36 +24,69 @@ import {
 
 const EQUIPMENTS_PAGE_SIZE = 4;
 
-function DashboardPanel({ title, description, badge, onClick, disabled = false }) {
+function IconTicket() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+    </svg>
+  );
+}
+
+function IconLicense() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+function IconMonitor() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function IconShield() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  );
+}
+
+function IconUser() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  );
+}
+
+function QuickLinkCard({ title, description, badge, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      className={`bg-white border border-gray-200 p-6 text-left transition-all group ${
-        disabled
-          ? 'opacity-60 cursor-not-allowed'
-          : 'hover:border-green-700 hover:shadow-sm hover:bg-green-50/30'
-      }`}
+      className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-card p-5 hover:border-primary/30 hover:shadow-md transition-all group"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-serif text-xl text-green-700 group-hover:text-green-800">
+          <p className="font-semibold text-slate-900 group-hover:text-primary transition-colors">
             {title}
           </p>
-          <p className="text-sm text-gray-500 mt-2 leading-relaxed">{description}</p>
+          <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{description}</p>
         </div>
         {badge && (
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 shrink-0 bg-gray-100 text-gray-500">
+          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-gray-100 text-gray-600 shrink-0">
             {badge}
           </span>
         )}
       </div>
-      {!disabled && (
-        <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-green-700 opacity-0 group-hover:opacity-100 transition-opacity">
-          Acessar →
-        </p>
-      )}
+      <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+        Acessar →
+      </p>
     </button>
   );
 }
@@ -184,6 +222,7 @@ export default function HomePage() {
   );
 
   const totalUrgentExpiring = urgentLicenses + urgentSoftwareLicenses + urgentCertificates;
+  const myLicensesCount = (myOfficeLicense ? 1 : 0) + mySoftwareLicenses.length;
 
   const expiringTabConfig = useMemo(
     () => ({
@@ -308,8 +347,8 @@ export default function HomePage() {
   );
 
   const expiringTabs = [
-    { id: 'office', label: 'Licenças Office', urgentCount: urgentLicenses },
-    { id: 'software', label: 'Licenças de Software', urgentCount: urgentSoftwareLicenses },
+    { id: 'office', label: 'Office', urgentCount: urgentLicenses },
+    { id: 'software', label: 'Software', urgentCount: urgentSoftwareLicenses },
     { id: 'certificates', label: 'Certificados', urgentCount: urgentCertificates },
   ];
 
@@ -326,121 +365,194 @@ export default function HomePage() {
     );
   }, [myEquipments.length]);
 
-  return (
-    <div className="p-6 lg:p-8 space-y-8 max-w-6xl">
-      <header>
-        <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-          Dashboard
-        </p>
-        <h1 className="font-serif italic text-4xl text-green-700">
-          Olá, {user?.nome?.split(' ')[0]}
-        </h1>
-        <p className="text-sm text-gray-600 mt-2">
-          Bem-vindo ao portal Malibru. Use o menu lateral ou os painéis abaixo para navegar.
-        </p>
-      </header>
+  const kpiCards = useMemo(() => {
+    const cards = [];
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 p-5">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Setor</p>
-          <p className="text-lg font-medium text-gray-900 mt-1">{user?.setor || '—'}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-5">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Perfil</p>
-          <p className="text-lg font-medium text-gray-900 mt-1">{formatRoles(user)}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-5">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Conta</p>
-          <p className="text-lg font-medium text-gray-900 mt-1">
-            {user?.enabled ? 'Ativa' : 'Pendente'}
-          </p>
-        </div>
+    if (showChamadosAdmin) {
+      cards.push({
+        key: 'chamados',
+        icon: <IconTicket />,
+        label: 'Chamados abertos',
+        value: openChamadosCount,
+        subtext: openChamadosCount > 0 ? 'Aguardando atendimento' : 'Nenhum pendente',
+        accent: openChamadosCount > 0 ? 'amber' : 'default',
+        onClick: () => navigate('/admin/chamados'),
+      });
+    }
+
+    cards.push({
+      key: 'equipamentos',
+      icon: <IconMonitor />,
+      label: 'Equipamentos',
+      value: resourcesLoading ? '—' : myEquipments.length,
+      subtext: 'Vinculados à sua conta',
+      accent: 'blue',
+    });
+
+    cards.push({
+      key: 'licencas',
+      icon: <IconLicense />,
+      label: 'Minhas licenças',
+      value: resourcesLoading ? '—' : myLicensesCount,
+      subtext: myOfficeLicense ? 'Office + software' : 'Software vinculado',
+      accent: 'green',
+    });
+
+    if (showTiAlerts) {
+      cards.push({
+        key: 'office-exp',
+        icon: <IconLicense />,
+        label: 'Office vencendo',
+        value: loading ? '—' : expiringLicenses.length,
+        subtext: urgentLicenses > 0 ? `${urgentLicenses} em até 7 dias` : 'Próximos do vencimento',
+        accent: urgentLicenses > 0 ? 'amber' : 'default',
+        onClick: () => navigate('/admin/office-licenses'),
+      });
+      cards.push({
+        key: 'cert-exp',
+        icon: <IconShield />,
+        label: 'Certificados',
+        value: loading ? '—' : expiringCertificates.length,
+        subtext: urgentCertificates > 0 ? `${urgentCertificates} urgentes` : 'Monitoramento TI',
+        accent: urgentCertificates > 0 ? 'red' : 'default',
+        onClick: () => navigate('/admin/certificates'),
+      });
+    } else {
+      cards.push({
+        key: 'setor',
+        icon: <IconUser />,
+        label: 'Setor',
+        value: user?.setor || '—',
+        subtext: formatRoles(user),
+        accent: 'default',
+      });
+      cards.push({
+        key: 'conta',
+        icon: <IconUser />,
+        label: 'Conta',
+        value: user?.enabled ? 'Ativa' : 'Pendente',
+        subtext: user?.enabled ? 'Acesso liberado' : 'Aguardando ativação',
+        accent: user?.enabled ? 'green' : 'amber',
+      });
+    }
+
+    return cards.slice(0, 5);
+  }, [
+    showChamadosAdmin,
+    showTiAlerts,
+    openChamadosCount,
+    resourcesLoading,
+    myEquipments.length,
+    myLicensesCount,
+    myOfficeLicense,
+    loading,
+    expiringLicenses.length,
+    expiringCertificates.length,
+    urgentLicenses,
+    urgentCertificates,
+    user,
+    navigate,
+  ]);
+
+  return (
+    <PageContainer className="space-y-8">
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Início']}
+        title={`Olá, ${user?.nome?.split(' ')[0]}`}
+        subtitle="Visão geral dos seus recursos, alertas e acesso rápido ao portal."
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {kpiCards.map((kpi) => (
+          <KpiCard key={kpi.key} {...kpi} />
+        ))}
       </div>
 
-      <section className="space-y-4">
-        <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-          Meus recursos
-        </p>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-white border border-gray-200 p-6">
-            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-              Minhas licenças
-            </p>
+      <SectionCard
+        title="Meus recursos"
+        subtitle="Licenças e equipamentos vinculados à sua conta"
+        icon={<IconLicense />}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 -mx-2">
+          <div className="px-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
+              Licenças
+            </h3>
             {resourcesLoading ? (
-              <p className="text-sm text-gray-500 mt-3">Carregando...</p>
+              <p className="text-sm text-gray-500">Carregando...</p>
             ) : !myOfficeLicense && mySoftwareLicenses.length === 0 ? (
-              <p className="text-sm text-gray-500 mt-3">
-                Nenhuma licença vinculada à sua conta.
-              </p>
+              <p className="text-sm text-gray-500">Nenhuma licença vinculada à sua conta.</p>
             ) : (
-              <div className="mt-3 space-y-4">
+              <div className="space-y-5">
                 {myOfficeLicense && (
-                  <div className="border-b border-gray-100 pb-4">
-                    <p className="text-xs font-bold uppercase tracking-widest text-green-700 mb-2">
+                  <div className="rounded-lg border border-gray-100 p-4 bg-gray-50/50">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
                       Microsoft Office
                     </p>
                     <p className="font-medium text-gray-900">{myOfficeLicense.email}</p>
                     <p className="text-sm text-gray-600 mt-1">
                       Vencimento: {formatDate(myOfficeLicense.vencimento)}
                     </p>
-                    <span
-                      className={`inline-block mt-2 text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(myOfficeLicense.diasParaVencer)}`}
-                    >
-                      {expiryLabel(myOfficeLicense.diasParaVencer)}
-                    </span>
+                    <div className="mt-3 space-y-2">
+                      <ExpiryProgressBar days={myOfficeLicense.diasParaVencer ?? daysUntil(myOfficeLicense.vencimento)} />
+                      <span
+                        className={`inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md ${expiryBadgeClass(myOfficeLicense.diasParaVencer ?? daysUntil(myOfficeLicense.vencimento))}`}
+                      >
+                        {expiryLabel(myOfficeLicense.diasParaVencer ?? daysUntil(myOfficeLicense.vencimento))}
+                      </span>
+                    </div>
                   </div>
                 )}
 
-                {mySoftwareLicenses.length > 0 && (
-                  <ul className="space-y-3">
-                    {mySoftwareLicenses.map((license) => {
-                      const days = daysUntil(license.dataVencimento);
-
-                      return (
-                        <li
-                          key={license.id}
-                          className="border-b border-gray-100 pb-3 last:border-0 last:pb-0"
-                        >
-                          <p className="font-medium text-gray-900">{license.nome}</p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Vencimento: {formatDate(license.dataVencimento)}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <span
-                              className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${expiryBadgeClass(days)}`}
-                            >
-                              {expiryLabel(days)}
+                {mySoftwareLicenses.map((license) => {
+                  const days = daysUntil(license.dataVencimento);
+                  return (
+                    <div
+                      key={license.id}
+                      className="rounded-lg border border-gray-100 p-4 bg-gray-50/50"
+                    >
+                      <p className="font-medium text-gray-900">{license.nome}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Vencimento: {formatDate(license.dataVencimento)}
+                      </p>
+                      <div className="mt-3 space-y-2">
+                        <ExpiryProgressBar days={days} />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md ${expiryBadgeClass(days)}`}
+                          >
+                            {expiryLabel(days)}
+                          </span>
+                          {(license.qtdLicencas ?? 1) > 1 && (
+                            <span className="text-xs text-gray-500">
+                              {license.qtdLicencas} licenças
                             </span>
-                            {(license.qtdLicencas ?? 1) > 1 && (
-                              <span className="text-xs text-gray-500">
-                                {license.qtdLicencas} licenças
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <div className="bg-white border border-gray-200 p-6">
-            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+          <div className="px-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
               Equipamentos
-            </p>
+            </h3>
             {resourcesLoading ? (
-              <p className="text-sm text-gray-500 mt-3">Carregando...</p>
+              <p className="text-sm text-gray-500">Carregando...</p>
             ) : myEquipments.length === 0 ? (
-              <p className="text-sm text-gray-500 mt-3">
-                Nenhum equipamento vinculado à sua conta.
-              </p>
+              <p className="text-sm text-gray-500">Nenhum equipamento vinculado.</p>
             ) : (
               <>
-                <ul className="mt-3 space-y-3">
+                <ul className="space-y-3">
                   {equipmentsPagination.items.map((equipment) => (
-                    <li key={equipment.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                    <li
+                      key={equipment.id}
+                      className="rounded-lg border border-gray-100 p-4 bg-gray-50/50"
+                    >
                       <p className="font-medium text-gray-900">{equipment.nome}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         Patrimônio: {equipment.patrimonio || '—'}
@@ -465,42 +577,39 @@ export default function HomePage() {
             )}
           </div>
         </div>
-      </section>
+      </SectionCard>
 
       {showTiAlerts && (
-        <section className="space-y-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-              Alertas administrativos
-            </p>
-            <h2 className="font-serif text-2xl text-green-700 mt-1">Próximos do vencimento</h2>
-            {totalUrgentExpiring > 0 && (
-              <p className="text-xs text-amber-700 mt-1">
-                {totalUrgentExpiring} item(ns) vence(m) em até 7 dias
-              </p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-2">
+        <SectionCard
+          title="Alertas administrativos"
+          subtitle={
+            totalUrgentExpiring > 0
+              ? `${totalUrgentExpiring} item(ns) vence(m) em até 7 dias`
+              : 'Monitoramento de vencimentos — Office, software e certificados'
+          }
+          icon={<IconShield />}
+          noPadding
+          bodyClassName="p-0"
+        >
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
             {expiringTabs.map((tab) => {
               const isActive = expiringTab === tab.id;
-
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setExpiringTab(tab.id)}
-                  className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest border transition-colors inline-flex items-center gap-2 ${
+                  className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors inline-flex items-center gap-2 ${
                     isActive
-                      ? 'bg-green-700 text-white border-green-700'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-green-700 hover:text-green-700'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {tab.label}
                   {tab.urgentCount > 0 && (
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                        isActive ? 'bg-white text-white' : 'bg-amber-100 text-amber-800'
+                      className={`text-[10px] min-w-[1.25rem] h-5 px-1.5 rounded-full inline-flex items-center justify-center ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
                       }`}
                     >
                       {tab.urgentCount}
@@ -510,22 +619,23 @@ export default function HomePage() {
               );
             })}
           </div>
-
-          <ExpiringPanel embedded {...activeExpiringPanel} />
-        </section>
+          <div className="px-6 py-5">
+            <ExpiringPanel embedded {...activeExpiringPanel} />
+          </div>
+        </SectionCard>
       )}
 
       <section className="space-y-4">
-        <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
           Acesso rápido
-        </p>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <DashboardPanel
+          <QuickLinkCard
             title="Meu Perfil"
             description="Visualize e atualize suas informações pessoais, e-mail e setor."
             onClick={() => navigate('/profile')}
           />
-          <DashboardPanel
+          <QuickLinkCard
             title={showChamadosAdmin ? 'Abrir Chamado' : 'Suporte Técnico'}
             description={
               showChamadosAdmin
@@ -535,16 +645,8 @@ export default function HomePage() {
             badge={showChamadosAdmin ? 'Suporte' : undefined}
             onClick={() => navigate(showChamadosAdmin ? '/admin/chamados?novo=1' : '/chamados?novo=1')}
           />
-        </div>
-      </section>
-
-      {showChamadosAdmin && (
-        <section className="space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-            Suporte
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DashboardPanel
+          {showChamadosAdmin && (
+            <QuickLinkCard
               title="Atender Chamados"
               description={
                 openChamadosCount > 0
@@ -554,30 +656,14 @@ export default function HomePage() {
               badge="Suporte"
               onClick={() => navigate('/admin/chamados')}
             />
-            <DashboardPanel
-              title="Meus Chamados"
-              description="Consulte os chamados abertos por você."
-              onClick={() => navigate('/chamados')}
-            />
-          </div>
-        </section>
-      )}
-
-      {!showChamadosAdmin && (
-        <section className="space-y-4">
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500">
-            Suporte
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DashboardPanel
-              title="Meus Chamados"
-              description="Veja o histórico e o status dos seus chamados abertos."
-              onClick={() => navigate('/chamados')}
-            />
-          </div>
-        </section>
-      )}
-
-    </div>
+          )}
+          <QuickLinkCard
+            title="Meus Chamados"
+            description="Consulte o histórico e o status dos seus chamados."
+            onClick={() => navigate('/chamados')}
+          />
+        </div>
+      </section>
+    </PageContainer>
   );
 }

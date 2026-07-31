@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import TablePagination from '../components/TablePagination';
 import CsvImportPanel from '../components/CsvImportPanel';
+import AlertBanner from '../components/ui/AlertBanner';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import { listUsers } from '../services/adminService';
 import {
   createEquipment,
@@ -315,54 +319,39 @@ export default function EquipmentsPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando equipamentos...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando equipamentos...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Equipamentos</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Cadastre equipamentos corporativos e vincule a usuários.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setShowImport((current) => !current);
-              setImportResult(null);
-            }}
-            className="border border-green-700 text-green-700 hover:bg-green-50 px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            {showImport ? 'Fechar importação' : 'Importar CSV'}
-          </button>
-          <button
-            type="button"
-            onClick={openCreateForm}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            Novo equipamento
-          </button>
-        </div>
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'TI', 'Equipamentos']}
+        title="Equipamentos"
+        subtitle="Cadastre equipamentos corporativos e vincule a usuários."
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setShowImport((current) => !current);
+                setImportResult(null);
+              }}
+              className="btn-outline"
+            >
+              {showImport ? 'Fechar importação' : 'Importar CSV'}
+            </button>
+            <button type="button" onClick={openCreateForm} className="btn-primary">
+              Novo equipamento
+            </button>
+          </>
+        }
+      />
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
       {showImport && (
         <CsvImportPanel
@@ -375,11 +364,8 @@ export default function EquipmentsPage() {
         />
       )}
 
-      <form
-        onSubmit={handleLink}
-        className="bg-white border border-gray-200 p-6 space-y-4"
-      >
-        <h2 className="font-serif text-xl text-green-700">Vincular equipamento</h2>
+      <SectionCard title="Vincular equipamento">
+      <form onSubmit={handleLink} className="space-y-4 -mt-2">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <label className="block space-y-1.5">
             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
@@ -388,7 +374,7 @@ export default function EquipmentsPage() {
             <select
               value={linkForm.usuarioId}
               onChange={(e) => setLinkForm((prev) => ({ ...prev, usuarioId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
             >
               <option value="">Selecione...</option>
               {users.map((user) => (
@@ -406,7 +392,7 @@ export default function EquipmentsPage() {
             <select
               value={linkForm.equipamentoId}
               onChange={(e) => setLinkForm((prev) => ({ ...prev, equipamentoId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
             >
               <option value="">Selecione...</option>
               {availableEquipments.map((equipment) => (
@@ -421,19 +407,18 @@ export default function EquipmentsPage() {
           <button
             type="submit"
             disabled={linking || availableEquipments.length === 0}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {linking && <Loader2 />}
             Vincular
           </button>
         </div>
       </form>
+      </SectionCard>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border border-gray-200 p-6 space-y-4">
-          <h2 className="font-serif text-xl text-green-700">
-            {editingId ? 'Editar equipamento' : 'Cadastrar equipamento'}
-          </h2>
+        <SectionCard title={editingId ? 'Editar equipamento' : 'Cadastrar equipamento'}>
+        <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <label className="block space-y-1.5">
@@ -445,7 +430,7 @@ export default function EquipmentsPage() {
                 required
                 value={form.nome}
                 onChange={(e) => updateField('nome', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
               />
             </label>
 
@@ -457,7 +442,7 @@ export default function EquipmentsPage() {
                 type="text"
                 value={form.patrimonio}
                 onChange={(e) => updateField('patrimonio', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
               />
             </label>
 
@@ -469,7 +454,7 @@ export default function EquipmentsPage() {
                 type="text"
                 value={form.descricao}
                 onChange={(e) => updateField('descricao', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
               />
             </label>
           </div>
@@ -485,24 +470,25 @@ export default function EquipmentsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-50"
+              className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
             >
               {saving && <Loader2 />}
               {editingId ? 'Salvar alterações' : 'Cadastrar'}
             </button>
           </div>
         </form>
+        </SectionCard>
       )}
 
-      <div className="bg-white border border-gray-200 overflow-x-auto">
-        <table className="w-full text-sm">
+      <SectionCard title="Equipamentos cadastrados" noPadding bodyClassName="p-0">
+        <table className="data-table w-full">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-              <th className="px-6 py-3 font-bold">Nome</th>
-              <th className="px-6 py-3 font-bold">Patrimônio</th>
-              <th className="px-6 py-3 font-bold">Usuário</th>
-              <th className="px-6 py-3 font-bold">Descrição</th>
-              <th className="px-6 py-3 font-bold text-right">Ações</th>
+            <tr>
+              <th>Nome</th>
+              <th>Patrimônio</th>
+              <th>Usuário</th>
+              <th>Descrição</th>
+              <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -518,10 +504,10 @@ export default function EquipmentsPage() {
                 const unlinkKey = `${equipment.usuarioId}-${equipment.id}`;
 
                 return (
-                  <tr key={equipment.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">{equipment.nome}</td>
-                    <td className="px-6 py-4 text-gray-600">{equipment.patrimonio || '—'}</td>
-                    <td className="px-6 py-4 text-gray-600">
+                  <tr key={equipment.id}>
+                    <td className="font-medium text-gray-900">{equipment.nome}</td>
+                    <td className="text-gray-600">{equipment.patrimonio || '—'}</td>
+                    <td className="text-gray-600">
                       {linkedUser ? (
                         <span>{linkedUser.nome}</span>
                       ) : (
@@ -567,6 +553,7 @@ export default function EquipmentsPage() {
           </tbody>
         </table>
 
+        <div className="px-6 pb-4">
         <TablePagination
           page={tablePagination.page}
           totalPages={tablePagination.totalPages}
@@ -575,7 +562,8 @@ export default function EquipmentsPage() {
           onPrev={() => setTablePage((p) => Math.max(1, p - 1))}
           onNext={() => setTablePage((p) => Math.min(tablePagination.totalPages, p + 1))}
         />
-      </div>
-    </div>
+        </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

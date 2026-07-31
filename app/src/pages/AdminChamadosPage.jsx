@@ -3,6 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ChamadoStatusBadge from '../components/ChamadoStatusBadge';
 import OpenChamadoForm from '../components/OpenChamadoForm';
+import AlertBanner from '../components/ui/AlertBanner';
+import KpiCard from '../components/ui/KpiCard';
+import PageContainer from '../components/ui/PageContainer';
+import PageHeader from '../components/ui/PageHeader';
+import SectionCard from '../components/ui/SectionCard';
 import {
   listAdminChamados,
   openChamado,
@@ -162,60 +167,34 @@ export default function AdminChamadosPage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando chamados...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando chamados...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-6xl">
-      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Administração
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Atendimento de Chamados</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Visualize, atenda e atualize o status dos chamados de suporte.
-          </p>
-        </div>
-        {!showForm && (
-          <button
-            type="button"
-            onClick={openForm}
-            className="bg-green-700 hover:bg-green-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest transition-colors"
-          >
-            Abrir chamado
-          </button>
-        )}
-      </header>
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Suporte', 'Atendimento']}
+        title="Atendimento de Chamados"
+        subtitle="Visualize, atenda e atualize o status dos chamados de suporte."
+        actions={
+          !showForm ? (
+            <button type="button" onClick={openForm} className="btn-primary">
+              Abrir chamado
+            </button>
+          ) : null
+        }
+      />
 
-      {error && !showForm && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>
-      )}
-
-      {success && (
-        <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-          {success}
-        </div>
-      )}
+      {error && !showForm && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Total</p>
-          <p className="text-2xl font-serif text-green-700 mt-1">{stats.total}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Abertos</p>
-          <p className="text-2xl font-serif text-amber-600 mt-1">{stats.abertos}</p>
-        </div>
-        <div className="bg-white border border-gray-200 p-4">
-          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-            Em atendimento
-          </p>
-          <p className="text-2xl font-serif text-blue-700 mt-1">{stats.emAtendimento}</p>
-        </div>
+        <KpiCard label="Total" value={stats.total} />
+        <KpiCard label="Abertos" value={stats.abertos} accent="amber" />
+        <KpiCard label="Em atendimento" value={stats.emAtendimento} accent="blue" />
       </div>
 
       {showForm && (
@@ -227,8 +206,8 @@ export default function AdminChamadosPage() {
         />
       )}
 
-      <div className="bg-white border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap gap-2">
+      <SectionCard title="Chamados" noPadding bodyClassName="p-0">
+        <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
           {[
             { key: '', label: 'Todos' },
             { key: 'ABERTO', label: 'Abertos' },
@@ -240,9 +219,9 @@ export default function AdminChamadosPage() {
               key={key || 'all'}
               type="button"
               onClick={() => handleFilter(key)}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
                 filter === key
-                  ? 'bg-green-700 text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -252,14 +231,14 @@ export default function AdminChamadosPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="data-table w-full">
             <thead>
-              <tr className="border-b border-gray-200 text-left text-[10px] uppercase tracking-widest text-gray-500">
-                <th className="px-6 py-3 font-bold">Assunto</th>
-                <th className="px-6 py-3 font-bold">Solicitante</th>
-                <th className="px-6 py-3 font-bold">Status</th>
-                <th className="px-6 py-3 font-bold">Abertura</th>
-                <th className="px-6 py-3 font-bold text-right">Ações</th>
+              <tr>
+                <th>Assunto</th>
+                <th>Solicitante</th>
+                <th>Status</th>
+                <th>Abertura</th>
+                <th className="text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -359,7 +338,7 @@ export default function AdminChamadosPage() {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import AlertBanner from "../components/ui/AlertBanner";
+import PageContainer from "../components/ui/PageContainer";
+import PageHeader from "../components/ui/PageHeader";
+import SectionCard from "../components/ui/SectionCard";
 import { getMyProfile, updateProfile } from "../services/profileService";
 import { getApiErrorMessage, isUnauthorized } from "../utils/apiErrors";
 import { formatRoles, normalizeRoles } from "../utils/roles";
@@ -107,7 +111,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
-        className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:ring-0 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
+        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
       />
       {error && <p className="text-xs text-red-600">{error}</p>}
     </label>
@@ -207,45 +211,33 @@ function ProfilePage() {
 
   if (pageLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[50vh]">
-        <p className="text-sm text-gray-500">Carregando perfil...</p>
-      </div>
+      <PageContainer>
+        <p className="text-sm text-gray-500 text-center py-16">Carregando perfil...</p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 max-w-4xl">
-        <header>
-          <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-gray-500 mb-2">
-            Conta
-          </p>
-          <h1 className="font-serif italic text-4xl text-green-700">Meu Perfil</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Atualize seu nome, e-mail e setor.
-          </p>
-        </header>
+    <PageContainer className="max-w-4xl">
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Conta', 'Meu Perfil']}
+        title="Meu Perfil"
+        subtitle="Atualize seu nome, e-mail e setor."
+      />
 
-        {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm">
-            {error}
-          </div>
-        )}
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
 
-        {success && (
-          <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm">
-            {success}
-          </div>
-        )}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
 
-        <div className="grid grid-cols-12 gap-6">
-          <aside className="col-span-12 md:col-span-4">
-            <div className="bg-white border border-gray-200 p-6 text-center">
-              <div className="size-24 mx-auto bg-green-100 border border-green-300 rounded-full flex items-center justify-center font-serif italic text-green-700 text-4xl mb-4">
-                {initial}
-              </div>
-              <p className="font-serif text-lg text-green-700">{form.nome || "—"}</p>
-              <p className="text-xs text-gray-500 mt-1">{form.email}</p>
-              <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-left">
+      <div className="grid grid-cols-12 gap-6">
+        <aside className="col-span-12 md:col-span-4">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6 text-center">
+            <div className="size-24 mx-auto bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center font-bold text-primary text-4xl mb-4">
+              {initial}
+            </div>
+            <p className="font-semibold text-lg text-slate-900">{form.nome || "—"}</p>
+            <p className="text-xs text-gray-500 mt-1">{form.email}</p>
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-left">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <Building2Icon />
                   <span>{form.setor || "Setor não informado"}</span>
@@ -263,10 +255,8 @@ function ProfilePage() {
           </aside>
 
           <section className="col-span-12 md:col-span-8">
-            <form
-              onSubmit={onSubmit}
-              className="bg-white border border-gray-200 p-8 space-y-5"
-            >
+            <SectionCard title="Dados pessoais">
+            <form onSubmit={onSubmit} className="space-y-5 -mt-2">
               <Field
                 icon={<UserIcon />}
                 label="Nome completo"
@@ -297,16 +287,17 @@ function ProfilePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 text-xs font-bold uppercase tracking-[0.2em] transition-all inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
                 >
                   {loading && <Loader2 />}
                   Salvar alterações
                 </button>
               </div>
             </form>
+            </SectionCard>
           </section>
         </div>
-    </div>
+    </PageContainer>
   );
 }
 
