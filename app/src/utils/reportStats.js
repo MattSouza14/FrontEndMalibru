@@ -1,5 +1,6 @@
 import { daysUntil } from './expiry';
 import { getStatusLabel } from './chamadoStatus';
+import { formatEmpresaLabel } from './equipment';
 
 export function countByField(items, field, fallback = '—') {
   const counts = {};
@@ -135,12 +136,18 @@ export function buildEquipmentStats(equipments) {
   const list = Array.isArray(equipments) ? equipments : [];
   const linked = list.filter((e) => e.usuarioId).length;
   const available = list.length - linked;
+  const byEmpresa = countByField(list, 'empresa', 'Sem empresa').map(({ label, value }) => ({
+    key: label,
+    label: label === 'Sem empresa' ? label : formatEmpresaLabel(label),
+    value,
+  }));
 
   return {
     total: list.length,
     linked,
     available,
     linkRate: list.length ? Math.round((linked / list.length) * 100) : 0,
+    byEmpresa: byEmpresa.slice(0, 12),
   };
 }
 

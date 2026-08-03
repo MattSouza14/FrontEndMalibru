@@ -17,6 +17,7 @@ import { listSignedTerms } from '../services/signedTermService';
 import { listSoftwareLicenses } from '../services/softwareLicenseService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDateTime } from '../utils/chamadoStatus';
+import { formatEmpresaLabel } from '../utils/equipment';
 import {
   buildCertificateStats,
   buildChamadoStats,
@@ -57,6 +58,7 @@ export default function ReportsPage() {
   const [certificates, setCertificates] = useState([]);
   const [equipments, setEquipments] = useState([]);
   const [termos, setTermos] = useState([]);
+  const [selectedEquipmentEmpresa, setSelectedEquipmentEmpresa] = useState(null);
 
   useEffect(() => {
     async function loadReports() {
@@ -130,6 +132,21 @@ export default function ReportsPage() {
   );
   const equipmentStats = useMemo(() => buildEquipmentStats(equipments), [equipments]);
   const termStats = useMemo(() => buildSignedTermStats(termos), [termos]);
+
+  const filteredEquipments = useMemo(() => {
+    if (selectedEquipmentEmpresa == null) return [];
+
+    if (selectedEquipmentEmpresa === 'Sem empresa') {
+      return equipments.filter((equipment) => !equipment.empresa);
+    }
+
+    return equipments.filter((equipment) => equipment.empresa === selectedEquipmentEmpresa);
+  }, [equipments, selectedEquipmentEmpresa]);
+
+  function handleEquipmentEmpresaClick(item) {
+    const empresaKey = item.key ?? item.label;
+    setSelectedEquipmentEmpresa((current) => (current === empresaKey ? null : empresaKey));
+  }
 
   const generatedAt = new Date().toLocaleString('pt-BR', {
     day: '2-digit',
@@ -351,6 +368,66 @@ export default function ReportsPage() {
                     Disponíveis: {equipmentStats.available}
                   </span>
                 </div>
+                {equipmentStats.byEmpresa.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="form-label mb-1">Por empresa</p>
+                    <p className="text-xs text-gray-500 mb-3">Clique em uma empresa para ver os equipamentos</p>
+                    <ReportBarList
+                      items={equipmentStats.byEmpresa.map((e) => ({ ...e, color: 'bg-primary' }))}
+                      onItemClick={handleEquipmentEmpresaClick}
+                      selectedKey={selectedEquipmentEmpresa}
+                    />
+                  </div>
+                )}
+                {selectedEquipmentEmpresa != null && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="form-label">
+                        Equipamentos —{' '}
+                        {selectedEquipmentEmpresa === 'Sem empresa'
+                          ? 'Sem empresa'
+                          : formatEmpresaLabel(selectedEquipmentEmpresa)}
+                        <span className="text-gray-400 font-normal ml-1">
+                          ({filteredEquipments.length})
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedEquipmentEmpresa(null)}
+                        className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                    {filteredEquipments.length === 0 ? (
+                      <p className="text-sm text-gray-500">Nenhum equipamento encontrado.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
+                        {filteredEquipments.map((equipment) => (
+                          <li
+                            key={equipment.id}
+                            className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2.5 bg-gray-50/50"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900">{equipment.nome}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                Patrimônio: {equipment.patrimonio || '—'}
+                                {equipment.descricao ? ` · ${equipment.descricao}` : ''}
+                              </p>
+                            </div>
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-widest shrink-0 ${
+                                equipment.usuarioId ? 'text-primary' : 'text-gray-400'
+                              }`}
+                            >
+                              {equipment.usuarioId ? 'Vinculado' : 'Disponível'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
             </SectionCard>
 

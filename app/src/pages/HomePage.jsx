@@ -13,6 +13,7 @@ import { listAdminChamados } from '../services/chamadoService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
 import { listSoftwareLicenses, listSoftwareLicensesByUser } from '../services/softwareLicenseService';
 import { getMyEquipments, getMyOfficeLicense, getMySoftwareLicenses } from '../services/userResourcesService';
+import { formatEmpresaLabel } from '../utils/equipment';
 import { daysUntil, expiryBadgeClass, expiryLabel, formatDate, getTopExpiring } from '../utils/expiry';
 import { clampPageAfterChange, paginateItems } from '../utils/pagination';
 import {
@@ -554,6 +555,9 @@ export default function HomePage() {
                       className="rounded-lg border border-gray-100 p-4 bg-gray-50/50"
                     >
                       <p className="font-medium text-gray-900">{equipment.nome}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Empresa: {equipment.empresa ? formatEmpresaLabel(equipment.empresa) : '—'}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
                         Patrimônio: {equipment.patrimonio || '—'}
                       </p>

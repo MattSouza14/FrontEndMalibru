@@ -13,17 +13,26 @@ import {
   deleteEquipment,
   importEquipmentsCsv,
   linkEquipmentToUser,
+  listEquipmentCompanies,
   listEquipments,
   unlinkEquipmentFromUser,
   updateEquipment,
 } from '../services/equipmentService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
+import { formatEmpresaLabel } from '../utils/equipment';
 import { clampPageAfterChange, paginateItems } from '../utils/pagination';
 
 const PAGE_SIZE = 4;
 
+const EQUIPMENT_CSV_TEMPLATE = `nome,empresa,patrimonio,descricao
+Notebook Dell,malibru mtz,12345,Core i5 16GB
+Monitor LG,dicoco itapipoca,12346,Tela 24 polegadas
+Impressora HP,malibru filial,,Multifuncional sala 2
+`;
+
 const EMPTY_FORM = {
   nome: '',
+  empresa: '',
   patrimonio: '',
   descricao: '',
 };
@@ -51,6 +60,7 @@ export default function EquipmentsPage() {
   const { getToken, logout } = useAuth();
   const [equipments, setEquipments] = useState([]);
   const [users, setUsers] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -75,12 +85,14 @@ export default function EquipmentsPage() {
     setError(null);
 
     try {
-      const [equipmentsData, usersData] = await Promise.all([
+      const [equipmentsData, usersData, companiesData] = await Promise.all([
         listEquipments(token),
         listUsers(token),
+        listEquipmentCompanies(token),
       ]);
       setEquipments(Array.isArray(equipmentsData) ? equipmentsData : []);
       setUsers(Array.isArray(usersData) ? usersData : []);
+      setCompanies(Array.isArray(companiesData) ? companiesData : []);
     } catch (err) {
       if (isUnauthorized(err)) {
         handleAuthFailure(logout, navigate);
@@ -131,6 +143,7 @@ export default function EquipmentsPage() {
     setEditingId(equipment.id);
     setForm({
       nome: equipment.nome ?? '',
+      empresa: equipment.empresa ?? '',
       patrimonio: equipment.patrimonio ?? '',
       descricao: equipment.descricao ?? '',
     });
@@ -156,11 +169,17 @@ export default function EquipmentsPage() {
     if (!token) return;
 
     const nome = form.nome.trim();
+    const empresa = form.empresa.trim();
     const patrimonio = form.patrimonio.trim();
     const descricao = form.descricao.trim();
 
     if (!nome) {
       setError('Nome é obrigatório.');
+      return;
+    }
+
+    if (!empresa) {
+      setError('Empresa é obrigatória.');
       return;
     }
 
@@ -170,6 +189,7 @@ export default function EquipmentsPage() {
 
     const payload = {
       nome,
+      empresa,
       patrimonio: patrimonio || undefined,
       descricao: descricao || undefined,
     };
@@ -358,6 +378,7 @@ export default function EquipmentsPage() {
           title="Importar equipamentos"
           description="Envie um CSV para cadastrar vários equipamentos de uma vez. Linhas válidas são gravadas; erros são listados sem interromper o restante."
           templateFilename="modelo-equipamentos.csv"
+          templateContent={EQUIPMENT_CSV_TEMPLATE}
           importing={importing}
           result={importResult}
           onImport={handleImportCsv}
@@ -398,6 +419,7 @@ export default function EquipmentsPage() {
               {availableEquipments.map((equipment) => (
                 <option key={equipment.id} value={equipment.id}>
                   {equipment.nome}
+                  {equipment.empresa ? ` · ${formatEmpresaLabel(equipment.empresa)}` : ''}
                   {equipment.patrimonio ? ` · ${equipment.patrimonio}` : ''}
                 </option>
               ))}
@@ -420,7 +442,7 @@ export default function EquipmentsPage() {
         <SectionCard title={editingId ? 'Editar equipamento' : 'Cadastrar equipamento'}>
         <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="block space-y-1.5">
               <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                 Nome
@@ -436,6 +458,25 @@ export default function EquipmentsPage() {
 
             <label className="block space-y-1.5">
               <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                Empresa
+              </span>
+              <select
+                required
+                value={form.empresa}
+                onChange={(e) => updateField('empresa', e.target.value)}
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+              >
+                <option value="">Selecione...</option>
+                {companies.map((company) => (
+                  <option key={company} value={company}>
+                    {formatEmpresaLabel(company)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block space-y-1.5">
+              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                 Patrimônio
               </span>
               <input
@@ -446,7 +487,7 @@ export default function EquipmentsPage() {
               />
             </label>
 
-            <label className="block space-y-1.5 md:col-span-1">
+            <label className="block space-y-1.5">
               <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
                 Descrição
               </span>
@@ -485,6 +526,7 @@ export default function EquipmentsPage() {
           <thead>
             <tr>
               <th>Nome</th>
+              <th>Empresa</th>
               <th>Patrimônio</th>
               <th>Usuário</th>
               <th>Descrição</th>
@@ -494,7 +536,7 @@ export default function EquipmentsPage() {
           <tbody>
             {equipments.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
                   Nenhum equipamento cadastrado.
                 </td>
               </tr>
@@ -506,6 +548,9 @@ export default function EquipmentsPage() {
                 return (
                   <tr key={equipment.id}>
                     <td className="font-medium text-gray-900">{equipment.nome}</td>
+                    <td className="text-gray-600">
+                      {equipment.empresa ? formatEmpresaLabel(equipment.empresa) : '—'}
+                    </td>
                     <td className="text-gray-600">{equipment.patrimonio || '—'}</td>
                     <td className="text-gray-600">
                       {linkedUser ? (

@@ -10,6 +10,12 @@ export async function listEquipments(token) {
   });
 }
 
+export async function listEquipmentCompanies(token) {
+  return apiRequest('/api/admin/equipamentos/empresas', {
+    headers: authHeaders(token),
+  });
+}
+
 export async function getEquipment(token, id) {
   return apiRequest(`/api/admin/equipamentos/${id}`, {
     headers: authHeaders(token),
