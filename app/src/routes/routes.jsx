@@ -34,6 +34,8 @@ import SoftwareLicensesPage from '../pages/SoftwareLicensesPage';
 
 import SignedTermsPage from '../pages/SignedTermsPage';
 
+import ReportsPage from '../pages/ReportsPage';
+
 import Layout from '../pages/Layout';
 
 
@@ -71,6 +73,8 @@ export default function AppRoutes() {
                 <Route path="/profile" element={<ProfilePage />} />
 
                 <Route path="/chamados" element={<ChamadosPage />} />
+
+                <Route path="/relatorios" element={<ReportsPage />} />
 
 
 

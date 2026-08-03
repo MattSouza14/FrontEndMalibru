@@ -70,6 +70,9 @@ export default function AppSidebar() {
           <NavItem to="/chamados">
             Meus Chamados
           </NavItem>
+          <NavItem to="/relatorios">
+            Relatórios
+          </NavItem>
         </NavSection>
 
         {showChamadosAdmin && (
