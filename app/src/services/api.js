@@ -1,4 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL
+export function resolveApiUrl(endpoint) {
+  if (!endpoint) return '';
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+  return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+}
 
 async function parseResponse(response) {
   const data =
@@ -15,7 +21,7 @@ async function parseResponse(response) {
 export async function apiRequest(endpoint, options = {}) {
   const { headers = {}, ...rest } = options;
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     ...rest,
     headers: {
       'Content-Type': 'application/json',
@@ -26,7 +32,7 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 export async function uploadApiRequest(endpoint, token, formData) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(resolveApiUrl(endpoint), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

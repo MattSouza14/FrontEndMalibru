@@ -1,6 +1,4 @@
-import { apiRequest, uploadApiRequest } from './api';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { apiRequest, resolveApiUrl, uploadApiRequest } from './api';
 
 function authHeaders(token) {
   return { Authorization: `Bearer ${token}` };
@@ -53,7 +51,7 @@ export async function deleteSignedTerm(token, id) {
 }
 
 export async function fetchSignedTermFileBlob(token, previewUrl) {
-  const url = previewUrl.startsWith('http') ? previewUrl : `${API_URL}${previewUrl}`;
+  const url = resolveApiUrl(previewUrl);
 
   const response = await fetch(url, {
     headers: authHeaders(token),
