@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { apiRequest } from '../services/api';
+import { getMe } from '../services/authService';
 import {
   clearAuth,
   getToken,
@@ -35,9 +35,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const data = await apiRequest('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const data = await getMe(token);
       const normalized = normalizeUser(data);
       setUser(normalized);
       saveUser(normalized);

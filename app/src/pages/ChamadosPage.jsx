@@ -8,7 +8,7 @@ import AlertBanner from '../components/ui/AlertBanner';
 import PageContainer from '../components/ui/PageContainer';
 import PageHeader from '../components/ui/PageHeader';
 import SectionCard from '../components/ui/SectionCard';
-import { listMyChamados, openChamado } from '../services/chamadoService';
+import { listMyChamados, getMyChamado, openChamado } from '../services/chamadoService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDateTime, getFerramentaLabel } from '../utils/chamadoStatus';
 
@@ -28,6 +28,7 @@ export default function ChamadosPage() {
   const [success, setSuccess] = useState(null);
   const [showForm, setShowForm] = useState(searchParams.get('novo') === '1');
   const [expandedId, setExpandedId] = useState(null);
+  const [expandedLoadingId, setExpandedLoadingId] = useState(null);
 
   async function loadChamados() {
     const token = getToken();
@@ -70,6 +71,44 @@ export default function ChamadosPage() {
   function closeForm() {
     setShowForm(false);
     setSearchParams({});
+  }
+
+  async function handleToggleConversation(chamado) {
+    if (expandedId === chamado.id) {
+      setExpandedId(null);
+      return;
+    }
+
+    setExpandedId(chamado.id);
+
+    const token = getToken();
+    if (!token) return;
+
+    setExpandedLoadingId(chamado.id);
+    try {
+      const fresh = await getMyChamado(token, chamado.id);
+      setChamados((prev) => prev.map((item) => (item.id === fresh.id ? fresh : item)));
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+      }
+    } finally {
+      setExpandedLoadingId(null);
+    }
+  }
+
+  async function refreshChamado(chamadoId) {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const fresh = await getMyChamado(token, chamadoId);
+      setChamados((prev) => prev.map((item) => (item.id === fresh.id ? fresh : item)));
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+      }
+    }
   }
 
   async function handleOpenChamado(payload) {
@@ -169,7 +208,7 @@ export default function ChamadosPage() {
                     <td className="text-right">
                       <button
                         type="button"
-                        onClick={() => setExpandedId(expandedId === chamado.id ? null : chamado.id)}
+                        onClick={() => handleToggleConversation(chamado)}
                         className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
                       >
                         {expandedId === chamado.id ? 'Fechar' : 'Ver conversa'}
@@ -179,6 +218,9 @@ export default function ChamadosPage() {
                   {expandedId === chamado.id && (
                     <tr className="bg-gray-50">
                       <td colSpan={5} className="px-6 py-5">
+                        {expandedLoadingId === chamado.id ? (
+                          <p className="text-sm text-gray-500">Carregando conversa...</p>
+                        ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           <div className="space-y-3 text-sm">
                             <p>
@@ -198,8 +240,10 @@ export default function ChamadosPage() {
                             chamado={chamado}
                             mode="user"
                             getToken={getToken}
+                            onMessageSent={() => refreshChamado(chamado.id)}
                           />
                         </div>
+                        )}
                       </td>
                     </tr>
                   )}

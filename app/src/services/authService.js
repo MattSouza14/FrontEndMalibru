@@ -20,3 +20,9 @@ export async function activateAccount(token) {
     body: JSON.stringify({ token }),
   });
 }
+
+export async function getMe(token) {
+  return apiRequest('/api/auth/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

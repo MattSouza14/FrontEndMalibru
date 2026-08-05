@@ -126,6 +126,9 @@ export default function RegisterPage() {
                     className="form-input"
                     placeholder="voce@empresa.com.br"
                   />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Use um e-mail válido com domínio existente (validado pelo servidor).
+                  </p>
                   {fieldErrors.email && (
                     <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
                   )}

@@ -10,6 +10,7 @@ import PageContainer from '../components/ui/PageContainer';
 import PageHeader from '../components/ui/PageHeader';
 import SectionCard from '../components/ui/SectionCard';
 import {
+  getAdminChamado,
   listAdminChamados,
   openChamado,
   updateChamadoStatus,
@@ -166,14 +167,22 @@ export default function AdminChamadosPage() {
     }
   }
 
-  function handleAdminMessageSent(chamadoId) {
-    setChamados((prev) =>
-      prev.map((chamado) =>
-        chamado.id === chamadoId && chamado.status === 'ABERTO'
-          ? { ...chamado, status: 'EM_ATENDIMENTO' }
-          : chamado,
-      ),
-    );
+  async function handleAdminMessageSent(chamadoId) {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const updated = await getAdminChamado(token, chamadoId);
+      setChamados((prev) => prev.map((chamado) => (chamado.id === updated.id ? updated : chamado)));
+    } catch {
+      setChamados((prev) =>
+        prev.map((chamado) =>
+          chamado.id === chamadoId && chamado.status === 'ABERTO'
+            ? { ...chamado, status: 'EM_ATENDIMENTO' }
+            : chamado,
+        ),
+      );
+    }
   }
 
   if (pageLoading) {

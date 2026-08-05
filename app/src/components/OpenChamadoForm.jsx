@@ -74,7 +74,7 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
   return (
     <SectionCard
       title="Abrir chamado de suporte"
-      subtitle="O e-mail do chamado será o cadastrado no seu perfil. Certifique-se de que está correto antes de abrir."
+      subtitle="O e-mail do chamado será o cadastrado no seu perfil. Após abrir, a TI pode receber alerta por WhatsApp (se configurado no servidor)."
     >
       <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
         {error && <AlertBanner type="error">{error}</AlertBanner>}

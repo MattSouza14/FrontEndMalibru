@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   canAccessChamadosAdmin,
+  canAccessRhModules,
   canAccessTiModules,
   isAdmin,
 } from '../utils/roles';
@@ -94,6 +95,14 @@ function IconDocument() {
   );
 }
 
+function IconPayroll() {
+  return (
+    <svg className="size-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
 function NavItem({ to, end, icon: Icon, children }) {
   return (
     <NavLink
@@ -137,6 +146,7 @@ export default function AppSidebar() {
   const { user } = useAuth();
   const showAdminUsers = isAdmin(user);
   const showChamadosAdmin = canAccessChamadosAdmin(user);
+  const showRhModules = canAccessRhModules(user);
   const showTiModules = canAccessTiModules(user);
 
   return (
@@ -183,6 +193,14 @@ export default function AppSidebar() {
           <NavSection label="Admin">
             <NavItem to="/admin" icon={IconUsers}>
               Usuários
+            </NavItem>
+          </NavSection>
+        )}
+
+        {showRhModules && (
+          <NavSection label="RH">
+            <NavItem to="/rh/folha" icon={IconPayroll}>
+              Folha Fortes
             </NavItem>
           </NavSection>
         )}

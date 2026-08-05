@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AlertBanner from "../components/ui/AlertBanner";
 import PageContainer from "../components/ui/PageContainer";
@@ -7,7 +7,7 @@ import PageHeader from "../components/ui/PageHeader";
 import SectionCard from "../components/ui/SectionCard";
 import { getMyProfile, updateProfile } from "../services/profileService";
 import { getApiErrorMessage, isUnauthorized } from "../utils/apiErrors";
-import { formatRoles, normalizeRoles } from "../utils/roles";
+import { formatRoles, isAdmin, normalizeRoles } from "../utils/roles";
 import { validateProfileForm } from "../utils/validation";
 
 const EMPTY_FORM = {
@@ -250,6 +250,14 @@ function ProfilePage() {
                   <IdCardIcon />
                   <span>{form.enabled ? "Acesso Ativo" : "Aguardando ativação"}</span>
                 </div>
+                {isAdmin({ roles: form.roles }) && (
+                  <Link
+                    to="/admin"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    Painel de usuários
+                  </Link>
+                )}
               </div>
             </div>
           </aside>

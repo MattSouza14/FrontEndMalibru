@@ -36,6 +36,8 @@ import SignedTermsPage from '../pages/SignedTermsPage';
 
 import ReportsPage from '../pages/ReportsPage';
 
+import FolhaFortesPage from '../pages/FolhaFortesPage';
+
 import Layout from '../pages/Layout';
 
 
@@ -105,6 +107,14 @@ export default function AppRoutes() {
                 <Route element={<RoleRoute roles={['ADMIN']} />}>
 
                   <Route path="/admin" element={<AdminPage />} />
+
+                </Route>
+
+
+
+                <Route element={<RoleRoute roles={['ADMIN', 'RH']} />}>
+
+                  <Route path="/rh/folha" element={<FolhaFortesPage />} />
 
                 </Route>
 

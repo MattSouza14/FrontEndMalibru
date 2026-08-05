@@ -66,7 +66,10 @@ export function getApiErrorMessage(err, fallback) {
     return 'Já existe um equipamento com este patrimônio.';
   }
   if (err.code === 'IMPORTACAO_ARQUIVO_INVALIDA') {
-    return err.message || 'Arquivo de importação inválido. Envie um CSV UTF-8 com o formato correto.';
+    return err.message || 'Arquivo inválido, vazio ou sem CPF identificável.';
+  }
+  if (err.code === 'CPF_INVALIDO') {
+    return err.message || 'Um ou mais CPFs informados têm formato inválido.';
   }
   if (err.code === 'ARQUIVO_INVALIDO') {
     return err.message || 'Arquivo inválido. Envie JPEG, PNG, WebP, PDF, DOC ou DOCX (máx. 50 MB).';
