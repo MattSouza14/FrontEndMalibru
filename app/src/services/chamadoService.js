@@ -44,3 +44,31 @@ export async function updateChamadoStatus(token, id, status) {
     body: JSON.stringify({ status }),
   });
 }
+
+export async function listMyChamadoMessages(token, id) {
+  return apiRequest(`/api/chamados/${id}/mensagens`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function postMyChamadoMessage(token, id, mensagem) {
+  return apiRequest(`/api/chamados/${id}/mensagens`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ mensagem }),
+  });
+}
+
+export async function listAdminChamadoMessages(token, id) {
+  return apiRequest(`/api/admin/chamados/${id}/mensagens`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function postAdminChamadoMessage(token, id, mensagem) {
+  return apiRequest(`/api/admin/chamados/${id}/mensagens`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ mensagem }),
+  });
+}

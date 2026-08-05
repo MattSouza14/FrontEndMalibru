@@ -53,3 +53,7 @@ export function formatDateTime(iso) {
 export function getFerramentaLabel(value) {
   return FERRAMENTAS_REMOTAS.find((f) => f.value === value)?.label ?? value;
 }
+
+export function isChamadoEncerrado(status) {
+  return status === 'FECHADO' || status === 'CANCELADO';
+}

@@ -47,6 +47,9 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'CHAMADO_NAO_ENCONTRADO') {
     return 'Chamado não encontrado.';
   }
+  if (err.code === 'CHAMADO_ENCERRADO') {
+    return 'Este chamado está encerrado e não aceita novas mensagens.';
+  }
   if (err.code === 'EQUIPAMENTO_NAO_ENCONTRADO') {
     return 'Equipamento não encontrado.';
   }

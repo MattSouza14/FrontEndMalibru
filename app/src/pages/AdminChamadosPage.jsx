@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ChamadoMessagesPanel from '../components/ChamadoMessagesPanel';
 import ChamadoStatusBadge from '../components/ChamadoStatusBadge';
 import OpenChamadoForm from '../components/OpenChamadoForm';
 import AlertBanner from '../components/ui/AlertBanner';
@@ -165,6 +166,16 @@ export default function AdminChamadosPage() {
     }
   }
 
+  function handleAdminMessageSent(chamadoId) {
+    setChamados((prev) =>
+      prev.map((chamado) =>
+        chamado.id === chamadoId && chamado.status === 'ABERTO'
+          ? { ...chamado, status: 'EM_ATENDIMENTO' }
+          : chamado,
+      ),
+    );
+  }
+
   if (pageLoading) {
     return (
       <PageContainer>
@@ -281,53 +292,61 @@ export default function AdminChamadosPage() {
                     {expandedId === chamado.id && (
                       <tr className="bg-gray-50">
                         <td colSpan={5} className="px-6 py-5">
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="space-y-3 text-sm">
-                              <p>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                                  Descrição
-                                </span>
-                                <span className="block mt-1 text-gray-700">{chamado.descricao}</span>
-                              </p>
-                              <p>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                                  Telefone
-                                </span>
-                                <span className="block mt-1 text-gray-700">
-                                  {chamado.telefoneContato}
-                                </span>
-                              </p>
-                              <p>
-                                <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
-                                  Código remoto
-                                </span>
-                                <span className="block mt-1 text-gray-700 font-mono">
-                                  {chamado.codigoAcessoRemoto}
-                                </span>
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">
-                                Atualizar status
-                              </p>
-                              <select
-                                value={chamado.status}
-                                disabled={updatingId === chamado.id}
-                                onChange={(e) => handleStatusChange(chamado, e.target.value)}
-                                className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm disabled:opacity-50"
-                              >
-                                {CHAMADO_STATUS.map((status) => (
-                                  <option key={status} value={status}>
-                                    {getStatusLabel(status)}
-                                  </option>
-                                ))}
-                              </select>
-                              {updatingId === chamado.id && (
-                                <p className="text-xs text-gray-500 mt-2 inline-flex items-center gap-2">
-                                  <Loader2 /> Salvando...
+                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div className="space-y-5">
+                              <div className="space-y-3 text-sm">
+                                <p>
+                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                    Descrição
+                                  </span>
+                                  <span className="block mt-1 text-gray-700">{chamado.descricao}</span>
                                 </p>
-                              )}
+                                <p>
+                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                    Telefone
+                                  </span>
+                                  <span className="block mt-1 text-gray-700">
+                                    {chamado.telefoneContato}
+                                  </span>
+                                </p>
+                                <p>
+                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                    Código remoto
+                                  </span>
+                                  <span className="block mt-1 text-gray-700 font-mono">
+                                    {chamado.codigoAcessoRemoto}
+                                  </span>
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">
+                                  Atualizar status
+                                </p>
+                                <select
+                                  value={chamado.status}
+                                  disabled={updatingId === chamado.id}
+                                  onChange={(e) => handleStatusChange(chamado, e.target.value)}
+                                  className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm disabled:opacity-50"
+                                >
+                                  {CHAMADO_STATUS.map((status) => (
+                                    <option key={status} value={status}>
+                                      {getStatusLabel(status)}
+                                    </option>
+                                  ))}
+                                </select>
+                                {updatingId === chamado.id && (
+                                  <p className="text-xs text-gray-500 mt-2 inline-flex items-center gap-2">
+                                    <Loader2 /> Salvando...
+                                  </p>
+                                )}
+                              </div>
                             </div>
+                            <ChamadoMessagesPanel
+                              chamado={chamado}
+                              mode="admin"
+                              getToken={getToken}
+                              onMessageSent={() => handleAdminMessageSent(chamado.id)}
+                            />
                           </div>
                         </td>
                       </tr>

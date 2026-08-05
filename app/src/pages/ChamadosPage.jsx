@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ChamadoMessagesPanel from '../components/ChamadoMessagesPanel';
 import ChamadoStatusBadge from '../components/ChamadoStatusBadge';
 import OpenChamadoForm from '../components/OpenChamadoForm';
 import AlertBanner from '../components/ui/AlertBanner';
@@ -26,6 +27,7 @@ export default function ChamadosPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showForm, setShowForm] = useState(searchParams.get('novo') === '1');
+  const [expandedId, setExpandedId] = useState(null);
 
   async function loadChamados() {
     const token = getToken();
@@ -139,30 +141,69 @@ export default function ChamadosPage() {
               <th>Ferramenta</th>
               <th>Status</th>
               <th>Abertura</th>
+              <th className="text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {chamados.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center text-gray-500 py-10">
+                <td colSpan={5} className="text-center text-gray-500 py-10">
                   Você ainda não abriu nenhum chamado.
                 </td>
               </tr>
             ) : (
               chamados.map((chamado) => (
-                <tr key={chamado.id}>
-                  <td>
-                    <p className="font-medium text-gray-900">{chamado.assunto}</p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{chamado.descricao}</p>
-                  </td>
-                  <td className="text-gray-600">{getFerramentaLabel(chamado.ferramentaRemota)}</td>
-                  <td className="whitespace-nowrap">
-                    <ChamadoStatusBadge status={chamado.status} />
-                  </td>
-                  <td className="text-gray-600 whitespace-nowrap tabular-nums">
-                    {formatDateTime(chamado.createdAt)}
-                  </td>
-                </tr>
+                <Fragment key={chamado.id}>
+                  <tr className="hover:bg-gray-50">
+                    <td>
+                      <p className="font-medium text-gray-900">{chamado.assunto}</p>
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-1">{chamado.descricao}</p>
+                    </td>
+                    <td className="text-gray-600">{getFerramentaLabel(chamado.ferramentaRemota)}</td>
+                    <td className="whitespace-nowrap">
+                      <ChamadoStatusBadge status={chamado.status} />
+                    </td>
+                    <td className="text-gray-600 whitespace-nowrap tabular-nums">
+                      {formatDateTime(chamado.createdAt)}
+                    </td>
+                    <td className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(expandedId === chamado.id ? null : chamado.id)}
+                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      >
+                        {expandedId === chamado.id ? 'Fechar' : 'Ver conversa'}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedId === chamado.id && (
+                    <tr className="bg-gray-50">
+                      <td colSpan={5} className="px-6 py-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-3 text-sm">
+                            <p>
+                              <span className="form-label block mb-1">Telefone</span>
+                              <span className="text-gray-700">{chamado.telefoneContato}</span>
+                            </p>
+                            <p>
+                              <span className="form-label block mb-1">Código remoto</span>
+                              <span className="text-gray-700 font-mono">{chamado.codigoAcessoRemoto}</span>
+                            </p>
+                            <p>
+                              <span className="form-label block mb-1">E-mail</span>
+                              <span className="text-gray-700">{chamado.email}</span>
+                            </p>
+                          </div>
+                          <ChamadoMessagesPanel
+                            chamado={chamado}
+                            mode="user"
+                            getToken={getToken}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))
             )}
           </tbody>
