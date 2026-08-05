@@ -70,4 +70,19 @@
   .data-table tbody tr {
     @apply border-b border-gray-50 hover:bg-gray-50/60 transition-colors;
   }
+
+  .animate-toast-in {
+    animation: toast-in 0.25s ease-out;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

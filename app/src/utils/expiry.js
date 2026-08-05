@@ -30,3 +30,12 @@ export function getTopExpiring(items, dateField, limit = 5) {
     .sort((a, b) => new Date(a[dateField]) - new Date(b[dateField]))
     .slice(0, limit);
 }
+
+export function getExpiringWithinDays(items, dateField, maxDays = 30) {
+  return [...items]
+    .filter((item) => {
+      if (!item[dateField]) return false;
+      return daysUntil(item[dateField]) <= maxDays;
+    })
+    .sort((a, b) => new Date(a[dateField]) - new Date(b[dateField]));
+}

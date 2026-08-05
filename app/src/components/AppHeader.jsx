@@ -1,20 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 import { formatRoles } from '../utils/roles';
 
 function IconSearch() {
   return (
     <svg className="size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
-    </svg>
-  );
-}
-
-function IconBell() {
-  return (
-    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
   );
 }
@@ -82,13 +75,7 @@ export default function AppHeader() {
       <div className="flex items-center gap-2 sm:gap-4 ml-auto">
         <span className="hidden md:inline text-xs text-gray-500 tabular-nums">{dateTime}</span>
 
-        <button
-          type="button"
-          className="relative size-9 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors flex items-center justify-center"
-          aria-label="Notificações"
-        >
-          <IconBell />
-        </button>
+        <NotificationBell />
 
         <div className="relative" ref={menuRef}>
           <button

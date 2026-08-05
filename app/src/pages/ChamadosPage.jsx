@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ChamadoMessagesPanel from '../components/ChamadoMessagesPanel';
@@ -11,6 +11,7 @@ import SectionCard from '../components/ui/SectionCard';
 import { listMyChamados, getMyChamado, openChamado } from '../services/chamadoService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDateTime, getFerramentaLabel } from '../utils/chamadoStatus';
+import { markChamadoRead } from '../utils/notificationStorage';
 
 function handleAuthFailure(logout, navigate) {
   logout();
@@ -20,7 +21,7 @@ function handleAuthFailure(logout, navigate) {
 export default function ChamadosPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getToken, logout } = useAuth();
+  const { getToken, logout, user } = useAuth();
   const [chamados, setChamados] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(searchParams.get('novo') === '1');
   const [expandedId, setExpandedId] = useState(null);
   const [expandedLoadingId, setExpandedLoadingId] = useState(null);
+  const handledDeepLink = useRef(false);
 
   async function loadChamados() {
     const token = getToken();
@@ -61,6 +63,20 @@ export default function ChamadosPage() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const chamadoParam = searchParams.get('chamado');
+    if (!chamadoParam || pageLoading || chamados.length === 0 || handledDeepLink.current) return;
+
+    const chamadoId = Number(chamadoParam);
+    if (!Number.isFinite(chamadoId)) return;
+
+    const chamado = chamados.find((item) => item.id === chamadoId);
+    if (!chamado) return;
+
+    handledDeepLink.current = true;
+    handleToggleConversation(chamado);
+  }, [chamados, pageLoading, searchParams]);
+
   function openForm() {
     setShowForm(true);
     setSearchParams({ novo: '1' });
@@ -76,10 +92,16 @@ export default function ChamadosPage() {
   async function handleToggleConversation(chamado) {
     if (expandedId === chamado.id) {
       setExpandedId(null);
+      if (searchParams.get('chamado')) {
+        setSearchParams({});
+      }
       return;
     }
 
     setExpandedId(chamado.id);
+    if (user?.id) {
+      markChamadoRead(user.id, chamado.id);
+    }
 
     const token = getToken();
     if (!token) return;

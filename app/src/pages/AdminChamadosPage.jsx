@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ChamadoMessagesPanel from '../components/ChamadoMessagesPanel';
@@ -22,6 +22,7 @@ import {
   getFerramentaLabel,
   getStatusLabel,
 } from '../utils/chamadoStatus';
+import { markChamadoRead } from '../utils/notificationStorage';
 
 function Loader2() {
   return (
@@ -44,7 +45,7 @@ function handleAuthFailure(logout, navigate) {
 export default function AdminChamadosPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getToken, logout } = useAuth();
+  const { getToken, logout, user } = useAuth();
   const [chamados, setChamados] = useState([]);
   const [filter, setFilter] = useState('');
   const [pageLoading, setPageLoading] = useState(true);
@@ -54,6 +55,24 @@ export default function AdminChamadosPage() {
   const [success, setSuccess] = useState(null);
   const [showForm, setShowForm] = useState(searchParams.get('novo') === '1');
   const [expandedId, setExpandedId] = useState(null);
+  const handledDeepLink = useRef(false);
+
+  function handleToggleChamado(chamadoId) {
+    setExpandedId((current) => {
+      const next = current === chamadoId ? null : chamadoId;
+      if (next && user?.id) {
+        markChamadoRead(user.id, next);
+      }
+      if (next === null && searchParams.get('chamado')) {
+        setSearchParams((params) => {
+          const nextParams = new URLSearchParams(params);
+          nextParams.delete('chamado');
+          return nextParams;
+        });
+      }
+      return next;
+    });
+  }
 
   async function loadChamados(status = filter) {
     const token = getToken();
@@ -89,6 +108,20 @@ export default function AdminChamadosPage() {
       setShowForm(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const chamadoParam = searchParams.get('chamado');
+    if (!chamadoParam || pageLoading || chamados.length === 0 || handledDeepLink.current) return;
+
+    const chamadoId = Number(chamadoParam);
+    if (!Number.isFinite(chamadoId)) return;
+
+    const exists = chamados.some((item) => item.id === chamadoId);
+    if (!exists) return;
+
+    handledDeepLink.current = true;
+    handleToggleChamado(chamadoId);
+  }, [chamados, pageLoading, searchParams]);
 
   const stats = useMemo(
     () => ({
@@ -289,9 +322,7 @@ export default function AdminChamadosPage() {
                       <td className="px-6 py-4 text-right space-x-2">
                         <button
                           type="button"
-                          onClick={() =>
-                            setExpandedId(expandedId === chamado.id ? null : chamado.id)
-                          }
+                          onClick={() => handleToggleChamado(chamado.id)}
                           className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
                         >
                           {expandedId === chamado.id ? 'Fechar' : 'Atender'}
