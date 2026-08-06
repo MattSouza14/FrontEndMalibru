@@ -19,9 +19,9 @@ export function expiryLabel(days) {
 
 export function expiryBadgeClass(days) {
   if (days < 0) return 'bg-red-100 text-red-800';
-  if (days <= 7) return 'bg-amber-100 text-amber-800';
+  if (days <= 7) return 'bg-amber-100 text-amber-400';
   if (days <= 30) return 'bg-yellow-100 text-yellow-800';
-  return 'bg-green-100 text-green-800';
+  return 'bg-green-100 text-accent';
 }
 
 export function getTopExpiring(items, dateField, limit = 5) {

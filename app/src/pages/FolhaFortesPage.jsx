@@ -181,25 +181,25 @@ export default function FolhaFortesPage() {
       >
         <div className="space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-gray-700">Arquivo .txt</span>
+            <span className="text-sm font-medium text-ws-secondary">Arquivo .txt</span>
             <input
               type="file"
               accept={ACCEPTED_FILE}
               onChange={handleFileChange}
-              className="mt-1.5 block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/15"
+              className="mt-1.5 block w-full text-sm text-ws-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/15"
             />
           </label>
 
           {file && (
-            <p className="text-sm text-gray-500">
-              <span className="font-medium text-gray-700">{file.name}</span>
+            <p className="text-sm text-ws-muted">
+              <span className="font-medium text-ws-secondary">{file.name}</span>
               {' · '}
               {formatFileSize(file.size)}
             </p>
           )}
 
           {analyzing && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-ws-muted">
               <Loader2 />
               Analisando arquivo...
             </div>
@@ -214,36 +214,36 @@ export default function FolhaFortesPage() {
           className="mt-6"
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="rounded-lg bg-gray-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-gray-500">Linhas</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{analysis.totalLinhas}</p>
+            <div className="rounded-lg bg-ws-canvas px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-ws-muted">Linhas</p>
+              <p className="text-2xl font-semibold text-ws-bright mt-1">{analysis.totalLinhas}</p>
             </div>
-            <div className="rounded-lg bg-gray-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-gray-500">CPFs distintos</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{analysis.totalCpfs}</p>
+            <div className="rounded-lg bg-ws-canvas px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-ws-muted">CPFs distintos</p>
+              <p className="text-2xl font-semibold text-ws-bright mt-1">{analysis.totalCpfs}</p>
             </div>
-            <div className="rounded-lg bg-gray-50 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-gray-500">Linhas sem CPF</p>
-              <p className="text-2xl font-semibold text-gray-900 mt-1">{analysis.linhasSemCpf}</p>
+            <div className="rounded-lg bg-ws-canvas px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-ws-muted">Linhas sem CPF</p>
+              <p className="text-2xl font-semibold text-ws-bright mt-1">{analysis.linhasSemCpf}</p>
             </div>
           </div>
 
           {analysis.sugestoesDivisao?.length > 0 && (
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Sugestões de divisão</p>
-              <div className="overflow-x-auto rounded-lg border border-gray-100">
+              <p className="text-sm font-medium text-ws-secondary mb-2">Sugestões de divisão</p>
+              <div className="overflow-x-auto rounded-lg border border-ws-border">
                 <table className="min-w-full text-sm">
-                  <thead className="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+                  <thead className="bg-ws-canvas text-left text-xs uppercase tracking-wider text-ws-muted">
                     <tr>
                       <th className="px-4 py-2.5 font-medium">CPFs por parte</th>
                       <th className="px-4 py-2.5 font-medium">Total de partes</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-ws-border">
                     {analysis.sugestoesDivisao.map((item) => (
                       <tr key={item.cpfsPorParte}>
-                        <td className="px-4 py-2.5 text-gray-900">{item.cpfsPorParte}</td>
-                        <td className="px-4 py-2.5 text-gray-600">{item.totalPartes}</td>
+                        <td className="px-4 py-2.5 text-ws-bright">{item.cpfsPorParte}</td>
+                        <td className="px-4 py-2.5 text-ws-secondary">{item.totalPartes}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -267,7 +267,7 @@ export default function FolhaFortesPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'dividir'
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
               }`}
             >
               Dividir
@@ -278,7 +278,7 @@ export default function FolhaFortesPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'extrair'
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
               }`}
             >
               Extrair CPFs
@@ -288,13 +288,13 @@ export default function FolhaFortesPage() {
           {mode === 'dividir' ? (
             <form onSubmit={handleDividir} className="space-y-4 max-w-md">
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">CPFs por parte</span>
+                <span className="text-sm font-medium text-ws-secondary">CPFs por parte</span>
                 <input
                   type="number"
                   min="1"
                   value={cpfsPorParte}
                   onChange={(event) => setCpfsPorParte(event.target.value)}
-                  className="mt-1.5 block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="mt-1.5 block w-full rounded-lg border border-ws-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-primary"
                 />
               </label>
 
@@ -305,7 +305,7 @@ export default function FolhaFortesPage() {
                       key={item.cpfsPorParte}
                       type="button"
                       onClick={() => setCpfsPorParte(String(item.cpfsPorParte))}
-                      className="px-3 py-1.5 rounded-md text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100"
+                      className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary/15 text-blue-700 hover:bg-blue-100"
                     >
                       {item.cpfsPorParte} CPFs → {item.totalPartes} partes
                     </button>
@@ -318,9 +318,9 @@ export default function FolhaFortesPage() {
                   type="checkbox"
                   checked={incluirLinhasSemCpf}
                   onChange={(event) => setIncluirLinhasSemCpf(event.target.checked)}
-                  className="mt-0.5 rounded border-gray-300 text-primary focus:ring-primary/20"
+                  className="mt-0.5 rounded border-ws-border-strong text-primary focus:ring-accent/30"
                 />
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-ws-secondary">
                   Incluir linhas sem CPF identificável na parte 1
                 </span>
               </label>
@@ -337,8 +337,8 @@ export default function FolhaFortesPage() {
           ) : (
             <form onSubmit={handleExtrair} className="space-y-4 max-w-xl">
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">CPFs</span>
-                <span className="block text-xs text-gray-500 mt-0.5">
+                <span className="text-sm font-medium text-ws-secondary">CPFs</span>
+                <span className="block text-xs text-ws-muted mt-0.5">
                   Um por linha ou separados por vírgula. Aceita máscara (ex.: 246.067.228-40).
                 </span>
                 <textarea
@@ -346,16 +346,16 @@ export default function FolhaFortesPage() {
                   value={cpfsText}
                   onChange={(event) => setCpfsText(event.target.value)}
                   placeholder={'24606722840\n315.070.241-27'}
-                  className="mt-1.5 block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="mt-1.5 block w-full rounded-lg border border-ws-border px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-primary"
                 />
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">Formato de saída</span>
+                <span className="text-sm font-medium text-ws-secondary">Formato de saída</span>
                 <select
                   value={formatoSaida}
                   onChange={(event) => setFormatoSaida(event.target.value)}
-                  className="mt-1.5 block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="mt-1.5 block w-full rounded-lg border border-ws-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-primary"
                 >
                   <option value="UNICO">Arquivo único (folha_extraida.txt)</option>
                   <option value="POR_CPF">Um arquivo por CPF (folha_{'{cpf}'}.txt)</option>

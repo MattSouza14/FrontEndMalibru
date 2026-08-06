@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ExpiryReportPanel from '../components/reports/ExpiryReportPanel';
 import ReportBarList from '../components/reports/ReportBarList';
+import ReportPieChart from '../components/reports/ReportPieChart';
 import AlertBanner from '../components/ui/AlertBanner';
 import KpiCard from '../components/ui/KpiCard';
 import PageContainer from '../components/ui/PageContainer';
@@ -187,7 +188,7 @@ export default function ReportsPage() {
   if (loading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Gerando relatórios...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Gerando relatórios...</p>
       </PageContainer>
     );
   }
@@ -259,7 +260,7 @@ export default function ReportsPage() {
             <div>
               <p className="form-label mb-3">Por status</p>
               <ReportBarList
-                items={chamadoStats.byStatus.map((s) => ({ ...s, color: 'bg-blue-500' }))}
+                items={chamadoStats.byStatus.map((s) => ({ ...s, color: 'bg-primary/150' }))}
                 emptyMessage="Nenhum chamado registrado."
               />
             </div>
@@ -272,13 +273,13 @@ export default function ReportsPage() {
             </div>
           </div>
           {chamadoStats.recent.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-gray-100">
+            <div className="mt-5 pt-4 border-t border-ws-border">
               <p className="form-label mb-2">Últimos chamados</p>
               <ul className="space-y-2 text-sm">
                 {chamadoStats.recent.map((c) => (
                   <li key={c.id} className="flex justify-between gap-3">
-                    <span className="text-gray-800 truncate">{c.assunto}</span>
-                    <span className="text-gray-500 text-xs tabular-nums shrink-0">
+                    <span className="text-ws-bright truncate">{c.assunto}</span>
+                    <span className="text-ws-muted text-xs tabular-nums shrink-0">
                       {formatDateTime(c.createdAt)}
                     </span>
                   </li>
@@ -290,28 +291,44 @@ export default function ReportsPage() {
 
         {showAdmin && (
           <SectionCard title="Usuários" subtitle="Contas, perfis e setores">
-            <div className="grid grid-cols-3 gap-3 mb-5 -mt-2">
-              <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-center">
-                <p className="text-2xl font-bold text-slate-900">{userStats.total}</p>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Total</p>
+            <div className="grid grid-cols-3 gap-3 mb-6 -mt-2">
+              <div className="rounded-lg bg-ws-canvas border border-ws-border p-3 text-center">
+                <p className="text-2xl font-bold text-ws-bright font-mono">{userStats.total}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Total</p>
               </div>
-              <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-center">
-                <p className="text-2xl font-bold text-emerald-700">{userStats.active}</p>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Ativos</p>
+              <div className="rounded-lg bg-emerald-950/30 border border-emerald-900/50 p-3 text-center">
+                <p className="text-2xl font-bold text-emerald-400 font-mono">{userStats.active}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Ativos</p>
               </div>
-              <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-center">
-                <p className="text-2xl font-bold text-amber-700">{userStats.pending}</p>
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Pendentes</p>
+              <div className="rounded-lg bg-amber-950/25 border border-amber-900/50 p-3 text-center">
+                <p className="text-2xl font-bold text-amber-400 font-mono">{userStats.pending}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Pendentes</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <div>
-                <p className="form-label mb-3">Por perfil (role)</p>
-                <ReportBarList items={userStats.roles.map((r) => ({ ...r, color: 'bg-indigo-500' }))} />
+                <p className="form-label mb-3">Situação da conta</p>
+                <ReportPieChart
+                  items={userStats.status}
+                  centerLabel="contas"
+                  emptyMessage="Sem usuários cadastrados."
+                />
               </div>
               <div>
+                <p className="form-label mb-3">Por perfil (role)</p>
+                <ReportPieChart
+                  items={userStats.roles}
+                  centerLabel="atribuições"
+                  emptyMessage="Sem perfis atribuídos."
+                />
+              </div>
+              <div className="md:col-span-2 xl:col-span-1">
                 <p className="form-label mb-3">Por setor</p>
-                <ReportBarList items={userStats.setores.map((s) => ({ ...s, color: 'bg-slate-500' }))} />
+                <ReportPieChart
+                  items={userStats.setores}
+                  centerLabel="usuários"
+                  emptyMessage="Sem setores informados."
+                />
               </div>
             </div>
           </SectionCard>
@@ -335,12 +352,24 @@ export default function ReportsPage() {
               title="Licenças de software"
               subtitle={`${softwareStats.total} licenças · ${softwareStats.totalSeats} assentos`}
             >
-              <div className="space-y-5 -mt-2">
-                <div>
-                  <p className="form-label mb-3">Por software</p>
-                  <ReportBarList
-                    items={softwareStats.bySoftware.map((s) => ({ ...s, color: 'bg-violet-500' }))}
-                  />
+              <div className="space-y-6 -mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="form-label mb-3">Por software</p>
+                    <ReportPieChart
+                      items={softwareStats.bySoftware}
+                      centerLabel="licenças"
+                      emptyMessage="Nenhuma licença de software cadastrada."
+                    />
+                  </div>
+                  <div>
+                    <p className="form-label mb-3">Por vencimento</p>
+                    <ReportPieChart
+                      items={softwareStats.expiry}
+                      centerLabel="licenças"
+                      emptyMessage="Sem datas de vencimento."
+                    />
+                  </div>
                 </div>
                 <ExpiryReportPanel
                   segments={softwareStats.expiry}
@@ -360,7 +389,7 @@ export default function ReportsPage() {
                   renderLabel={(item) => item.nome}
                 />
                 {certificateStats.byEmpresa.length > 0 && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <p className="form-label mb-3">Por empresa</p>
                     <ReportBarList
                       items={certificateStats.byEmpresa.map((e) => ({ ...e, color: 'bg-teal-500' }))}
@@ -375,31 +404,31 @@ export default function ReportsPage() {
               subtitle={`${equipmentStats.linked} vinculados · ${equipmentStats.available} disponíveis`}
             >
               <div className="space-y-4 -mt-2">
-                <div className="h-3 rounded-full bg-gray-100 overflow-hidden flex">
+                <div className="h-3 rounded-full bg-ws-elevated overflow-hidden flex">
                   <div
                     className="bg-primary h-full"
                     style={{ width: `${equipmentStats.linkRate}%` }}
                     title="Vinculados"
                   />
                   <div
-                    className="bg-gray-300 h-full flex-1"
+                    className="bg-ws-border-strong h-full flex-1"
                     title="Disponíveis"
                   />
                 </div>
                 <div className="flex gap-6 text-sm">
-                  <span className="inline-flex items-center gap-2 text-gray-600">
+                  <span className="inline-flex items-center gap-2 text-ws-secondary">
                     <span className="size-2 rounded-full bg-primary" />
                     Vinculados: {equipmentStats.linked}
                   </span>
-                  <span className="inline-flex items-center gap-2 text-gray-600">
-                    <span className="size-2 rounded-full bg-gray-300" />
+                  <span className="inline-flex items-center gap-2 text-ws-secondary">
+                    <span className="size-2 rounded-full bg-ws-border-strong" />
                     Disponíveis: {equipmentStats.available}
                   </span>
                 </div>
                 {equipmentStats.byEmpresa.length > 0 && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <p className="form-label mb-1">Por empresa</p>
-                    <p className="text-xs text-gray-500 mb-3">Clique em uma empresa para ver os equipamentos</p>
+                    <p className="text-xs text-ws-muted mb-3">Clique em uma empresa para ver os equipamentos</p>
                     <ReportBarList
                       items={equipmentStats.byEmpresa.map((e) => ({ ...e, color: 'bg-primary' }))}
                       onItemClick={handleEquipmentEmpresaClick}
@@ -408,44 +437,44 @@ export default function ReportsPage() {
                   </div>
                 )}
                 {selectedEquipmentEmpresa != null && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <p className="form-label">
                         Equipamentos —{' '}
                         {selectedEquipmentEmpresa === 'Sem empresa'
                           ? 'Sem empresa'
                           : formatEmpresaLabel(selectedEquipmentEmpresa)}
-                        <span className="text-gray-400 font-normal ml-1">
+                        <span className="text-ws-muted font-normal ml-1">
                           ({filteredEquipments.length})
                         </span>
                       </p>
                       <button
                         type="button"
                         onClick={() => setSelectedEquipmentEmpresa(null)}
-                        className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                        className="text-xs font-semibold text-ws-muted hover:text-ws-bright"
                       >
                         Fechar
                       </button>
                     </div>
                     {filteredEquipments.length === 0 ? (
-                      <p className="text-sm text-gray-500">Nenhum equipamento encontrado.</p>
+                      <p className="text-sm text-ws-muted">Nenhum equipamento encontrado.</p>
                     ) : (
                       <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
                         {filteredEquipments.map((equipment) => (
                           <li
                             key={equipment.id}
-                            className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2.5 bg-gray-50/50"
+                            className="flex items-start justify-between gap-3 rounded-lg border border-ws-border px-3 py-2.5 bg-ws-canvas/50"
                           >
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900">{equipment.nome}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="font-medium text-ws-bright">{equipment.nome}</p>
+                              <p className="text-xs text-ws-muted mt-0.5">
                                 Patrimônio: {equipment.patrimonio || '—'}
                                 {equipment.descricao ? ` · ${equipment.descricao}` : ''}
                               </p>
                             </div>
                             <span
                               className={`text-[10px] font-bold uppercase tracking-widest shrink-0 ${
-                                equipment.usuarioId ? 'text-primary' : 'text-gray-400'
+                                equipment.usuarioId ? 'text-primary' : 'text-ws-muted'
                               }`}
                             >
                               {equipment.usuarioId ? 'Vinculado' : 'Disponível'}
@@ -465,19 +494,19 @@ export default function ReportsPage() {
             >
               <div className="space-y-4 -mt-2">
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-center">
-                    <p className="text-2xl font-bold text-slate-900">{printerStats.total}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Impressoras</p>
+                  <div className="rounded-lg bg-ws-canvas border border-ws-border p-3 text-center">
+                    <p className="text-2xl font-bold text-ws-bright">{printerStats.total}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Impressoras</p>
                   </div>
-                  <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-center">
+                  <div className="rounded-lg bg-primary/15 border border-blue-100 p-3 text-center">
                     <p className="text-2xl font-bold text-blue-700">{printerStats.usedTonerSlots}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">
                       Slots / {printerStats.totalTonerSlots}
                     </p>
                   </div>
-                  <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-center">
-                    <p className="text-2xl font-bold text-red-700">{printerStats.full}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Lotadas</p>
+                  <div className="rounded-lg bg-red-950/30 border border-red-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-ws-red">{printerStats.full}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Lotadas</p>
                   </div>
                 </div>
                 {printerStats.slotUsage.length > 0 && (
@@ -487,15 +516,15 @@ export default function ReportsPage() {
                   </div>
                 )}
                 {tonerStats.byCor.length > 0 && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <p className="form-label mb-3">Toners por cor</p>
                     <ReportBarList items={tonerStats.byCor.map((item) => ({ ...item, color: 'bg-indigo-500' }))} />
                   </div>
                 )}
                 {printerStats.byEmpresa.length > 0 && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <p className="form-label mb-1">Por empresa</p>
-                    <p className="text-xs text-gray-500 mb-3">Clique em uma empresa para ver as impressoras</p>
+                    <p className="text-xs text-ws-muted mb-3">Clique em uma empresa para ver as impressoras</p>
                     <ReportBarList
                       items={printerStats.byEmpresa.map((e) => ({ ...e, color: 'bg-indigo-500' }))}
                       onItemClick={handlePrinterEmpresaClick}
@@ -504,35 +533,35 @@ export default function ReportsPage() {
                   </div>
                 )}
                 {selectedPrinterEmpresa != null && (
-                  <div className="pt-3 border-t border-gray-100">
+                  <div className="pt-3 border-t border-ws-border">
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <p className="form-label">
                         Impressoras —{' '}
                         {selectedPrinterEmpresa === 'Sem empresa'
                           ? 'Sem empresa'
                           : formatEmpresaLabel(selectedPrinterEmpresa)}
-                        <span className="text-gray-400 font-normal ml-1">({filteredPrinters.length})</span>
+                        <span className="text-ws-muted font-normal ml-1">({filteredPrinters.length})</span>
                       </p>
                       <button
                         type="button"
                         onClick={() => setSelectedPrinterEmpresa(null)}
-                        className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                        className="text-xs font-semibold text-ws-muted hover:text-ws-bright"
                       >
                         Fechar
                       </button>
                     </div>
                     {filteredPrinters.length === 0 ? (
-                      <p className="text-sm text-gray-500">Nenhuma impressora encontrada.</p>
+                      <p className="text-sm text-ws-muted">Nenhuma impressora encontrada.</p>
                     ) : (
                       <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
                         {filteredPrinters.map((printer) => (
                           <li
                             key={printer.id}
-                            className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2.5 bg-gray-50/50"
+                            className="flex items-start justify-between gap-3 rounded-lg border border-ws-border px-3 py-2.5 bg-ws-canvas/50"
                           >
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 font-mono">{printer.ip}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
+                              <p className="font-medium text-ws-bright font-mono">{printer.ip}</p>
+                              <p className="text-xs text-ws-muted mt-0.5">
                                 {printer.nome || '—'}
                                 {printer.localizacao ? ` · ${printer.localizacao}` : ''}
                               </p>
@@ -554,13 +583,13 @@ export default function ReportsPage() {
               subtitle={`${termStats.total} documentos · ${formatBytes(termStats.totalBytes)} armazenados`}
             >
               <div className="grid grid-cols-2 gap-4 -mt-2">
-                <div className="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                  <p className="text-2xl font-bold text-slate-900">{termStats.withUser}</p>
-                  <p className="text-xs text-gray-500 mt-1">Com usuário vinculado</p>
+                <div className="rounded-lg bg-ws-canvas border border-ws-border p-4">
+                  <p className="text-2xl font-bold text-ws-bright">{termStats.withUser}</p>
+                  <p className="text-xs text-ws-muted mt-1">Com usuário vinculado</p>
                 </div>
-                <div className="rounded-lg bg-gray-50 border border-gray-100 p-4">
-                  <p className="text-2xl font-bold text-slate-900">{termStats.withoutUser}</p>
-                  <p className="text-xs text-gray-500 mt-1">Sem vínculo de usuário</p>
+                <div className="rounded-lg bg-ws-canvas border border-ws-border p-4">
+                  <p className="text-2xl font-bold text-ws-bright">{termStats.withoutUser}</p>
+                  <p className="text-xs text-ws-muted mt-1">Sem vínculo de usuário</p>
                 </div>
               </div>
             </SectionCard>
@@ -570,7 +599,7 @@ export default function ReportsPage() {
 
       {!showTi && !showAdmin && (
         <SectionCard title="Relatórios operacionais">
-          <p className="text-sm text-gray-600 -mt-2">
+          <p className="text-sm text-ws-secondary -mt-2">
             Painéis de licenças, certificados, equipamentos e usuários ficam disponíveis para
             perfis <strong>TI</strong> e <strong>ADMIN</strong>. Você já vê o resumo dos seus
             chamados acima.

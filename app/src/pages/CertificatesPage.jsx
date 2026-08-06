@@ -203,7 +203,7 @@ export default function CertificatesPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando certificados...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando certificados...</p>
       </PageContainer>
     );
   }
@@ -292,16 +292,16 @@ export default function CertificatesPage() {
           <tbody>
             {certificates.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center text-gray-500 py-10">
+                <td colSpan={4} className="text-center text-ws-muted py-10">
                   Nenhum certificado cadastrado.
                 </td>
               </tr>
             ) : (
               tablePagination.items.map((certificate) => (
                 <tr key={certificate.id}>
-                  <td className="font-medium text-gray-900">{certificate.nome}</td>
-                  <td className="text-gray-600">{certificate.empresa || '—'}</td>
-                  <td className="text-gray-600 tabular-nums">
+                  <td className="font-medium text-ws-bright">{certificate.nome}</td>
+                  <td className="text-ws-secondary">{certificate.empresa || '—'}</td>
+                  <td className="text-ws-secondary tabular-nums">
                     {formatDate(certificate.dataVencimento)}
                   </td>
                   <td className="text-right space-x-2">

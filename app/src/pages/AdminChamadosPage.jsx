@@ -221,7 +221,7 @@ export default function AdminChamadosPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando chamados...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando chamados...</p>
       </PageContainer>
     );
   }
@@ -260,7 +260,7 @@ export default function AdminChamadosPage() {
       )}
 
       <SectionCard title="Chamados" noPadding bodyClassName="p-0">
-        <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+        <div className="px-6 py-4 border-b border-ws-border flex flex-wrap gap-2">
           {[
             { key: '', label: 'Todos' },
             { key: 'ABERTO', label: 'Abertos' },
@@ -275,7 +275,7 @@ export default function AdminChamadosPage() {
               className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
                 filter === key
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
               }`}
             >
               {label}
@@ -297,76 +297,76 @@ export default function AdminChamadosPage() {
             <tbody>
               {chamados.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-10 text-center text-ws-muted">
                     Nenhum chamado encontrado para este filtro.
                   </td>
                 </tr>
               ) : (
                 chamados.map((chamado) => (
                   <Fragment key={chamado.id}>
-                    <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr className="border-b border-ws-border hover:bg-ws-canvas">
                       <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">{chamado.assunto}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="font-medium text-ws-bright">{chamado.assunto}</p>
+                        <p className="text-xs text-ws-muted mt-1">
                           {getFerramentaLabel(chamado.ferramentaRemota)} ·{' '}
                           {chamado.codigoAcessoRemoto}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{chamado.email}</td>
+                      <td className="px-6 py-4 text-ws-secondary">{chamado.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <ChamadoStatusBadge status={chamado.status} />
                       </td>
-                      <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                      <td className="px-6 py-4 text-ws-secondary whitespace-nowrap">
                         {formatDateTime(chamado.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
                         <button
                           type="button"
                           onClick={() => handleToggleChamado(chamado.id)}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
+                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-ws-elevated hover:bg-ws-hover-strong text-ws-secondary"
                         >
                           {expandedId === chamado.id ? 'Fechar' : 'Atender'}
                         </button>
                       </td>
                     </tr>
                     {expandedId === chamado.id && (
-                      <tr className="bg-gray-50">
+                      <tr className="bg-ws-canvas">
                         <td colSpan={5} className="px-6 py-5">
                           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                             <div className="space-y-5">
                               <div className="space-y-3 text-sm">
                                 <p>
-                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                  <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                                     Descrição
                                   </span>
-                                  <span className="block mt-1 text-gray-700">{chamado.descricao}</span>
+                                  <span className="block mt-1 text-ws-secondary">{chamado.descricao}</span>
                                 </p>
                                 <p>
-                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                  <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                                     Telefone
                                   </span>
-                                  <span className="block mt-1 text-gray-700">
+                                  <span className="block mt-1 text-ws-secondary">
                                     {chamado.telefoneContato}
                                   </span>
                                 </p>
                                 <p>
-                                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+                                  <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                                     Código remoto
                                   </span>
-                                  <span className="block mt-1 text-gray-700 font-mono">
+                                  <span className="block mt-1 text-ws-secondary font-mono">
                                     {chamado.codigoAcessoRemoto}
                                   </span>
                                 </p>
                               </div>
                               <div>
-                                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">
+                                <p className="text-[10px] uppercase tracking-widest text-ws-muted font-bold mb-2">
                                   Atualizar status
                                 </p>
                                 <select
                                   value={chamado.status}
                                   disabled={updatingId === chamado.id}
                                   onChange={(e) => handleStatusChange(chamado, e.target.value)}
-                                  className="w-full px-4 py-3 bg-white border border-gray-300 focus:border-green-700 focus:outline-none text-sm disabled:opacity-50"
+                                  className="w-full px-4 py-3 bg-ws-panel border border-ws-border-strong focus:border-accent focus:outline-none text-sm disabled:opacity-50"
                                 >
                                   {CHAMADO_STATUS.map((status) => (
                                     <option key={status} value={status}>
@@ -375,7 +375,7 @@ export default function AdminChamadosPage() {
                                   ))}
                                 </select>
                                 {updatingId === chamado.id && (
-                                  <p className="text-xs text-gray-500 mt-2 inline-flex items-center gap-2">
+                                  <p className="text-xs text-ws-muted mt-2 inline-flex items-center gap-2">
                                     <Loader2 /> Salvando...
                                   </p>
                                 )}

@@ -1,9 +1,9 @@
 export const TONER_COLORS = [
-  { value: 'preto', label: 'Preto', badge: 'bg-gray-800 text-white' },
-  { value: 'ciano', label: 'Ciano', badge: 'bg-cyan-500 text-white' },
-  { value: 'magenta', label: 'Magenta', badge: 'bg-fuchsia-500 text-white' },
-  { value: 'amarelo', label: 'Amarelo', badge: 'bg-yellow-400 text-gray-900' },
-  { value: 'outro', label: 'Outro', badge: 'bg-gray-600 text-white' },
+  { value: 'preto', label: 'Preto', badge: 'bg-ws-canvas text-ws-bright border border-ws-border-strong' },
+  { value: 'ciano', label: 'Ciano', badge: 'bg-cyan-900/50 text-ws-cyan border border-cyan-800/50' },
+  { value: 'magenta', label: 'Magenta', badge: 'bg-fuchsia-900/50 text-fuchsia-300 border border-fuchsia-800/50' },
+  { value: 'amarelo', label: 'Amarelo', badge: 'bg-yellow-900/40 text-ws-yellow border border-yellow-800/50' },
+  { value: 'outro', label: 'Outro', badge: 'bg-ws-elevated text-ws-muted border border-ws-border-strong' },
 ];
 
 export function formatTonerColor(value) {
@@ -11,7 +11,7 @@ export function formatTonerColor(value) {
 }
 
 export function getTonerColorBadge(value) {
-  return TONER_COLORS.find((item) => item.value === value)?.badge ?? 'bg-gray-700 text-gray-100';
+  return TONER_COLORS.find((item) => item.value === value)?.badge ?? 'bg-ws-elevated text-ws-secondary border border-ws-border-strong';
 }
 
 export function getPrinterFillState(printer) {
@@ -29,7 +29,7 @@ export function getPrinterFillLabel(state) {
 }
 
 export function getPrinterFillClass(state) {
-  if (state === 'full') return 'text-red-400';
+  if (state === 'full') return 'text-ws-red';
   if (state === 'partial') return 'text-amber-400';
   return 'text-emerald-400';
 }

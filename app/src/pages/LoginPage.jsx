@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { getApiErrorMessage } from '../utils/apiErrors';
+import AlertBanner from '../components/ui/AlertBanner';
 
 function IconMail() {
   return (
@@ -22,7 +23,7 @@ function IconLock() {
 
 function IconSpark() {
   return (
-    <svg className="size-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+    <svg className="size-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
     </svg>
   );
@@ -87,39 +88,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-[#f4f7fb]">
-      <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 p-12 xl:p-16 text-white">
+    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr] bg-ws-canvas">
+      <div className="relative hidden lg:flex flex-col justify-between overflow-hidden bg-ws-elevated p-12 xl:p-16 text-ws-bright">
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)',
+              'linear-gradient(rgba(124,179,66,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(124,179,66,.35) 1px, transparent 1px)',
             backgroundSize: '48px 48px',
           }}
         />
-        <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 size-96 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-ws-canvas/60 via-transparent to-accent/[0.04]" />
+        <div className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-accent/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-0 size-96 rounded-full bg-primary/5 blur-3xl" />
 
         <div className="relative flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10 flex items-center justify-center font-semibold text-lg">
+          <div className="size-10 rounded bg-ws-panel border border-ws-border-strong flex items-center justify-center font-mono font-semibold text-lg text-accent">
             M
           </div>
           <div>
-            <p className="font-semibold text-lg tracking-tight">Malibru</p>
-            <p className="text-sm text-white/60">Portal interno</p>
+            <p className="font-mono font-semibold text-lg tracking-tight text-ws-bright">Malibru</p>
+            <p className="text-sm text-ws-muted">Portal interno</p>
           </div>
         </div>
 
         <div className="relative space-y-10 max-w-lg">
           <div className="space-y-4">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-3 py-1 text-xs font-medium text-white/80">
+            <p className="inline-flex items-center gap-2 rounded-full bg-ws-panel/80 border border-ws-border px-3 py-1 text-xs font-medium text-ws-secondary">
               <IconSpark />
               Plataforma corporativa
             </p>
-            <h2 className="text-4xl xl:text-[2.75rem] font-bold leading-[1.15] tracking-tight">
+            <h2 className="text-4xl xl:text-[2.75rem] font-bold font-mono leading-[1.15] tracking-tight text-ws-bright">
               Tudo o que você precisa, em um só lugar.
             </h2>
-            <p className="text-white/65 text-base leading-relaxed">
+            <p className="text-ws-muted text-base leading-relaxed">
               Acesse licenças, equipamentos, chamados e documentos com segurança e praticidade.
             </p>
           </div>
@@ -128,52 +130,52 @@ export default function LoginPage() {
             {FEATURES.map((feature) => (
               <li
                 key={feature.title}
-                className="rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur-sm px-5 py-4"
+                className="rounded bg-ws-panel/70 border border-ws-border px-5 py-4"
               >
-                <p className="font-medium text-white/95">{feature.title}</p>
-                <p className="text-sm text-white/55 mt-1 leading-relaxed">{feature.description}</p>
+                <p className="font-mono font-medium text-ws-bright">{feature.title}</p>
+                <p className="text-sm text-ws-muted mt-1 leading-relaxed">{feature.description}</p>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative text-xs text-white/35">© 2026 Malibru. Todos os direitos reservados.</p>
+        <p className="relative text-xs text-ws-muted">© 2026 Malibru. Todos os direitos reservados.</p>
       </div>
 
-      <div className="relative flex items-center justify-center px-6 py-12 sm:px-10">
+      <div className="relative flex items-center justify-center px-6 py-12 sm:px-10 bg-ws-panel">
         <div className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
-          <div className="absolute -top-20 -right-20 size-64 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute bottom-0 left-0 size-72 rounded-full bg-emerald-200/30 blur-3xl" />
+          <div className="absolute -top-20 -right-20 size-64 rounded-full bg-accent/5 blur-3xl" />
+          <div className="absolute bottom-0 left-0 size-72 rounded-full bg-primary/5 blur-3xl" />
         </div>
 
         <div className="relative w-full max-w-[420px]">
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="size-10 rounded-xl bg-primary flex items-center justify-center font-semibold text-white">
+            <div className="size-10 rounded bg-accent flex items-center justify-center font-mono font-semibold text-accent-foreground">
               M
             </div>
             <div>
-              <p className="font-semibold text-gray-900">Malibru Portal</p>
-              <p className="text-sm text-gray-500">Acesso interno</p>
+              <p className="font-mono font-semibold text-ws-bright">Malibru Portal</p>
+              <p className="text-sm text-ws-muted">Acesso interno</p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/80 bg-white/90 backdrop-blur-xl shadow-[0_20px_60px_-24px_rgba(15,23,42,0.18)] p-8 sm:p-10">
+          <div className="rounded border border-ws-border bg-ws-elevated shadow-card p-8 sm:p-10">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Bem-vindo de volta</h1>
-              <p className="text-sm text-gray-500 mt-2">Entre com suas credenciais corporativas</p>
+              <h1 className="text-2xl font-bold font-mono text-ws-bright tracking-tight">Bem-vindo de volta</h1>
+              <p className="text-sm text-ws-muted mt-2">Entre com suas credenciais corporativas</p>
             </div>
 
             {error && (
-              <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
+              <div className="mb-6">
+                <AlertBanner type="error">{error}</AlertBanner>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <label className="block space-y-2">
-                <span className="text-sm font-medium text-gray-700">E-mail</span>
+                <span className="form-label">E-mail</span>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ws-muted">
                     <IconMail />
                   </span>
                   <input
@@ -182,7 +184,7 @@ export default function LoginPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition-all text-sm"
+                    className="form-input pl-11"
                     placeholder="voce@empresa.com.br"
                   />
                 </div>
@@ -190,13 +192,13 @@ export default function LoginPage() {
 
               <label className="block space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Senha</span>
-                  <span className="text-xs text-gray-400 cursor-not-allowed" title="Em breve">
+                  <span className="form-label">Senha</span>
+                  <span className="text-xs text-ws-muted cursor-not-allowed" title="Em breve">
                     Esqueci minha senha
                   </span>
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ws-muted">
                     <IconLock />
                   </span>
                   <input
@@ -205,7 +207,7 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition-all text-sm"
+                    className="form-input pl-11"
                     placeholder="••••••••"
                   />
                 </div>
@@ -216,25 +218,25 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={manterConectado}
                   onChange={(e) => setManterConectado(e.target.checked)}
-                  className="size-4 rounded border-gray-300 text-primary focus:ring-primary/30 cursor-pointer"
+                  className="size-4 rounded border-ws-border-strong bg-ws-panel text-accent focus:ring-accent/30 cursor-pointer"
                 />
-                <span className="text-sm text-gray-600">Manter conectado neste dispositivo</span>
+                <span className="text-sm text-ws-secondary">Manter conectado neste dispositivo</span>
               </label>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-white py-3.5 text-sm font-semibold transition-colors shadow-sm shadow-primary/20 disabled:opacity-50"
+                className="btn-primary w-full mt-2 inline-flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading && <Loader2 />}
                 {loading ? 'Entrando...' : 'Entrar no portal'}
               </button>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-              <p className="text-sm text-gray-500">
+            <div className="mt-8 pt-6 border-t border-ws-border text-center">
+              <p className="text-sm text-ws-muted">
                 Ainda não tem conta?{' '}
-                <Link to="/Register" className="font-semibold text-primary hover:text-primary/80 transition-colors">
+                <Link to="/Register" className="font-semibold text-accent hover:text-accent-light transition-colors">
                   Criar conta
                 </Link>
               </p>
@@ -246,7 +248,7 @@ export default function LoginPage() {
               href="https://malibru.com.br"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-gray-400 hover:text-primary transition-colors"
+              className="text-xs text-ws-muted hover:text-accent transition-colors"
             >
               malibru.com.br ↗
             </a>

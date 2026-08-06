@@ -44,26 +44,26 @@ export default function ActivateAccountPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-muted p-6">
-      <div className="w-full max-w-[440px] bg-white rounded-2xl border border-gray-100 shadow-card p-8 sm:p-10">
+      <div className="w-full max-w-[440px] bg-ws-panel rounded-2xl border border-ws-border shadow-card p-8 sm:p-10">
         <div className="text-center mb-8">
-          <div className="size-12 bg-primary rounded-xl flex items-center justify-center font-bold text-white text-xl mx-auto mb-4">
+          <div className="size-12 bg-primary rounded flex items-center justify-center font-bold text-white text-xl mx-auto mb-4">
             M
           </div>
-          <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 mb-2">
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-ws-muted mb-2">
             Ativação de conta
           </p>
-          <h1 className="text-2xl font-bold text-slate-900">Malibru Portal</h1>
+          <h1 className="text-2xl font-bold text-ws-bright">Malibru Portal</h1>
         </div>
 
         {loading && (
-          <p className="text-sm text-gray-600 text-center">Ativando sua conta...</p>
+          <p className="text-sm text-ws-secondary text-center">Ativando sua conta...</p>
         )}
 
         {!loading && error && (
           <div className="space-y-4">
             <AlertBanner type="error">{error}</AlertBanner>
             {isExpired && (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-ws-secondary">
                 Entre em contato com um administrador para solicitar uma nova ativação.
               </p>
             )}

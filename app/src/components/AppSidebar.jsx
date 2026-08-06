@@ -117,17 +117,17 @@ function NavItem({ to, end, icon: Icon, children }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors ${
+        `group relative flex items-center gap-3 rounded px-3 py-2 text-[13px] font-mono transition-colors ${
           isActive
-            ? 'bg-gray-100 text-gray-900 font-medium'
-            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+            ? 'bg-ws-selected text-ws-bright font-medium'
+            : 'text-ws-muted hover:bg-ws-hover hover:text-ws-secondary'
         }`
       }
     >
       {({ isActive }) => (
         <>
           {isActive && (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-primary" />
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-accent" />
           )}
           <Icon />
           <span className="truncate">{children}</span>
@@ -141,7 +141,7 @@ function NavSection({ label, children }) {
   return (
     <div className="space-y-0.5">
       {label && (
-        <p className="px-3 pt-5 pb-1.5 text-[11px] font-medium text-gray-400 first:pt-2">
+        <p className="px-3 pt-5 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-accent first:pt-2">
           {label}
         </p>
       )}
@@ -158,17 +158,17 @@ export default function AppSidebar() {
   const showTiModules = canAccessTiModules(user);
 
   return (
-    <aside className="w-[220px] min-h-screen bg-white border-r border-gray-200/80 flex flex-col shrink-0">
-      <div className="px-5 h-16 flex items-center shrink-0">
+    <aside className="w-[220px] min-h-screen bg-ws-elevated border-r border-ws-border flex flex-col shrink-0">
+      <div className="px-5 h-16 flex items-center shrink-0 border-b border-ws-border">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="size-7 rounded-md bg-primary flex items-center justify-center shrink-0">
-            <span className="text-white font-semibold text-xs">M</span>
+          <div className="size-7 rounded bg-accent flex items-center justify-center shrink-0">
+            <span className="text-accent-foreground font-bold text-xs font-mono">M</span>
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-[15px] text-gray-900 tracking-tight leading-none truncate">
+            <p className="font-semibold text-[15px] text-ws-bright tracking-tight leading-none truncate font-mono">
               Malibru
             </p>
-            <p className="text-[11px] text-gray-400 mt-0.5 truncate">Portal interno</p>
+            <p className="text-[10px] text-ws-muted mt-0.5 truncate uppercase tracking-wider">Portal interno</p>
           </div>
         </div>
       </div>

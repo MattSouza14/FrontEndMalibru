@@ -76,19 +76,19 @@ function LicenseUsersModal({
       role="presentation"
     >
       <div
-        className="bg-white rounded-xl border border-gray-100 w-full max-w-lg shadow-lg overflow-hidden"
+        className="bg-ws-panel rounded border border-ws-border w-full max-w-lg shadow-card overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="license-users-title"
       >
-        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-100">
+        <div className="flex items-start justify-between gap-4 px-6 py-5 border-b border-ws-border">
           <div>
             <p className="form-label">Usuários vinculados</p>
-            <h2 id="license-users-title" className="text-lg font-semibold text-slate-900 mt-1">
+            <h2 id="license-users-title" className="text-lg font-semibold text-ws-bright mt-1">
               {license.email}
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-ws-muted mt-1">
               Vencimento: {formatDate(license.vencimento)} ·{' '}
               {license.usuariosVinculados ?? users.length}/5 vinculados
             </p>
@@ -96,7 +96,7 @@ function LicenseUsersModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 text-2xl leading-none px-1"
+            className="text-ws-muted hover:text-ws-secondary text-2xl leading-none px-1"
             aria-label="Fechar"
           >
             ×
@@ -105,12 +105,12 @@ function LicenseUsersModal({
 
         <div className="max-h-[360px] overflow-y-auto">
           {loading ? (
-            <p className="px-6 py-10 text-sm text-gray-500 text-center">
+            <p className="px-6 py-10 text-sm text-ws-muted text-center">
               Carregando usuários vinculados...
             </p>
           ) : users.length === 0 ? (
             <div className="px-6 py-10 text-center space-y-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ws-muted">
                 Nenhum usuário vinculado a esta licença.
               </p>
               {showMissingHint && (
@@ -123,24 +123,24 @@ function LicenseUsersModal({
               )}
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-ws-border">
               {users.map((user) => (
                 <li
                   key={user.id}
-                  className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-gray-50"
+                  className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-ws-canvas"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{user.nome}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    <p className="font-medium text-ws-bright truncate">{user.nome}</p>
+                    <p className="text-xs text-ws-muted truncate">{user.email}</p>
                     {user.setor && (
-                      <p className="text-xs text-gray-400 mt-0.5">{user.setor}</p>
+                      <p className="text-xs text-ws-muted mt-0.5">{user.setor}</p>
                     )}
                   </div>
                   <button
                     type="button"
                     disabled={unlinkingUserId === user.id}
                     onClick={() => onUnlink(user)}
-                    className="shrink-0 px-3 py-2 text-[10px] font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-900 disabled:opacity-50 inline-flex items-center gap-2"
+                    className="shrink-0 px-3 py-2 text-[10px] font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-300 disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     {unlinkingUserId === user.id && <Loader2 />}
                     Desvincular
@@ -151,7 +151,7 @@ function LicenseUsersModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 flex justify-end">
+        <div className="px-6 py-4 border-t border-ws-border flex justify-end">
           <button type="button" onClick={onClose} className="btn-secondary">
             Fechar
           </button>
@@ -512,7 +512,7 @@ export default function OfficeLicensesPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando licenças...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando licenças...</p>
       </PageContainer>
     );
   }
@@ -656,7 +656,7 @@ export default function OfficeLicensesPage() {
           <tbody>
             {licenses.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center text-gray-500 py-10">
+                <td colSpan={5} className="text-center text-ws-muted py-10">
                   Nenhuma licença cadastrada.
                 </td>
               </tr>
@@ -667,14 +667,14 @@ export default function OfficeLicensesPage() {
                   onClick={() => openLicenseModal(license)}
                   className="cursor-pointer hover:bg-primary/5 transition-colors"
                 >
-                  <td className="font-medium text-gray-900">{license.email}</td>
-                  <td className="text-gray-600 tabular-nums">{formatDate(license.vencimento)}</td>
-                  <td className="text-gray-600">{license.usuariosVinculados ?? 0}</td>
+                  <td className="font-medium text-ws-bright">{license.email}</td>
+                  <td className="text-ws-secondary tabular-nums">{formatDate(license.vencimento)}</td>
+                  <td className="text-ws-secondary">{license.usuariosVinculados ?? 0}</td>
                   <td>
                     <span
                       className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md ${
                         (license.vagasRestantes ?? 0) > 0
-                          ? 'bg-emerald-100 text-emerald-800'
+                          ? 'bg-emerald-100 text-emerald-400'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >

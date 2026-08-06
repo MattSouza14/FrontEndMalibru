@@ -9,12 +9,12 @@ export default function ProgressBar({ segments = [], className = '' }) {
   const total = segments.reduce((sum, s) => sum + s.value, 0);
   if (total === 0) {
     return (
-      <div className={`h-3 rounded-full bg-gray-100 ${className}`} />
+      <div className={`h-3 rounded-full bg-ws-elevated ${className}`} />
     );
   }
 
   return (
-    <div className={`flex h-3 rounded-full overflow-hidden bg-gray-100 ${className}`}>
+    <div className={`flex h-3 rounded-full overflow-hidden bg-ws-elevated ${className}`}>
       {segments.map((segment) => {
         const width = (segment.value / total) * 100;
         if (width <= 0) return null;
@@ -38,7 +38,7 @@ export function ExpiryProgressBar({ days, maxDays = 90 }) {
 
   return (
     <div className="space-y-1">
-      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-2 rounded-full bg-ws-elevated overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${color}`}
           style={{ width: `${Math.max(percent, days < 0 ? 100 : 8)}%` }}

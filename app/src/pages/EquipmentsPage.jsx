@@ -340,7 +340,7 @@ export default function EquipmentsPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando equipamentos...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando equipamentos...</p>
       </PageContainer>
     );
   }
@@ -389,13 +389,13 @@ export default function EquipmentsPage() {
       <form onSubmit={handleLink} className="space-y-4 -mt-2">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <label className="block space-y-1.5">
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+            <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
               Usuário
             </span>
             <select
               value={linkForm.usuarioId}
               onChange={(e) => setLinkForm((prev) => ({ ...prev, usuarioId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+              className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
             >
               <option value="">Selecione...</option>
               {users.map((user) => (
@@ -407,13 +407,13 @@ export default function EquipmentsPage() {
           </label>
 
           <label className="block space-y-1.5">
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+            <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
               Equipamento disponível
             </span>
             <select
               value={linkForm.equipamentoId}
               onChange={(e) => setLinkForm((prev) => ({ ...prev, equipamentoId: e.target.value }))}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+              className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
             >
               <option value="">Selecione...</option>
               {availableEquipments.map((equipment) => (
@@ -444,7 +444,7 @@ export default function EquipmentsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                 Nome
               </span>
               <input
@@ -452,19 +452,19 @@ export default function EquipmentsPage() {
                 required
                 value={form.nome}
                 onChange={(e) => updateField('nome', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                 Empresa
               </span>
               <select
                 required
                 value={form.empresa}
                 onChange={(e) => updateField('empresa', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
               >
                 <option value="">Selecione...</option>
                 {companies.map((company) => (
@@ -476,26 +476,26 @@ export default function EquipmentsPage() {
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                 Patrimônio
               </span>
               <input
                 type="text"
                 value={form.patrimonio}
                 onChange={(e) => updateField('patrimonio', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
               />
             </label>
 
             <label className="block space-y-1.5">
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-ws-muted font-bold">
                 Descrição
               </span>
               <input
                 type="text"
                 value={form.descricao}
                 onChange={(e) => updateField('descricao', e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none text-sm"
+                className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none text-sm"
               />
             </label>
           </div>
@@ -504,7 +504,7 @@ export default function EquipmentsPage() {
             <button
               type="button"
               onClick={closeForm}
-              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
+              className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-ws-secondary hover:text-ws-bright"
             >
               Cancelar
             </button>
@@ -536,7 +536,7 @@ export default function EquipmentsPage() {
           <tbody>
             {equipments.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-10 text-center text-ws-muted">
                   Nenhum equipamento cadastrado.
                 </td>
               </tr>
@@ -547,28 +547,28 @@ export default function EquipmentsPage() {
 
                 return (
                   <tr key={equipment.id}>
-                    <td className="font-medium text-gray-900">{equipment.nome}</td>
-                    <td className="text-gray-600">
+                    <td className="font-medium text-ws-bright">{equipment.nome}</td>
+                    <td className="text-ws-secondary">
                       {equipment.empresa ? formatEmpresaLabel(equipment.empresa) : '—'}
                     </td>
-                    <td className="text-gray-600">{equipment.patrimonio || '—'}</td>
-                    <td className="text-gray-600">
+                    <td className="text-ws-secondary">{equipment.patrimonio || '—'}</td>
+                    <td className="text-ws-secondary">
                       {linkedUser ? (
                         <span>{linkedUser.nome}</span>
                       ) : (
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-ws-muted">
                           Disponível
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{equipment.descricao || '—'}</td>
+                    <td className="px-6 py-4 text-ws-secondary">{equipment.descricao || '—'}</td>
                     <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                       {equipment.usuarioId ? (
                         <button
                           type="button"
                           disabled={unlinkingKey === unlinkKey}
                           onClick={() => handleUnlink(equipment)}
-                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-900 disabled:opacity-50 inline-flex items-center gap-2"
+                          className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-300 disabled:opacity-50 inline-flex items-center gap-2"
                         >
                           {unlinkingKey === unlinkKey ? <Loader2 /> : null}
                           Desvincular
@@ -577,7 +577,7 @@ export default function EquipmentsPage() {
                       <button
                         type="button"
                         onClick={() => openEditForm(equipment)}
-                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-ws-elevated hover:bg-ws-hover-strong text-ws-secondary"
                       >
                         Editar
                       </button>

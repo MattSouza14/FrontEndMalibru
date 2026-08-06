@@ -29,10 +29,10 @@ function formatRelativeTime(iso) {
 }
 
 function notificationAccent(type) {
-  if (type === 'LICENSE_EXPIRING') return 'bg-amber-100 text-amber-700';
-  if (type === 'CHAMADO_NOVO') return 'bg-blue-100 text-blue-700';
-  if (type === 'CHAMADO_RESPOSTA') return 'bg-emerald-100 text-emerald-700';
-  return 'bg-gray-100 text-gray-600';
+  if (type === 'LICENSE_EXPIRING') return 'bg-amber-950/40 text-amber-400';
+  if (type === 'CHAMADO_NOVO') return 'bg-primary/20 text-ws-sky';
+  if (type === 'CHAMADO_RESPOSTA') return 'bg-emerald-950/30 text-emerald-400';
+  return 'bg-ws-elevated text-ws-muted';
 }
 
 function notificationLabel(type) {
@@ -81,7 +81,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="relative size-9 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors flex items-center justify-center"
+        className="relative size-9 rounded text-ws-muted hover:bg-ws-hover hover:text-ws-secondary transition-colors flex items-center justify-center"
         aria-label="Notificações"
         aria-expanded={open}
       >
@@ -94,11 +94,11 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] bg-white rounded-xl border border-gray-100 shadow-lg z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3">
+        <div className="absolute right-0 top-full mt-2 w-[min(22rem,calc(100vw-2rem))] bg-ws-panel rounded border border-ws-border shadow-card z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-ws-border flex items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-gray-900">Notificações</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm font-semibold text-ws-bright">Notificações</p>
+              <p className="text-xs text-ws-muted">
                 {unreadCount > 0 ? `${unreadCount} não lida(s)` : 'Tudo em dia'}
               </p>
             </div>
@@ -106,7 +106,7 @@ export default function NotificationBell() {
               <button
                 type="button"
                 onClick={markAllAsRead}
-                className="text-xs font-medium text-primary hover:text-primary/80"
+                className="text-xs font-medium text-ws-sky hover:text-white"
               >
                 Marcar todas
               </button>
@@ -115,13 +115,13 @@ export default function NotificationBell() {
 
           <div className="max-h-96 overflow-y-auto">
             {loading && notifications.length === 0 ? (
-              <p className="px-4 py-8 text-sm text-gray-500 text-center">Carregando...</p>
+              <p className="px-4 py-8 text-sm text-ws-muted text-center">Carregando...</p>
             ) : notifications.length === 0 ? (
-              <p className="px-4 py-8 text-sm text-gray-500 text-center">
+              <p className="px-4 py-8 text-sm text-ws-muted text-center">
                 Nenhuma notificação no momento.
               </p>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-ws-border">
                 {notifications.map((notification) => {
                   const read = isRead(notification.id);
                   return (
@@ -129,8 +129,8 @@ export default function NotificationBell() {
                       <button
                         type="button"
                         onClick={() => handleNotificationClick(notification)}
-                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          read ? 'opacity-70' : 'bg-blue-50/40'
+                        className={`w-full text-left px-4 py-3 hover:bg-ws-hover transition-colors ${
+                          read ? 'opacity-70' : 'bg-primary/10'
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -142,16 +142,16 @@ export default function NotificationBell() {
                             {notificationLabel(notification.type)}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                            <p className="text-sm font-medium text-ws-bright">{notification.title}</p>
+                            <p className="text-xs text-ws-secondary mt-1 leading-relaxed">
                               {notification.message}
                             </p>
-                            <p className="text-[11px] text-gray-400 mt-1.5">
+                            <p className="text-[11px] text-ws-muted mt-1.5">
                               {formatRelativeTime(notification.createdAt)}
                             </p>
                           </div>
                           {!read && (
-                            <span className="size-2 rounded-full bg-primary shrink-0 mt-1.5" />
+                            <span className="size-2 rounded-full bg-accent shrink-0 mt-1.5" />
                           )}
                         </div>
                       </button>

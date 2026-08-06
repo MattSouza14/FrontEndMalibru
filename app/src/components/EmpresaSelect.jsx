@@ -28,7 +28,7 @@ export default function EmpresaSelect({
           </option>
         ))}
       </select>
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-ws-red mt-1">{error}</p>}
     </div>
   );
 }

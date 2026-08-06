@@ -8,8 +8,8 @@ export default function RoleRoute({ roles = [] }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-sm text-gray-500">Carregando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-ws-elevated">
+        <p className="text-sm text-ws-muted">Carregando...</p>
       </div>
     );
   }

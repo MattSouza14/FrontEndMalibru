@@ -111,9 +111,9 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
-        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-none transition-all text-gray-900 text-sm placeholder:text-gray-400"
+        className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none transition-all text-ws-bright text-sm placeholder:text-ws-muted"
       />
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-ws-red">{error}</p>}
     </label>
   );
 }
@@ -212,7 +212,7 @@ function ProfilePage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando perfil...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando perfil...</p>
       </PageContainer>
     );
   }
@@ -231,22 +231,22 @@ function ProfilePage() {
 
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 md:col-span-4">
-          <div className="bg-white rounded-xl border border-gray-100 shadow-card p-6 text-center">
+          <div className="bg-ws-panel rounded border border-ws-border shadow-card p-6 text-center">
             <div className="size-24 mx-auto bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center font-bold text-primary text-4xl mb-4">
               {initial}
             </div>
-            <p className="font-semibold text-lg text-slate-900">{form.nome || "—"}</p>
-            <p className="text-xs text-gray-500 mt-1">{form.email}</p>
-            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-left">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+            <p className="font-semibold text-lg text-ws-bright">{form.nome || "—"}</p>
+            <p className="text-xs text-ws-muted mt-1">{form.email}</p>
+            <div className="mt-4 pt-4 border-t border-ws-border space-y-2 text-left">
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
                   <Building2Icon />
                   <span>{form.setor || "Setor não informado"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
                   <ShieldIcon />
                   <span>Roles: {formatRoles({ roles: form.roles }) || "—"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
                   <IdCardIcon />
                   <span>{form.enabled ? "Acesso Ativo" : "Aguardando ativação"}</span>
                 </div>

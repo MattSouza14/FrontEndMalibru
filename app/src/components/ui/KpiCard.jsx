@@ -1,10 +1,10 @@
 export default function KpiCard({ icon, label, value, subtext, accent = 'default', onClick }) {
   const accentClasses = {
-    default: 'text-slate-900',
-    green: 'text-primary',
-    amber: 'text-amber-600',
-    red: 'text-red-600',
-    blue: 'text-blue-600',
+    default: 'text-ws-bright',
+    green: 'text-accent',
+    amber: 'text-amber-400',
+    red: 'text-ws-red',
+    blue: 'text-ws-sky',
   };
 
   const Wrapper = onClick ? 'button' : 'div';
@@ -15,25 +15,25 @@ export default function KpiCard({ icon, label, value, subtext, accent = 'default
   return (
     <Wrapper {...wrapperProps}>
       <div
-        className={`bg-white rounded-xl border border-gray-100 shadow-card p-5 h-full transition-all ${
-          onClick ? 'hover:border-primary/30 hover:shadow-md cursor-pointer' : ''
+        className={`panel-card p-5 h-full transition-all ${
+          onClick ? 'hover:border-accent/40 cursor-pointer' : ''
         }`}
       >
         <div className="flex items-start gap-3">
           {icon && (
-            <div className="size-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            <div className="size-10 rounded bg-primary/15 text-ws-sky flex items-center justify-center shrink-0">
               {icon}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-ws-muted">
               {label}
             </p>
-            <p className={`text-2xl font-bold mt-1 tabular-nums ${accentClasses[accent] || accentClasses.default}`}>
+            <p className={`text-2xl font-bold mt-1 tabular-nums font-mono ${accentClasses[accent] || accentClasses.default}`}>
               {value}
             </p>
             {subtext && (
-              <p className="text-xs text-gray-500 mt-1.5 leading-snug">{subtext}</p>
+              <p className="text-xs text-ws-muted mt-1.5 leading-snug">{subtext}</p>
             )}
           </div>
         </div>

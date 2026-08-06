@@ -9,30 +9,30 @@ export default function SectionCard({
   noPadding = false,
 }) {
   return (
-    <section className={`bg-white rounded-xl border border-gray-100 shadow-card overflow-hidden ${className}`}>
+    <section className={`panel-card ${className}`}>
       {(title || subtitle || action) && (
-        <div className="px-6 py-5 border-b border-gray-100 flex items-start justify-between gap-4">
+        <div className="px-5 py-4 border-b border-ws-border flex items-start justify-between gap-4 bg-ws-elevated/50">
           <div className="flex items-start gap-3 min-w-0">
             {icon && (
-              <div className="size-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <div className="size-10 rounded bg-primary/15 text-ws-sky flex items-center justify-center shrink-0">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
               {title && (
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-700">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-ws-secondary">
                   {title}
                 </h2>
               )}
               {subtitle && (
-                <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>
+                <p className="text-sm text-ws-muted mt-0.5">{subtitle}</p>
               )}
             </div>
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className={noPadding ? bodyClassName : `px-6 py-5 ${bodyClassName}`}>
+      <div className={noPadding ? bodyClassName : `px-5 py-5 ${bodyClassName}`}>
         {children}
       </div>
     </section>

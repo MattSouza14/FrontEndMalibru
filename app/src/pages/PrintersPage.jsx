@@ -62,9 +62,9 @@ function Loader2({ className = 'size-4' }) {
 
 function DetailRow({ label, value, mono = false }) {
   return (
-    <div className="grid grid-cols-[minmax(0,7rem)_1fr] gap-x-3 gap-y-0.5 py-1.5 border-b border-[#333] last:border-0">
-      <span className="text-[11px] uppercase tracking-wider text-[#888]">{label}</span>
-      <span className={`text-sm text-[#e0e0e0] break-words min-w-0 ${mono ? 'font-mono' : ''}`}>
+    <div className="grid grid-cols-[minmax(0,7rem)_1fr] gap-x-3 gap-y-0.5 py-1.5 border-b border-ws-border last:border-0">
+      <span className="text-[11px] uppercase tracking-wider text-ws-muted">{label}</span>
+      <span className={`text-sm text-ws-bright break-words min-w-0 ${mono ? 'font-mono' : ''}`}>
         {value || '—'}
       </span>
     </div>
@@ -73,14 +73,14 @@ function DetailRow({ label, value, mono = false }) {
 
 function Modal({ title, children, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+      <div className="bg-ws-panel rounded border border-ws-border shadow-card w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-ws-border bg-ws-elevated">
+          <h3 className="text-base font-semibold text-ws-bright">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 text-xl leading-none"
+            className="text-ws-muted hover:text-ws-bright text-xl leading-none"
             aria-label="Fechar"
           >
             ×
@@ -508,18 +508,18 @@ export default function PrintersPage() {
       {error && <AlertBanner type="error">{error}</AlertBanner>}
       {success && <AlertBanner type="success">{success}</AlertBanner>}
 
-      <div className="rounded-xl border border-[#333] overflow-hidden shadow-lg bg-[#1a1a1a] flex flex-col min-h-0">
+      <div className="rounded border border-ws-border overflow-hidden shadow-card bg-ws-canvas flex flex-col min-h-0">
         {/* Toolbar estilo Wireshark */}
-        <div className="bg-[#252526] border-b border-[#333] shrink-0">
+        <div className="bg-ws-elevated border-b border-ws-border shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
-            <div className="flex rounded-md overflow-hidden border border-[#444] shrink-0">
+            <div className="flex rounded-md overflow-hidden border border-ws-border-strong shrink-0">
               <button
                 type="button"
                 onClick={() => setTab('printers')}
                 className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                   tab === 'printers'
-                    ? 'bg-[#007acc] text-white'
-                    : 'bg-[#1e1e1e] text-[#ccc] hover:bg-[#383838]'
+                    ? 'bg-primary text-white'
+                    : 'bg-ws-panel text-ws-secondary hover:bg-ws-hover-strong'
                 }`}
               >
                 Impressoras ({printers.length})
@@ -529,8 +529,8 @@ export default function PrintersPage() {
                 onClick={() => setTab('toners')}
                 className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                   tab === 'toners'
-                    ? 'bg-[#007acc] text-white'
-                    : 'bg-[#1e1e1e] text-[#ccc] hover:bg-[#383838]'
+                    ? 'bg-primary text-white'
+                    : 'bg-ws-panel text-ws-secondary hover:bg-ws-hover-strong'
                 }`}
               >
                 Toners ({toners.length})
@@ -542,7 +542,7 @@ export default function PrintersPage() {
                 type="button"
                 onClick={loadLists}
                 disabled={pageLoading}
-                className="px-2.5 py-1.5 text-xs font-semibold bg-[#1e1e1e] text-[#ccc] border border-[#444] rounded hover:bg-[#383838] disabled:opacity-50 inline-flex items-center gap-1.5"
+                className="px-2.5 py-1.5 text-xs font-semibold bg-ws-panel text-ws-secondary border border-ws-border-strong rounded hover:bg-ws-hover-strong disabled:opacity-50 inline-flex items-center gap-1.5"
               >
                 {pageLoading ? <Loader2 className="size-3.5" /> : null}
                 Atualizar
@@ -551,7 +551,7 @@ export default function PrintersPage() {
               <button
                 type="button"
                 onClick={tab === 'printers' ? openCreatePrinter : openCreateToner}
-                className="px-2.5 py-1.5 text-xs font-semibold bg-[#7cb342] hover:bg-[#8bc34a] text-[#1a1a1a] rounded whitespace-nowrap"
+                className="px-2.5 py-1.5 text-xs font-semibold bg-accent hover:bg-accent-light text-[#1a1a1a] rounded whitespace-nowrap"
               >
                 + {tab === 'printers' ? 'Impressora' : 'Toner'}
               </button>
@@ -572,13 +572,13 @@ export default function PrintersPage() {
                 value={displayFilter}
                 onChange={(e) => setDisplayFilter(e.target.value)}
                 placeholder="ip · nome · empresa · código..."
-                className="flex-1 min-w-0 bg-[#1e1e1e] border border-[#444] rounded px-2.5 py-1.5 text-xs font-mono text-[#d4d4d4] placeholder:text-[#666] focus:outline-none focus:border-[#7cb342]"
+                className="flex-1 min-w-0 bg-ws-panel border border-ws-border-strong rounded px-2.5 py-1.5 text-xs font-mono text-ws-ink placeholder:text-ws-muted focus:outline-none focus:border-accent"
               />
               {displayFilter && (
                 <button
                   type="button"
                   onClick={() => setDisplayFilter('')}
-                  className="text-[10px] text-[#888] hover:text-white px-2 shrink-0"
+                  className="text-[10px] text-ws-muted hover:text-white px-2 shrink-0"
                 >
                   Limpar
                 </button>
@@ -593,7 +593,7 @@ export default function PrintersPage() {
                   setSelectedPrinterId(null);
                   setPrinterDetail(null);
                 }}
-                className="bg-[#1e1e1e] border border-[#444] rounded px-2 py-1.5 text-xs text-[#d4d4d4] w-full sm:w-auto sm:min-w-[180px] sm:max-w-[220px] shrink-0"
+                className="bg-ws-panel border border-ws-border-strong rounded px-2 py-1.5 text-xs text-ws-ink w-full sm:w-auto sm:min-w-[180px] sm:max-w-[220px] shrink-0"
               >
                 <option value="">Todas empresas</option>
                 {[...new Set(printers.map((p) => p.empresa).filter(Boolean))].sort().map((empresa) => (
@@ -606,24 +606,24 @@ export default function PrintersPage() {
           </div>
         </div>
 
-        <div className="px-3 py-1 bg-[#007acc]/10 border-b border-[#333] text-[10px] font-mono text-[#9cdcfe]">
+        <div className="px-3 py-1 bg-primary/10 border-b border-ws-border text-[10px] font-mono text-ws-sky">
           Capturados: {tab === 'printers' ? captureStats.printers : captureStats.toners} exibidos
           {tab === 'printers' && captureStats.full > 0 && (
-            <span className="text-[#f48771] ml-3">· {captureStats.full} impressora(s) com slots lotados</span>
+            <span className="text-ws-red ml-3">· {captureStats.full} impressora(s) com slots lotados</span>
           )}
         </div>
 
         <div className="flex flex-col lg:flex-row lg:items-stretch lg:min-h-[min(560px,calc(100dvh-17rem))] min-h-0">
-          <div className="flex-1 min-h-[220px] max-h-[45vh] lg:max-h-none lg:min-h-0 overflow-auto border-b lg:border-b-0 lg:border-r border-[#333]">
+          <div className="flex-1 min-h-[220px] max-h-[45vh] lg:max-h-none lg:min-h-0 overflow-auto border-b lg:border-b-0 lg:border-r border-ws-border">
             {pageLoading ? (
-              <p className="text-sm text-[#888] text-center py-12">Carregando captura...</p>
+              <p className="text-sm text-ws-muted text-center py-12">Carregando captura...</p>
             ) : tab === 'printers' ? (
               filteredPrinters.length === 0 ? (
-                <p className="text-sm text-[#888] text-center py-12">Nenhuma impressora na captura.</p>
+                <p className="text-sm text-ws-muted text-center py-12">Nenhuma impressora na captura.</p>
               ) : (
                 <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-xs font-mono">
-                  <thead className="sticky top-0 bg-[#252526] text-[#888] uppercase tracking-wider">
+                  <thead className="sticky top-0 bg-ws-elevated text-ws-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-2 py-2 text-left w-10">No.</th>
                       <th className="px-2 py-2 text-left">IP</th>
@@ -641,19 +641,19 @@ export default function PrintersPage() {
                         <tr
                           key={printer.id}
                           onClick={() => selectPrinter(printer.id)}
-                          className={`cursor-pointer border-b border-[#2a2a2a] ${
-                            isSelected ? 'bg-[#094771]' : index % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#252526]/50'
-                          } hover:bg-[#2a2d2e]`}
+                          className={`cursor-pointer border-b border-ws-border/80 ${
+                            isSelected ? 'bg-ws-selected' : index % 2 === 0 ? 'bg-ws-panel' : 'bg-ws-elevated/50'
+                          } hover:bg-ws-hover`}
                         >
-                          <td className="px-2 py-1.5 text-[#888]">{index + 1}</td>
-                          <td className="px-2 py-1.5 text-[#4ec9b0]">{printer.ip}</td>
-                          <td className="px-2 py-1.5 text-[#dcdcaa] truncate max-w-[140px]">
+                          <td className="px-2 py-1.5 text-ws-muted">{index + 1}</td>
+                          <td className="px-2 py-1.5 text-ws-cyan">{printer.ip}</td>
+                          <td className="px-2 py-1.5 text-ws-yellow truncate max-w-[140px]">
                             {printer.nome || '—'}
                           </td>
-                          <td className="px-2 py-1.5 text-[#ce9178] hidden md:table-cell truncate max-w-[120px]">
+                          <td className="px-2 py-1.5 text-ws-orange hidden md:table-cell truncate max-w-[120px]">
                             {formatEmpresaLabel(printer.empresa)}
                           </td>
-                          <td className="px-2 py-1.5 text-[#b5cea8]">
+                          <td className="px-2 py-1.5 text-ws-green">
                             {printer.tonersVinculados ?? 0}/{printer.qtdToners ?? 0}
                           </td>
                           <td className={`px-2 py-1.5 hidden sm:table-cell ${getPrinterFillClass(fillState)}`}>
@@ -667,11 +667,11 @@ export default function PrintersPage() {
                 </div>
               )
             ) : filteredToners.length === 0 ? (
-              <p className="text-sm text-[#888] text-center py-12">Nenhum toner na captura.</p>
+              <p className="text-sm text-ws-muted text-center py-12">Nenhum toner na captura.</p>
             ) : (
               <div className="overflow-x-auto">
               <table className="w-full min-w-[400px] text-xs font-mono">
-                <thead className="sticky top-0 bg-[#252526] text-[#888] uppercase tracking-wider">
+                <thead className="sticky top-0 bg-ws-elevated text-ws-muted uppercase tracking-wider">
                   <tr>
                     <th className="px-2 py-2 text-left w-10">No.</th>
                     <th className="px-2 py-2 text-left">Código</th>
@@ -686,18 +686,18 @@ export default function PrintersPage() {
                       <tr
                         key={toner.id}
                         onClick={() => selectToner(toner.id)}
-                        className={`cursor-pointer border-b border-[#2a2a2a] ${
-                          isSelected ? 'bg-[#094771]' : index % 2 === 0 ? 'bg-[#1e1e1e]' : 'bg-[#252526]/50'
-                        } hover:bg-[#2a2d2e]`}
+                        className={`cursor-pointer border-b border-ws-border/80 ${
+                          isSelected ? 'bg-ws-selected' : index % 2 === 0 ? 'bg-ws-panel' : 'bg-ws-elevated/50'
+                        } hover:bg-ws-hover`}
                       >
-                        <td className="px-2 py-1.5 text-[#888]">{index + 1}</td>
-                        <td className="px-2 py-1.5 text-[#4ec9b0]">{toner.codigo}</td>
+                        <td className="px-2 py-1.5 text-ws-muted">{index + 1}</td>
+                        <td className="px-2 py-1.5 text-ws-cyan">{toner.codigo}</td>
                         <td className="px-2 py-1.5">
                           <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${getTonerColorBadge(toner.cor)}`}>
                             {formatTonerColor(toner.cor)}
                           </span>
                         </td>
-                        <td className="px-2 py-1.5 text-[#d4d4d4] truncate max-w-[200px]">
+                        <td className="px-2 py-1.5 text-ws-ink truncate max-w-[200px]">
                           {toner.descricao || '—'}
                         </td>
                       </tr>
@@ -709,19 +709,19 @@ export default function PrintersPage() {
             )}
           </div>
 
-          <div className="w-full lg:w-[min(380px,35%)] xl:w-[400px] shrink-0 bg-[#1e1e1e] flex flex-col min-h-[240px] lg:min-h-0">
-            <div className="px-3 py-2 bg-[#252526] border-b border-[#333] text-[10px] font-bold uppercase tracking-widest text-[#888] shrink-0">
+          <div className="w-full lg:w-[min(380px,35%)] xl:w-[400px] shrink-0 bg-ws-panel flex flex-col min-h-[240px] lg:min-h-0">
+            <div className="px-3 py-2 bg-ws-elevated border-b border-ws-border text-[10px] font-bold uppercase tracking-widest text-ws-muted shrink-0">
               Detalhes do frame
             </div>
             <div className="flex-1 overflow-y-auto p-3 min-h-0">
               {detailLoading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="size-5 text-[#888]" />
+                  <Loader2 className="size-5 text-ws-muted" />
                 </div>
               ) : tab === 'printers' && printerDetail ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#569cd6] mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-ws-blue mb-2">
                       Impressora #{printerDetail.id}
                     </p>
                     <DetailRow label="IP" value={printerDetail.ip} mono />
@@ -734,27 +734,27 @@ export default function PrintersPage() {
                   </div>
 
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#569cd6] mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-ws-blue mb-2">
                       Toners vinculados
                     </p>
                     {(printerDetail.toners ?? []).length === 0 ? (
-                      <p className="text-xs text-[#888]">Nenhum toner vinculado.</p>
+                      <p className="text-xs text-ws-muted">Nenhum toner vinculado.</p>
                     ) : (
                       <ul className="space-y-1.5">
                         {(printerDetail.toners ?? []).map((toner) => (
                           <li
                             key={toner.id}
-                            className="flex items-center justify-between gap-2 rounded border border-[#333] px-2 py-1.5 bg-[#252526]"
+                            className="flex items-center justify-between gap-2 rounded border border-ws-border px-2 py-1.5 bg-ws-elevated"
                           >
                             <div className="min-w-0">
-                              <p className="text-xs font-mono text-[#4ec9b0]">{toner.codigo}</p>
-                              <p className="text-[10px] text-[#888]">{formatTonerColor(toner.cor)}</p>
+                              <p className="text-xs font-mono text-ws-cyan">{toner.codigo}</p>
+                              <p className="text-[10px] text-ws-muted">{formatTonerColor(toner.cor)}</p>
                             </div>
                             <button
                               type="button"
                               onClick={() => handleUnlinkToner(toner.id)}
                               disabled={unlinkingId === toner.id}
-                              className="text-[10px] text-[#f48771] hover:text-red-300 disabled:opacity-50 shrink-0"
+                              className="text-[10px] text-ws-red hover:text-red-400 disabled:opacity-50 shrink-0"
                             >
                               {unlinkingId === toner.id ? '...' : 'Desvincular'}
                             </button>
@@ -768,7 +768,7 @@ export default function PrintersPage() {
                         <select
                           value={linkTonerId}
                           onChange={(e) => setLinkTonerId(e.target.value)}
-                          className="flex-1 bg-[#252526] border border-[#444] rounded px-2 py-1 text-xs text-[#d4d4d4]"
+                          className="flex-1 bg-ws-elevated border border-ws-border-strong rounded px-2 py-1 text-xs text-ws-ink"
                         >
                           <option value="">Vincular toner...</option>
                           {availableTonersForLink.map((t) => (
@@ -781,7 +781,7 @@ export default function PrintersPage() {
                           type="button"
                           onClick={handleLinkToner}
                           disabled={!linkTonerId || linking}
-                          className="px-2 py-1 text-xs font-semibold bg-[#007acc] text-white rounded disabled:opacity-50"
+                          className="px-2 py-1 text-xs font-semibold bg-primary text-white rounded disabled:opacity-50"
                         >
                           {linking ? '...' : 'OK'}
                         </button>
@@ -789,11 +789,11 @@ export default function PrintersPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#333]">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-ws-border">
                     <button
                       type="button"
                       onClick={() => openEditPrinter(printerDetail)}
-                      className="px-2.5 py-1 text-xs bg-[#1e1e1e] text-[#ccc] border border-[#444] rounded hover:bg-[#383838]"
+                      className="px-2.5 py-1 text-xs bg-ws-panel text-ws-secondary border border-ws-border-strong rounded hover:bg-ws-hover-strong"
                     >
                       Editar
                     </button>
@@ -801,7 +801,7 @@ export default function PrintersPage() {
                       type="button"
                       onClick={() => handleDeletePrinter(printerDetail.id)}
                       disabled={deletingId === printerDetail.id}
-                      className="px-2.5 py-1 text-xs text-[#f48771] border border-[#5a3030] rounded hover:bg-[#3a2020] disabled:opacity-50"
+                      className="px-2.5 py-1 text-xs text-ws-red border border-red-900/50 rounded hover:bg-red-950/30 disabled:opacity-50"
                     >
                       {deletingId === printerDetail.id ? 'Excluindo...' : 'Excluir'}
                     </button>
@@ -810,7 +810,7 @@ export default function PrintersPage() {
               ) : tab === 'toners' && tonerDetail ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#569cd6] mb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-ws-blue mb-2">
                       Toner #{tonerDetail.id}
                     </p>
                     <DetailRow label="Código" value={tonerDetail.codigo} mono />
@@ -824,7 +824,7 @@ export default function PrintersPage() {
 
                   {(tonerDetail.impressoras ?? []).length > 0 && (
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#569cd6] mb-2">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-ws-blue mb-2">
                         Vinculado em
                       </p>
                       <ul className="space-y-1.5">
@@ -833,10 +833,10 @@ export default function PrintersPage() {
                             <button
                               type="button"
                               onClick={() => selectPrinter(printer.id)}
-                              className="w-full text-left rounded border border-[#333] px-2 py-1.5 bg-[#252526] hover:bg-[#2a2d2e]"
+                              className="w-full text-left rounded border border-ws-border px-2 py-1.5 bg-ws-elevated hover:bg-ws-hover"
                             >
-                              <p className="text-xs font-mono text-[#4ec9b0]">{printer.ip}</p>
-                              <p className="text-[10px] text-[#888] truncate">
+                              <p className="text-xs font-mono text-ws-cyan">{printer.ip}</p>
+                              <p className="text-[10px] text-ws-muted truncate">
                                 {printer.nome || formatEmpresaLabel(printer.empresa)}
                               </p>
                             </button>
@@ -846,11 +846,11 @@ export default function PrintersPage() {
                     </div>
                   )}
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#333]">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-ws-border">
                     <button
                       type="button"
                       onClick={() => openEditToner(tonerDetail)}
-                      className="px-2.5 py-1 text-xs bg-[#1e1e1e] text-[#ccc] border border-[#444] rounded hover:bg-[#383838]"
+                      className="px-2.5 py-1 text-xs bg-ws-panel text-ws-secondary border border-ws-border-strong rounded hover:bg-ws-hover-strong"
                     >
                       Editar
                     </button>
@@ -858,14 +858,14 @@ export default function PrintersPage() {
                       type="button"
                       onClick={() => handleDeleteToner(tonerDetail.id)}
                       disabled={deletingId === tonerDetail.id}
-                      className="px-2.5 py-1 text-xs text-[#f48771] border border-[#5a3030] rounded hover:bg-[#3a2020] disabled:opacity-50"
+                      className="px-2.5 py-1 text-xs text-ws-red border border-red-900/50 rounded hover:bg-red-950/30 disabled:opacity-50"
                     >
                       {deletingId === tonerDetail.id ? 'Excluindo...' : 'Excluir'}
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-[#888] text-center py-8">
+                <p className="text-xs text-ws-muted text-center py-8">
                   Selecione uma linha na lista para inspecionar os detalhes.
                 </p>
               )}

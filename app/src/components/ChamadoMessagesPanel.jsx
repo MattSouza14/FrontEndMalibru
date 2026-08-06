@@ -26,17 +26,17 @@ function MessageBubble({ author, message, createdAt, isAttendant }) {
   return (
     <div className={`flex ${isAttendant ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] rounded-xl px-3.5 py-2.5 ${
+        className={`max-w-[85%] rounded px-3.5 py-2.5 ${
           isAttendant
             ? 'bg-primary text-white rounded-br-sm'
-            : 'bg-white border border-gray-200 text-gray-800 rounded-bl-sm'
+            : 'bg-ws-panel border border-ws-border text-ws-bright rounded-bl-sm'
         }`}
       >
-        <p className={`text-[11px] font-medium mb-1 ${isAttendant ? 'text-primary-light/90' : 'text-gray-500'}`}>
+        <p className={`text-[11px] font-medium mb-1 ${isAttendant ? 'text-primary-light/90' : 'text-ws-muted'}`}>
           {author}
         </p>
         <p className="text-sm whitespace-pre-wrap break-words">{message}</p>
-        <p className={`text-[10px] mt-1.5 tabular-nums ${isAttendant ? 'text-primary-light/80' : 'text-gray-400'}`}>
+        <p className={`text-[10px] mt-1.5 tabular-nums ${isAttendant ? 'text-primary-light/80' : 'text-ws-muted'}`}>
           {formatDateTime(createdAt)}
         </p>
       </div>
@@ -143,12 +143,12 @@ export default function ChamadoMessagesPanel({
       <div>
         <p className="form-label mb-3">Conversa</p>
         {loading ? (
-          <p className="text-sm text-gray-500 inline-flex items-center gap-2">
+          <p className="text-sm text-ws-muted inline-flex items-center gap-2">
             <Loader2 />
             Carregando mensagens...
           </p>
         ) : (
-          <div className="rounded-lg bg-gray-50 border border-gray-100 p-4 max-h-80 overflow-y-auto space-y-3">
+          <div className="rounded-lg bg-ws-canvas border border-ws-border p-4 max-h-80 overflow-y-auto space-y-3">
             {timeline.map((item) => (
               <MessageBubble
                 key={item.id}
@@ -165,7 +165,7 @@ export default function ChamadoMessagesPanel({
       {error && <AlertBanner type="error">{error}</AlertBanner>}
 
       {encerrado ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-ws-muted">
           Este chamado está {chamado.status === 'FECHADO' ? 'fechado' : 'cancelado'} e não aceita novas
           mensagens.
         </p>

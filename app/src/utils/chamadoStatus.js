@@ -23,12 +23,12 @@ const STATUS_LABELS = {
 };
 
 const STATUS_CLASSES = {
-  ABERTO: 'bg-amber-100 text-amber-800',
-  EM_ATENDIMENTO: 'bg-blue-100 text-blue-800',
-  AGUARDANDO_USUARIO: 'bg-yellow-100 text-yellow-800',
-  RESOLVIDO: 'bg-green-100 text-green-800',
-  FECHADO: 'bg-gray-100 text-gray-600',
-  CANCELADO: 'bg-red-100 text-red-800',
+  ABERTO: 'bg-amber-950/40 text-amber-400',
+  EM_ATENDIMENTO: 'bg-primary/20 text-ws-sky',
+  AGUARDANDO_USUARIO: 'bg-yellow-950/30 text-yellow-400',
+  RESOLVIDO: 'bg-emerald-950/30 text-emerald-400',
+  FECHADO: 'bg-ws-elevated text-ws-muted',
+  CANCELADO: 'bg-red-950/40 text-ws-red',
 };
 
 export function getStatusLabel(status) {
@@ -36,7 +36,7 @@ export function getStatusLabel(status) {
 }
 
 export function getStatusClass(status) {
-  return STATUS_CLASSES[status] ?? 'bg-gray-100 text-gray-600';
+  return STATUS_CLASSES[status] ?? 'bg-ws-elevated text-ws-muted';
 }
 
 export function formatDateTime(iso) {

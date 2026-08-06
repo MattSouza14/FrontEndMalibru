@@ -71,7 +71,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-[42%] bg-sidebar flex-col justify-between p-12 text-white">
         <div className="flex items-center gap-3">
-          <div className="size-11 bg-primary rounded-xl flex items-center justify-center font-bold text-xl">
+          <div className="size-11 bg-primary rounded flex items-center justify-center font-bold text-xl">
             M
           </div>
           <div>
@@ -99,10 +99,10 @@ export default function RegisterPage() {
             <p className="font-bold text-sidebar">Malibru Portal</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-8 sm:p-10">
+          <div className="bg-ws-panel rounded-2xl border border-ws-border shadow-card p-8 sm:p-10">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900">Criar conta</h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <h1 className="text-2xl font-bold text-ws-bright">Criar conta</h1>
+              <p className="text-sm text-ws-muted mt-1">
                 Preencha os dados abaixo para solicitar acesso ao portal.
               </p>
             </div>
@@ -126,11 +126,11 @@ export default function RegisterPage() {
                     className="form-input"
                     placeholder="voce@empresa.com.br"
                   />
-                  <p className="text-[11px] text-gray-400 mt-1">
+                  <p className="text-[11px] text-ws-muted mt-1">
                     Use um e-mail válido com domínio existente (validado pelo servidor).
                   </p>
                   {fieldErrors.email && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                    <p className="text-xs text-ws-red mt-1">{fieldErrors.email}</p>
                   )}
                 </Field>
 
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                     placeholder="Mínimo 6 caracteres"
                   />
                   {fieldErrors.senha && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.senha}</p>
+                    <p className="text-xs text-ws-red mt-1">{fieldErrors.senha}</p>
                   )}
                 </Field>
 
@@ -160,7 +160,7 @@ export default function RegisterPage() {
                     placeholder="Nome completo"
                   />
                   {fieldErrors.nome && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.nome}</p>
+                    <p className="text-xs text-ws-red mt-1">{fieldErrors.nome}</p>
                   )}
                 </Field>
 
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                     placeholder="Setor"
                   />
                   {fieldErrors.setor && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.setor}</p>
+                    <p className="text-xs text-ws-red mt-1">{fieldErrors.setor}</p>
                   )}
                 </Field>
               </div>
@@ -188,7 +188,7 @@ export default function RegisterPage() {
                 {loading ? 'Criando...' : 'Criar conta'}
               </button>
 
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-sm text-ws-muted text-center">
                 Já tem conta?{' '}
                 <Link to="/Login" className="text-primary hover:underline font-medium">
                   Entrar

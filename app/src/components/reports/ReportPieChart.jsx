@@ -76,15 +76,15 @@ function LegendRow({ slice, isSelected, isInteractive, onItemClick, valueSuffix 
       />
       <span
         className={`flex-1 min-w-0 leading-snug break-words ${
-          isSelected ? 'text-primary font-medium' : 'text-gray-700'
+          isSelected ? 'text-primary font-medium' : 'text-ws-secondary'
         }`}
       >
         {slice.label}
       </span>
-      <span className="font-semibold text-slate-900 tabular-nums shrink-0 whitespace-nowrap">
+      <span className="font-semibold text-ws-bright tabular-nums shrink-0 whitespace-nowrap">
         {slice.value}
         {valueSuffix}
-        <span className="text-gray-400 font-normal ml-1">({slice.percent}%)</span>
+        <span className="text-ws-muted font-normal ml-1">({slice.percent}%)</span>
       </span>
     </>
   );
@@ -94,7 +94,7 @@ function LegendRow({ slice, isSelected, isInteractive, onItemClick, valueSuffix 
       <button
         type="button"
         onClick={() => onItemClick(slice)}
-        className={`w-full flex items-start gap-2 text-sm rounded-lg px-2 py-2 transition-colors hover:bg-gray-50 text-left ${
+        className={`w-full flex items-start gap-2 text-sm rounded-lg px-2 py-2 transition-colors hover:bg-ws-canvas text-left ${
           isSelected ? 'bg-primary/5 ring-1 ring-primary/20' : ''
         }`}
         aria-pressed={isSelected}
@@ -119,7 +119,7 @@ export default function ReportPieChart({
   const isInteractive = typeof onItemClick === 'function';
 
   if (!slices.length) {
-    return <p className="text-sm text-gray-500">{emptyMessage}</p>;
+    return <p className="text-sm text-ws-muted">{emptyMessage}</p>;
   }
 
   return (
@@ -137,7 +137,7 @@ export default function ReportPieChart({
                     d={slice.path}
                     fill={slice.fill}
                     className={`transition-opacity ${isSelected ? 'opacity-100' : 'opacity-90'}`}
-                    stroke="#ffffff"
+                    stroke="#333333"
                     strokeWidth="1.5"
                   />
                 );
@@ -157,7 +157,7 @@ export default function ReportPieChart({
                     className={`pointer-events-none transition-opacity ${
                       isSelected ? 'opacity-100' : 'opacity-90'
                     }`}
-                    stroke="#ffffff"
+                    stroke="#333333"
                     strokeWidth={isSelected ? 2.5 : 1.5}
                   />
                 </g>
@@ -165,9 +165,9 @@ export default function ReportPieChart({
             })}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4 text-center">
-            <span className="text-xl font-bold text-slate-900 tabular-nums leading-none">{total}</span>
+            <span className="text-xl font-bold text-ws-bright tabular-nums leading-none">{total}</span>
             {centerLabel && (
-              <span className="text-[10px] uppercase tracking-wider text-gray-500 mt-1 leading-tight">
+              <span className="text-[10px] uppercase tracking-wider text-ws-muted mt-1 leading-tight">
                 {centerLabel}
               </span>
             )}

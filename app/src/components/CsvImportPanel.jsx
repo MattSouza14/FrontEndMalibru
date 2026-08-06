@@ -76,14 +76,14 @@ export default function CsvImportPanel({
 
   return (
     <SectionCard title={title} subtitle={description}>
-      <div className="rounded-lg bg-gray-50 border border-gray-100 p-4 space-y-3 -mt-2">
+      <div className="rounded-lg bg-ws-canvas border border-ws-border p-4 space-y-3 -mt-2">
         <p className="form-label">Formato esperado</p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-ws-secondary">
           Arquivo <strong>.csv</strong> UTF-8 com cabeçalho na primeira linha. Separador{' '}
-          <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">,</code> ou{' '}
-          <code className="text-xs bg-white px-1.5 py-0.5 rounded border border-gray-200">;</code> (Excel BR).
+          <code className="text-xs bg-ws-panel px-1.5 py-0.5 rounded border border-ws-border">,</code> ou{' '}
+          <code className="text-xs bg-ws-panel px-1.5 py-0.5 rounded border border-ws-border">;</code> (Excel BR).
         </p>
-        <pre className="text-xs bg-white border border-gray-100 rounded-lg p-3 overflow-x-auto text-gray-700">
+        <pre className="text-xs bg-ws-panel border border-ws-border rounded-lg p-3 overflow-x-auto text-ws-secondary">
           {preview}
         </pre>
         <button
@@ -130,7 +130,7 @@ export default function CsvImportPanel({
       </form>
 
       {result && (
-        <div className="space-y-4 pt-5 mt-5 border-t border-gray-100">
+        <div className="space-y-4 pt-5 mt-5 border-t border-ws-border">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <KpiCard label="Total de linhas" value={result.totalLinhas ?? 0} />
             <KpiCard label="Importados" value={result.importados ?? 0} accent="green" />
@@ -138,7 +138,7 @@ export default function CsvImportPanel({
           </div>
 
           {Array.isArray(result.erros) && result.erros.length > 0 && (
-            <div className="overflow-x-auto rounded-lg border border-gray-100">
+            <div className="overflow-x-auto rounded-lg border border-ws-border">
               <table className="data-table w-full">
                 <thead>
                   <tr>
@@ -153,7 +153,7 @@ export default function CsvImportPanel({
                       {errorColumns.map((column) => (
                         <td
                           key={column.key}
-                          className={column.key === 'motivo' ? 'text-red-700' : 'text-gray-600'}
+                          className={column.key === 'motivo' ? 'text-ws-red' : 'text-ws-secondary'}
                         >
                           {formatCellValue(item[column.key])}
                         </td>

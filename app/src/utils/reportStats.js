@@ -34,7 +34,7 @@ export function bucketByExpiry(items, dateField) {
     urgent: { key: 'urgent', label: 'Até 7 dias', value: 0, color: 'bg-amber-500' },
     warn: { key: 'warn', label: '8–30 dias', value: 0, color: 'bg-yellow-400' },
     ok: { key: 'ok', label: 'Acima de 30 dias', value: 0, color: 'bg-emerald-500' },
-    none: { key: 'none', label: 'Sem data', value: 0, color: 'bg-gray-300' },
+    none: { key: 'none', label: 'Sem data', value: 0, color: 'bg-ws-border-strong' },
   };
 
   items.forEach((item) => {
@@ -71,10 +71,14 @@ export function buildUserStats(users) {
     total: list.length,
     active,
     pending,
+    status: [
+      { key: 'active', label: 'Ativos', value: active, color: 'bg-emerald-500' },
+      { key: 'pending', label: 'Pendentes', value: pending, color: 'bg-amber-500' },
+    ].filter((item) => item.value > 0),
     roles: Object.entries(byRole)
-      .map(([label, value]) => ({ label, value }))
+      .map(([label, value]) => ({ key: label, label, value }))
       .sort((a, b) => b.value - a.value),
-    setores: bySetor.slice(0, 8),
+    setores: bySetor.slice(0, 8).map(({ label, value }) => ({ key: label, label, value })),
   };
 }
 
@@ -108,7 +112,7 @@ export function buildSoftwareLicenseStats(licenses) {
   return {
     total: list.length,
     totalSeats,
-    bySoftware: bySoftware.slice(0, 8),
+    bySoftware: bySoftware.slice(0, 8).map(({ label, value }) => ({ key: label, label, value })),
     expiry: bucketByExpiry(list, 'dataVencimento'),
     topExpiring: [...list]
       .filter((l) => l.dataVencimento)
@@ -191,7 +195,7 @@ export function buildPrinterStats(printers) {
   const slotUsage = [
     { key: 'full', label: 'Slots lotados', value: full, color: 'bg-red-500' },
     { key: 'partial', label: 'Parcialmente vinculadas', value: partial, color: 'bg-amber-500' },
-    { key: 'empty', label: 'Sem toners', value: empty, color: 'bg-gray-300' },
+    { key: 'empty', label: 'Sem toners', value: empty, color: 'bg-ws-border-strong' },
   ].filter((item) => item.value > 0);
 
   return {

@@ -70,17 +70,17 @@ function QuickLinkCard({ title, description, badge, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-card p-5 hover:border-primary/30 hover:shadow-md transition-all group"
+      className="w-full text-left bg-ws-panel rounded border border-ws-border shadow-card p-5 hover:border-primary/30 hover:shadow-md transition-all group"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-slate-900 group-hover:text-primary transition-colors">
+          <p className="font-semibold text-ws-bright group-hover:text-primary transition-colors">
             {title}
           </p>
-          <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">{description}</p>
+          <p className="text-sm text-ws-muted mt-1.5 leading-relaxed">{description}</p>
         </div>
         {badge && (
-          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-gray-100 text-gray-600 shrink-0">
+          <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-ws-elevated text-ws-secondary shrink-0">
             {badge}
           </span>
         )}
@@ -241,7 +241,7 @@ export default function HomePage() {
             key: 'email',
             label: 'E-mail',
             render: (item) => (
-              <span className="font-medium text-gray-900">{item.email}</span>
+              <span className="font-medium text-ws-bright">{item.email}</span>
             ),
           },
           {
@@ -258,7 +258,7 @@ export default function HomePage() {
             key: 'vagas',
             label: 'Vagas',
             render: (item) => (
-              <span className="text-gray-600">{item.vagasRestantes ?? 0} / 5</span>
+              <span className="text-ws-secondary">{item.vagasRestantes ?? 0} / 5</span>
             ),
           },
         ],
@@ -277,14 +277,14 @@ export default function HomePage() {
             key: 'nome',
             label: 'Software',
             render: (item) => (
-              <span className="font-medium text-gray-900">{item.nome}</span>
+              <span className="font-medium text-ws-bright">{item.nome}</span>
             ),
           },
           {
             key: 'usuario',
             label: 'Usuário',
             render: (item) => (
-              <span className="text-gray-600">{item.usuarioNome || '—'}</span>
+              <span className="text-ws-secondary">{item.usuarioNome || '—'}</span>
             ),
           },
           {
@@ -313,14 +313,14 @@ export default function HomePage() {
             key: 'nome',
             label: 'Nome',
             render: (item) => (
-              <span className="font-medium text-gray-900">{item.nome}</span>
+              <span className="font-medium text-ws-bright">{item.nome}</span>
             ),
           },
           {
             key: 'empresa',
             label: 'Empresa',
             render: (item) => (
-              <span className="text-gray-600">{item.empresa || '—'}</span>
+              <span className="text-ws-secondary">{item.empresa || '—'}</span>
             ),
           },
           {
@@ -476,22 +476,22 @@ export default function HomePage() {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 -mx-2">
           <div className="px-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ws-muted mb-4">
               Licenças
             </h3>
             {resourcesLoading ? (
-              <p className="text-sm text-gray-500">Carregando...</p>
+              <p className="text-sm text-ws-muted">Carregando...</p>
             ) : !myOfficeLicense && mySoftwareLicenses.length === 0 ? (
-              <p className="text-sm text-gray-500">Nenhuma licença vinculada à sua conta.</p>
+              <p className="text-sm text-ws-muted">Nenhuma licença vinculada à sua conta.</p>
             ) : (
               <div className="space-y-5">
                 {myOfficeLicense && (
-                  <div className="rounded-lg border border-gray-100 p-4 bg-gray-50/50">
+                  <div className="rounded-lg border border-ws-border p-4 bg-ws-canvas/50">
                     <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
                       Microsoft Office
                     </p>
-                    <p className="font-medium text-gray-900">{myOfficeLicense.email}</p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="font-medium text-ws-bright">{myOfficeLicense.email}</p>
+                    <p className="text-sm text-ws-secondary mt-1">
                       Vencimento: {formatDate(myOfficeLicense.vencimento)}
                     </p>
                     <div className="mt-3 space-y-2">
@@ -510,10 +510,10 @@ export default function HomePage() {
                   return (
                     <div
                       key={license.id}
-                      className="rounded-lg border border-gray-100 p-4 bg-gray-50/50"
+                      className="rounded-lg border border-ws-border p-4 bg-ws-canvas/50"
                     >
-                      <p className="font-medium text-gray-900">{license.nome}</p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="font-medium text-ws-bright">{license.nome}</p>
+                      <p className="text-sm text-ws-secondary mt-1">
                         Vencimento: {formatDate(license.dataVencimento)}
                       </p>
                       <div className="mt-3 space-y-2">
@@ -525,7 +525,7 @@ export default function HomePage() {
                             {expiryLabel(days)}
                           </span>
                           {(license.qtdLicencas ?? 1) > 1 && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-ws-muted">
                               {license.qtdLicencas} licenças
                             </span>
                           )}
@@ -539,30 +539,30 @@ export default function HomePage() {
           </div>
 
           <div className="px-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ws-muted mb-4">
               Equipamentos
             </h3>
             {resourcesLoading ? (
-              <p className="text-sm text-gray-500">Carregando...</p>
+              <p className="text-sm text-ws-muted">Carregando...</p>
             ) : myEquipments.length === 0 ? (
-              <p className="text-sm text-gray-500">Nenhum equipamento vinculado.</p>
+              <p className="text-sm text-ws-muted">Nenhum equipamento vinculado.</p>
             ) : (
               <>
                 <ul className="space-y-3">
                   {equipmentsPagination.items.map((equipment) => (
                     <li
                       key={equipment.id}
-                      className="rounded-lg border border-gray-100 p-4 bg-gray-50/50"
+                      className="rounded-lg border border-ws-border p-4 bg-ws-canvas/50"
                     >
-                      <p className="font-medium text-gray-900">{equipment.nome}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="font-medium text-ws-bright">{equipment.nome}</p>
+                      <p className="text-xs text-ws-muted mt-1">
                         Empresa: {equipment.empresa ? formatEmpresaLabel(equipment.empresa) : '—'}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-ws-muted mt-1">
                         Patrimônio: {equipment.patrimonio || '—'}
                       </p>
                       {equipment.descricao && (
-                        <p className="text-sm text-gray-600 mt-1">{equipment.descricao}</p>
+                        <p className="text-sm text-ws-secondary mt-1">{equipment.descricao}</p>
                       )}
                     </li>
                   ))}
@@ -595,7 +595,7 @@ export default function HomePage() {
           noPadding
           bodyClassName="p-0"
         >
-          <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+          <div className="px-6 py-4 border-b border-ws-border flex flex-wrap gap-2">
             {expiringTabs.map((tab) => {
               const isActive = expiringTab === tab.id;
               return (
@@ -606,14 +606,14 @@ export default function HomePage() {
                   className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors inline-flex items-center gap-2 ${
                     isActive
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
                   }`}
                 >
                   {tab.label}
                   {tab.urgentCount > 0 && (
                     <span
                       className={`text-[10px] min-w-[1.25rem] h-5 px-1.5 rounded-full inline-flex items-center justify-center ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                        isActive ? 'bg-ws-panel/20 text-white' : 'bg-amber-100 text-amber-400'
                       }`}
                     >
                       {tab.urgentCount}
@@ -630,7 +630,7 @@ export default function HomePage() {
       )}
 
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-ws-muted">
           Acesso rápido
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

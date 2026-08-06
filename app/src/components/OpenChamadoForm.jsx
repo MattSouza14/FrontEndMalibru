@@ -31,7 +31,7 @@ function Loader2() {
 
 function FieldError({ message }) {
   if (!message) return null;
-  return <p className="text-xs text-red-600">{message}</p>;
+  return <p className="text-xs text-ws-red">{message}</p>;
 }
 
 export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) {
@@ -116,7 +116,7 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
               className="form-input"
               placeholder="(11) 98765-4321"
             />
-            <p className="text-[11px] text-gray-400">Celular BR: DDD + 9 + 8 dígitos.</p>
+            <p className="text-[11px] text-ws-muted">Celular BR: DDD + 9 + 8 dígitos.</p>
             <FieldError message={fieldErrors.telefoneContato} />
           </label>
 
@@ -146,7 +146,7 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
               className="form-input"
               placeholder="Somente números"
             />
-            <p className="text-[11px] text-gray-400">ID AnyDesk, TeamViewer ou RustDesk.</p>
+            <p className="text-[11px] text-ws-muted">ID AnyDesk, TeamViewer ou RustDesk.</p>
             <FieldError message={fieldErrors.codigoAcessoRemoto} />
           </label>
         </div>

@@ -1,6 +1,6 @@
 export default function InfoBox({ children }) {
   return (
-    <div className="rounded-lg border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 leading-relaxed">
+    <div className="rounded border border-amber-900/50 bg-amber-950/25 px-4 py-3 text-sm text-amber-300 leading-relaxed">
       {children}
     </div>
   );

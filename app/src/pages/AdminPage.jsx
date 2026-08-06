@@ -339,7 +339,7 @@ export default function AdminPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando usuários...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando usuários...</p>
       </PageContainer>
     );
   }
@@ -387,7 +387,7 @@ export default function AdminPage() {
       </div>
 
       <SectionCard title="Usuários cadastrados" noPadding bodyClassName="p-0">
-        <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2">
+        <div className="px-6 py-4 border-b border-ws-border flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'Todos' },
             { key: 'pending', label: 'Pendentes' },
@@ -400,7 +400,7 @@ export default function AdminPage() {
               className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
                 filter === key
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
               }`}
             >
               {label}
@@ -425,7 +425,7 @@ export default function AdminPage() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-10 text-center text-ws-muted">
                     Nenhum usuário encontrado para este filtro.
                   </td>
                 </tr>
@@ -440,9 +440,9 @@ export default function AdminPage() {
 
                   return (
                     <tr key={u.id}>
-                      <td className="font-medium text-gray-900">{u.nome}</td>
-                      <td className="text-gray-600">{u.email}</td>
-                      <td className="text-gray-600">{u.setor || '—'}</td>
+                      <td className="font-medium text-ws-bright">{u.nome}</td>
+                      <td className="text-ws-secondary">{u.email}</td>
+                      <td className="text-ws-secondary">{u.setor || '—'}</td>
                       <td className="px-6 py-4 min-w-[220px]">
                         {roleEdits[u.id] ? (
                           <div className="space-y-2">
@@ -450,7 +450,7 @@ export default function AdminPage() {
                               {availableRoles.map((role) => (
                                 <label
                                   key={role}
-                                  className="inline-flex items-center gap-1.5 text-xs text-gray-700"
+                                  className="inline-flex items-center gap-1.5 text-xs text-ws-secondary"
                                 >
                                   <input
                                     type="checkbox"
@@ -475,7 +475,7 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => cancelRoleEdit(u.id)}
-                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-600 hover:text-gray-900"
+                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-ws-secondary hover:text-ws-bright"
                               >
                                 Cancelar
                               </button>
@@ -489,8 +489,8 @@ export default function AdminPage() {
                                   key={role}
                                   className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
                                     role === 'ADMIN'
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-gray-100 text-gray-600'
+                                      ? 'bg-green-100 text-accent'
+                                      : 'bg-ws-elevated text-ws-secondary'
                                   }`}
                                 >
                                   {role}
@@ -513,23 +513,23 @@ export default function AdminPage() {
                         <span
                           className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
                             u.enabled
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-green-100 text-accent'
+                              : 'bg-amber-100 text-amber-400'
                           }`}
                         >
                           {u.enabled ? 'Ativo' : 'Pendente'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 min-w-[180px]">
+                      <td className="px-6 py-4 text-ws-secondary min-w-[180px]">
                         {linkedLicense ? (
                           <span className="text-sm">{linkedLicense.email}</span>
                         ) : (
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-ws-muted">
                             Sem licença
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-gray-500">{formatDate(u.createdAt)}</td>
+                      <td className="px-6 py-4 text-ws-muted">{formatDate(u.createdAt)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex flex-col items-end gap-2 min-w-[220px]">
                           {!isSelf && (
@@ -539,7 +539,7 @@ export default function AdminPage() {
                                   type="button"
                                   disabled={isLicenseLoading}
                                   onClick={() => handleUnlinkLicense(u)}
-                                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-900 disabled:opacity-50 inline-flex items-center gap-2"
+                                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-300 disabled:opacity-50 inline-flex items-center gap-2"
                                 >
                                   {isLicenseLoading && <Loader2 />}
                                   Desvincular licença
@@ -594,7 +594,7 @@ export default function AdminPage() {
                             </>
                           )}
                           {isSelf && (
-                            <span className="text-xs text-gray-400">Sua conta</span>
+                            <span className="text-xs text-ws-muted">Sua conta</span>
                           )}
                         </div>
                       </td>

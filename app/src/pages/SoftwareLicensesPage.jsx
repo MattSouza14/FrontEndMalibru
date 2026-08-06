@@ -223,7 +223,7 @@ export default function SoftwareLicensesPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando licenças de software...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando licenças de software...</p>
       </PageContainer>
     );
   }
@@ -332,7 +332,7 @@ export default function SoftwareLicensesPage() {
           <tbody>
             {licenses.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-gray-500 py-10">
+                <td colSpan={6} className="text-center text-ws-muted py-10">
                   Nenhuma licença de software cadastrada.
                 </td>
               </tr>
@@ -342,12 +342,12 @@ export default function SoftwareLicensesPage() {
 
                 return (
                   <tr key={license.id}>
-                    <td className="font-medium text-gray-900">{license.nome}</td>
+                    <td className="font-medium text-ws-bright">{license.nome}</td>
                     <td>
-                      <p className="text-gray-900">{license.usuarioNome}</p>
-                      <p className="text-xs text-gray-500">{license.usuarioEmail}</p>
+                      <p className="text-ws-bright">{license.usuarioNome}</p>
+                      <p className="text-xs text-ws-muted">{license.usuarioEmail}</p>
                     </td>
-                    <td className="text-gray-600 tabular-nums">
+                    <td className="text-ws-secondary tabular-nums">
                       {formatDate(license.dataVencimento)}
                     </td>
                     <td>
@@ -357,7 +357,7 @@ export default function SoftwareLicensesPage() {
                         {expiryLabel(days)}
                       </span>
                     </td>
-                    <td className="text-gray-600">{license.qtdLicencas ?? 1}</td>
+                    <td className="text-ws-secondary">{license.qtdLicencas ?? 1}</td>
                     <td className="text-right space-x-2 whitespace-nowrap">
                       <button type="button" onClick={() => openEditForm(license)} className="btn-secondary">
                         Editar

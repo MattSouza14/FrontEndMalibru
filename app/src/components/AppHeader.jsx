@@ -6,7 +6,7 @@ import { formatRoles } from '../utils/roles';
 
 function IconSearch() {
   return (
-    <svg className="size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="size-4 text-ws-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
     </svg>
   );
@@ -51,7 +51,7 @@ export default function AppHeader() {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 shadow-header flex items-center px-5 lg:px-8 gap-4 shrink-0">
+    <header className="h-16 bg-ws-elevated border-b border-ws-border shadow-header flex items-center px-5 lg:px-8 gap-4 shrink-0">
       <div className="flex-1 max-w-md hidden sm:block">
         <label className="relative block">
           <span className="sr-only">Buscar</span>
@@ -61,19 +61,19 @@ export default function AppHeader() {
           <input
             type="search"
             placeholder="Buscar no portal..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 placeholder:text-gray-400"
+            className="w-full pl-10 pr-4 py-2 text-sm font-mono bg-ws-panel border border-ws-border-strong rounded focus:outline-none focus:border-accent placeholder:text-ws-muted text-ws-ink"
           />
         </label>
       </div>
 
       <div className="flex-1 sm:hidden">
-        <Link to="/HomePage" className="font-bold text-sidebar text-sm tracking-tight">
+        <Link to="/HomePage" className="font-bold text-ws-bright text-sm tracking-tight font-mono">
           Malibru Portal
         </Link>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-        <span className="hidden md:inline text-xs text-gray-500 tabular-nums">{dateTime}</span>
+        <span className="hidden md:inline text-xs text-ws-muted tabular-nums font-mono">{dateTime}</span>
 
         <NotificationBell />
 
@@ -81,36 +81,36 @@ export default function AppHeader() {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded hover:bg-ws-hover transition-colors"
           >
-            <div className="size-9 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center text-sm">
+            <div className="size-9 rounded-full bg-primary/20 text-ws-sky font-semibold flex items-center justify-center text-sm font-mono">
               {initial}
             </div>
             <div className="hidden lg:block text-left min-w-0 max-w-[140px]">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.nome}</p>
-              <p className="text-[10px] uppercase tracking-wider text-gray-500 truncate">
+              <p className="text-sm font-medium text-ws-bright truncate">{user?.nome}</p>
+              <p className="text-[10px] uppercase tracking-wider text-ws-muted truncate font-mono">
                 {formatRoles(user)}
               </p>
             </div>
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-gray-100 shadow-lg py-1 z-50">
-              <div className="px-4 py-3 border-b border-gray-100 lg:hidden">
-                <p className="text-sm font-medium text-gray-900 truncate">{user?.nome}</p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            <div className="absolute right-0 top-full mt-2 w-56 bg-ws-panel rounded border border-ws-border shadow-card py-1 z-50">
+              <div className="px-4 py-3 border-b border-ws-border lg:hidden">
+                <p className="text-sm font-medium text-ws-bright truncate">{user?.nome}</p>
+                <p className="text-xs text-ws-muted truncate">{user?.email}</p>
               </div>
               <Link
                 to="/profile"
                 onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2.5 text-sm text-ws-secondary hover:bg-ws-hover"
               >
                 Meu perfil
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                className="w-full text-left px-4 py-2.5 text-sm text-ws-red hover:bg-ws-hover"
               >
                 Sair da conta
               </button>

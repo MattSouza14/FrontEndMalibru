@@ -6,7 +6,7 @@ export default function ReportBarList({
   selectedKey,
 }) {
   if (!items.length) {
-    return <p className="text-sm text-gray-500">{emptyMessage}</p>;
+    return <p className="text-sm text-ws-muted">{emptyMessage}</p>;
   }
 
   const max = Math.max(...items.map((i) => i.value), 1);
@@ -22,17 +22,17 @@ export default function ReportBarList({
         const content = (
           <>
             <div className="flex items-center justify-between gap-3 text-sm mb-1">
-              <span className={`truncate ${isSelected ? 'text-primary font-medium' : 'text-gray-700'}`}>
+              <span className={`truncate ${isSelected ? 'text-primary font-medium' : 'text-ws-secondary'}`}>
                 {item.label}
               </span>
-              <span className="font-semibold text-slate-900 tabular-nums shrink-0">
+              <span className="font-semibold text-ws-bright tabular-nums shrink-0">
                 {item.value}
                 {valueSuffix}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 rounded-full bg-ws-elevated overflow-hidden">
               <div
-                className={`h-full rounded-full ${item.color || 'bg-blue-500'} transition-all`}
+                className={`h-full rounded-full ${item.color || 'bg-primary/150'} transition-all`}
                 style={{ width: `${Math.max(width, item.value > 0 ? 4 : 0)}%` }}
               />
             </div>
@@ -45,7 +45,7 @@ export default function ReportBarList({
               <button
                 type="button"
                 onClick={() => onItemClick(item)}
-                className={`w-full text-left rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-gray-50 ${
+                className={`w-full text-left rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-ws-canvas ${
                   isSelected ? 'bg-primary/5 ring-1 ring-primary/20' : ''
                 }`}
                 aria-pressed={isSelected}

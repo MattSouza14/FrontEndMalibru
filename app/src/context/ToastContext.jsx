@@ -23,9 +23,9 @@ function ToastItem({ toast, onDismiss }) {
   return (
     <div
       role="status"
-      className={`pointer-events-auto w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-gray-100 border-l-4 ${toastVariantClass(
+      className={`pointer-events-auto w-[min(22rem,calc(100vw-2rem))] rounded border border-ws-border border-l-4 ${toastVariantClass(
         toast.variant,
-      )} bg-white shadow-lg px-4 py-3 animate-toast-in`}
+      )} bg-ws-panel shadow-card px-4 py-3 animate-toast-in`}
     >
       <div className="flex items-start gap-3">
         <button
@@ -36,15 +36,15 @@ function ToastItem({ toast, onDismiss }) {
           }}
           className="min-w-0 flex-1 text-left"
         >
-          <p className="text-sm font-semibold text-gray-900">{toast.title}</p>
+          <p className="text-sm font-semibold text-ws-bright">{toast.title}</p>
           {toast.message && (
-            <p className="text-xs text-gray-600 mt-1 leading-relaxed line-clamp-2">{toast.message}</p>
+            <p className="text-xs text-ws-secondary mt-1 leading-relaxed line-clamp-2">{toast.message}</p>
           )}
         </button>
         <button
           type="button"
           onClick={() => onDismiss(toast.id)}
-          className="shrink-0 text-gray-400 hover:text-gray-600 p-0.5"
+          className="shrink-0 text-ws-muted hover:text-ws-secondary p-0.5"
           aria-label="Fechar aviso"
         >
           <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

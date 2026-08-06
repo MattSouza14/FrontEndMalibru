@@ -120,7 +120,7 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
 
   if (loading) {
     return (
-      <div className="size-14 bg-gray-100 border border-gray-200 flex items-center justify-center">
+      <div className="size-14 bg-ws-elevated border border-ws-border flex items-center justify-center">
         <Loader2 />
       </div>
     );
@@ -132,7 +132,7 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
         <img
           src={previewUrl}
           alt={termo.titulo}
-          className="size-14 object-cover border border-gray-200 hover:border-green-700"
+          className="size-14 object-cover border border-ws-border hover:border-green-700"
         />
       </button>
     );
@@ -142,7 +142,7 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
     <button
       type="button"
       onClick={() => onOpenPreview(termo)}
-      className="size-14 bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:border-green-700 hover:text-green-700"
+      className="size-14 bg-ws-canvas border border-ws-border flex flex-col items-center justify-center text-[10px] font-bold uppercase tracking-widest text-ws-muted hover:border-green-700 hover:text-accent"
     >
       {getPreviewLabel(termo.tipoMime)}
     </button>
@@ -428,7 +428,7 @@ export default function SignedTermsPage() {
   if (pageLoading) {
     return (
       <PageContainer>
-        <p className="text-sm text-gray-500 text-center py-16">Carregando termos assinados...</p>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando termos assinados...</p>
       </PageContainer>
     );
   }
@@ -622,7 +622,7 @@ export default function SignedTermsPage() {
             <tbody>
               {termos.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-500 py-10">
+                  <td colSpan={6} className="text-center text-ws-muted py-10">
                     Nenhum termo assinado encontrado.
                   </td>
                 </tr>
@@ -639,16 +639,16 @@ export default function SignedTermsPage() {
                           onOpenPreview={openPreview}
                         />
                       </td>
-                      <td className="font-medium text-gray-900">{termo.titulo}</td>
-                      <td className="text-gray-600">{linkedUser ? linkedUser.nome : '—'}</td>
-                      <td className="text-gray-600 tabular-nums">
+                      <td className="font-medium text-ws-bright">{termo.titulo}</td>
+                      <td className="text-ws-secondary">{linkedUser ? linkedUser.nome : '—'}</td>
+                      <td className="text-ws-secondary tabular-nums">
                         {termo.dataAssinatura ? formatDate(termo.dataAssinatura) : '—'}
                       </td>
-                      <td className="text-gray-600">
+                      <td className="text-ws-secondary">
                         <p className="truncate max-w-[180px]" title={termo.nomeArquivo}>
                           {termo.nomeArquivo}
                         </p>
-                        <p className="text-xs text-gray-400">{formatBytes(termo.tamanhoBytes)}</p>
+                        <p className="text-xs text-ws-muted">{formatBytes(termo.tamanhoBytes)}</p>
                       </td>
                       <td className="text-right space-x-2 whitespace-nowrap">
                         <button type="button" onClick={() => openPreview(termo)} className="btn-secondary">
@@ -686,34 +686,34 @@ export default function SignedTermsPage() {
 
       {previewTermo && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
+          <div className="bg-ws-panel w-full max-w-4xl max-h-[90vh] flex flex-col rounded border border-ws-border shadow-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-ws-border flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">{previewTermo.titulo}</h3>
-                <p className="text-xs text-gray-500">{previewTermo.nomeArquivo}</p>
+                <h3 className="text-lg font-semibold text-ws-bright">{previewTermo.titulo}</h3>
+                <p className="text-xs text-ws-muted">{previewTermo.nomeArquivo}</p>
               </div>
               <button type="button" onClick={closePreview} className="btn-secondary">
                 Fechar
               </button>
             </div>
-            <div className="flex-1 overflow-auto p-6 flex items-center justify-center bg-gray-50 min-h-[320px]">
+            <div className="flex-1 overflow-auto p-6 flex items-center justify-center bg-ws-canvas min-h-[320px]">
               {previewLoading ? (
                 <Loader2 />
               ) : previewBlobUrl && isImageMime(previewTermo.tipoMime) ? (
                 <img
                   src={previewBlobUrl}
                   alt={previewTermo.titulo}
-                  className="max-w-full max-h-[70vh] object-contain border border-gray-200"
+                  className="max-w-full max-h-[70vh] object-contain border border-ws-border"
                 />
               ) : previewBlobUrl && isPdfMime(previewTermo.tipoMime) ? (
                 <iframe
                   src={previewBlobUrl}
                   title={previewTermo.titulo}
-                  className="w-full h-[70vh] border border-gray-200 bg-white"
+                  className="w-full h-[70vh] border border-ws-border bg-ws-panel"
                 />
               ) : previewBlobUrl && isWordMime(previewTermo.tipoMime) ? (
                 <div className="text-center space-y-4 max-w-md">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-ws-secondary">
                     Arquivos Word não têm preview no navegador. Faça o download para abrir.
                   </p>
                   <a
@@ -725,7 +725,7 @@ export default function SignedTermsPage() {
                   </a>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Preview indisponível.</p>
+                <p className="text-sm text-ws-muted">Preview indisponível.</p>
               )}
             </div>
           </div>

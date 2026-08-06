@@ -1,13 +1,13 @@
 export default function AlertBanner({ type = 'error', children }) {
   const styles = {
-    error: 'bg-red-50 border-red-200 text-red-700',
-    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    error: 'bg-red-950/40 border-red-900/60 text-ws-red',
+    success: 'bg-emerald-950/30 border-emerald-900/50 text-emerald-400',
+    warning: 'bg-amber-950/30 border-amber-900/50 text-amber-400',
+    info: 'bg-primary/10 border-primary/30 text-ws-sky',
   };
 
   return (
-    <div className={`p-4 rounded-lg border text-sm ${styles[type] || styles.error}`}>
+    <div className={`p-4 rounded border text-sm ${styles[type] || styles.error}`}>
       {children}
     </div>
   );
