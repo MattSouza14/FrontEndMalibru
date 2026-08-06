@@ -13,8 +13,10 @@ import { listAdminChamados, listMyChamados } from '../services/chamadoService';
 import { listCertificates } from '../services/certificateService';
 import { listEquipments } from '../services/equipmentService';
 import { listOfficeLicenses } from '../services/officeLicenseService';
+import { listPrinters } from '../services/printerService';
 import { listSignedTerms } from '../services/signedTermService';
 import { listSoftwareLicenses } from '../services/softwareLicenseService';
+import { listToners } from '../services/tonerService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
 import { formatDateTime } from '../utils/chamadoStatus';
 import { formatEmpresaLabel } from '../utils/equipment';
@@ -23,8 +25,10 @@ import {
   buildChamadoStats,
   buildEquipmentStats,
   buildOfficeLicenseStats,
+  buildPrinterStats,
   buildSignedTermStats,
   buildSoftwareLicenseStats,
+  buildTonerStats,
   buildUserStats,
   formatBytes,
 } from '../utils/reportStats';
@@ -57,8 +61,11 @@ export default function ReportsPage() {
   const [softwareLicenses, setSoftwareLicenses] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [equipments, setEquipments] = useState([]);
+  const [printers, setPrinters] = useState([]);
+  const [toners, setToners] = useState([]);
   const [termos, setTermos] = useState([]);
   const [selectedEquipmentEmpresa, setSelectedEquipmentEmpresa] = useState(null);
+  const [selectedPrinterEmpresa, setSelectedPrinterEmpresa] = useState(null);
 
   useEffect(() => {
     async function loadReports() {
@@ -93,12 +100,16 @@ export default function ReportsPage() {
               listCertificates(token),
               listEquipments(token),
               listSignedTerms(token),
-            ]).then(([office, software, certs, equips, signed]) => {
+              listPrinters(token),
+              listToners(token),
+            ]).then(([office, software, certs, equips, signed, printerList, tonerList]) => {
               setOfficeLicenses(Array.isArray(office) ? office : []);
               setSoftwareLicenses(Array.isArray(software) ? software : []);
               setCertificates(Array.isArray(certs) ? certs : []);
               setEquipments(Array.isArray(equips) ? equips : []);
               setTermos(Array.isArray(signed) ? signed : []);
+              setPrinters(Array.isArray(printerList) ? printerList : []);
+              setToners(Array.isArray(tonerList) ? tonerList : []);
             }),
           );
         }
@@ -131,6 +142,8 @@ export default function ReportsPage() {
     [certificates],
   );
   const equipmentStats = useMemo(() => buildEquipmentStats(equipments), [equipments]);
+  const printerStats = useMemo(() => buildPrinterStats(printers), [printers]);
+  const tonerStats = useMemo(() => buildTonerStats(toners), [toners]);
   const termStats = useMemo(() => buildSignedTermStats(termos), [termos]);
 
   const filteredEquipments = useMemo(() => {
@@ -143,9 +156,24 @@ export default function ReportsPage() {
     return equipments.filter((equipment) => equipment.empresa === selectedEquipmentEmpresa);
   }, [equipments, selectedEquipmentEmpresa]);
 
+  const filteredPrinters = useMemo(() => {
+    if (selectedPrinterEmpresa == null) return [];
+    if (selectedPrinterEmpresa === 'Sem empresa') {
+      return printers.filter((printer) => !printer.empresa);
+    }
+    return printers.filter((printer) => printer.empresa === selectedPrinterEmpresa);
+  }, [printers, selectedPrinterEmpresa]);
+
   function handleEquipmentEmpresaClick(item) {
     const empresaKey = item.key ?? item.label;
     setSelectedEquipmentEmpresa((current) => (current === empresaKey ? null : empresaKey));
+    setSelectedPrinterEmpresa(null);
+  }
+
+  function handlePrinterEmpresaClick(item) {
+    const empresaKey = item.key ?? item.label;
+    setSelectedPrinterEmpresa((current) => (current === empresaKey ? null : empresaKey));
+    setSelectedEquipmentEmpresa(null);
   }
 
   const generatedAt = new Date().toLocaleString('pt-BR', {
@@ -421,6 +449,96 @@ export default function ReportsPage() {
                               }`}
                             >
                               {equipment.usuarioId ? 'Vinculado' : 'Disponível'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Impressoras"
+              subtitle={`${printerStats.total} cadastradas · ${printerStats.fillRate}% dos slots ocupados · ${printerStats.full} lotada(s)`}
+            >
+              <div className="space-y-4 -mt-2">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-slate-900">{printerStats.total}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Impressoras</p>
+                  </div>
+                  <div className="rounded-lg bg-blue-50 border border-blue-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-blue-700">{printerStats.usedTonerSlots}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">
+                      Slots / {printerStats.totalTonerSlots}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-red-700">{printerStats.full}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">Lotadas</p>
+                  </div>
+                </div>
+                {printerStats.slotUsage.length > 0 && (
+                  <div>
+                    <p className="form-label mb-3">Ocupação de slots</p>
+                    <ReportBarList items={printerStats.slotUsage} />
+                  </div>
+                )}
+                {tonerStats.byCor.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="form-label mb-3">Toners por cor</p>
+                    <ReportBarList items={tonerStats.byCor.map((item) => ({ ...item, color: 'bg-indigo-500' }))} />
+                  </div>
+                )}
+                {printerStats.byEmpresa.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <p className="form-label mb-1">Por empresa</p>
+                    <p className="text-xs text-gray-500 mb-3">Clique em uma empresa para ver as impressoras</p>
+                    <ReportBarList
+                      items={printerStats.byEmpresa.map((e) => ({ ...e, color: 'bg-indigo-500' }))}
+                      onItemClick={handlePrinterEmpresaClick}
+                      selectedKey={selectedPrinterEmpresa}
+                    />
+                  </div>
+                )}
+                {selectedPrinterEmpresa != null && (
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="form-label">
+                        Impressoras —{' '}
+                        {selectedPrinterEmpresa === 'Sem empresa'
+                          ? 'Sem empresa'
+                          : formatEmpresaLabel(selectedPrinterEmpresa)}
+                        <span className="text-gray-400 font-normal ml-1">({filteredPrinters.length})</span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPrinterEmpresa(null)}
+                        className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                    {filteredPrinters.length === 0 ? (
+                      <p className="text-sm text-gray-500">Nenhuma impressora encontrada.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
+                        {filteredPrinters.map((printer) => (
+                          <li
+                            key={printer.id}
+                            className="flex items-start justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2.5 bg-gray-50/50"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 font-mono">{printer.ip}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {printer.nome || '—'}
+                                {printer.localizacao ? ` · ${printer.localizacao}` : ''}
+                              </p>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest shrink-0 text-indigo-700">
+                              {printer.tonersVinculados ?? 0}/{printer.qtdToners ?? 0} toners
                             </span>
                           </li>
                         ))}

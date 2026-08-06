@@ -38,6 +38,8 @@ import ReportsPage from '../pages/ReportsPage';
 
 import FolhaFortesPage from '../pages/FolhaFortesPage';
 
+import PrintersPage from '../pages/PrintersPage';
+
 import Layout from '../pages/Layout';
 
 
@@ -99,6 +101,8 @@ export default function AppRoutes() {
                   <Route path="/admin/equipamentos" element={<EquipmentsPage />} />
 
                   <Route path="/admin/termos-assinados" element={<SignedTermsPage />} />
+
+                  <Route path="/admin/impressoras" element={<PrintersPage />} />
 
                 </Route>
 

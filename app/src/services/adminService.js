@@ -38,6 +38,14 @@ export async function updateUserRoles(token, id, roles) {
   });
 }
 
+export async function updateUser(token, id, payload) {
+  return apiRequest(`/api/admin/usuarios/${id}`, {
+    method: 'PATCH',
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function importUsersCsv(token, file) {
   const formData = new FormData();
   formData.append('file', file);

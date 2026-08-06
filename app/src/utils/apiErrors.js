@@ -53,6 +53,27 @@ export function getApiErrorMessage(err, fallback) {
   if (err.code === 'EQUIPAMENTO_NAO_ENCONTRADO') {
     return 'Equipamento não encontrado.';
   }
+  if (err.code === 'IMPRESSORA_NAO_ENCONTRADA') {
+    return 'Impressora não encontrada.';
+  }
+  if (err.code === 'TONER_NAO_ENCONTRADO') {
+    return 'Toner não encontrado.';
+  }
+  if (err.code === 'IP_JA_CADASTRADO') {
+    return 'Este IP já está cadastrado para a mesma empresa.';
+  }
+  if (err.code === 'CODIGO_TONER_JA_CADASTRADO') {
+    return 'Já existe um toner com este código.';
+  }
+  if (err.code === 'TONER_JA_VINCULADO') {
+    return 'Este toner já está vinculado à impressora.';
+  }
+  if (err.code === 'IMPRESSORA_LOTADA') {
+    return 'A impressora atingiu o limite de toners vinculados.';
+  }
+  if (err.code === 'QTD_TONERS_INSUFICIENTE') {
+    return 'A quantidade de toners não pode ser menor que os já vinculados.';
+  }
   if (err.code === 'LICENCA_LOTADA') {
     return 'Esta licença já atingiu o limite de 5 usuários.';
   }

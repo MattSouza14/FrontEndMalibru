@@ -16,6 +16,7 @@ function toUsuarioResponde(profile) {
     nome: profile.nome,
     email: profile.email,
     setor: profile.setor ?? null,
+    empresa: profile.empresa ?? null,
     roles: profile.roles,
     role: profile.role,
     enabled: profile.enabled,

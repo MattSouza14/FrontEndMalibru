@@ -165,6 +165,70 @@ export function buildSignedTermStats(termos) {
   };
 }
 
+export function buildPrinterStats(printers) {
+  const list = Array.isArray(printers) ? printers : [];
+  let full = 0;
+  let partial = 0;
+  let empty = 0;
+
+  list.forEach((printer) => {
+    const linked = printer.tonersVinculados ?? 0;
+    const capacity = printer.qtdToners ?? 1;
+    if (linked >= capacity) full += 1;
+    else if (linked > 0) partial += 1;
+    else empty += 1;
+  });
+
+  const byEmpresa = countByField(list, 'empresa', 'Sem empresa').map(({ label, value }) => ({
+    key: label,
+    label: label === 'Sem empresa' ? label : formatEmpresaLabel(label),
+    value,
+  }));
+
+  const totalTonerSlots = list.reduce((sum, printer) => sum + (printer.qtdToners ?? 0), 0);
+  const usedTonerSlots = list.reduce((sum, printer) => sum + (printer.tonersVinculados ?? 0), 0);
+
+  const slotUsage = [
+    { key: 'full', label: 'Slots lotados', value: full, color: 'bg-red-500' },
+    { key: 'partial', label: 'Parcialmente vinculadas', value: partial, color: 'bg-amber-500' },
+    { key: 'empty', label: 'Sem toners', value: empty, color: 'bg-gray-300' },
+  ].filter((item) => item.value > 0);
+
+  return {
+    total: list.length,
+    full,
+    partial,
+    empty,
+    byEmpresa: byEmpresa.slice(0, 12),
+    slotUsage,
+    totalTonerSlots,
+    usedTonerSlots,
+    fillRate: totalTonerSlots ? Math.round((usedTonerSlots / totalTonerSlots) * 100) : 0,
+  };
+}
+
+export function buildTonerStats(toners) {
+  const list = Array.isArray(toners) ? toners : [];
+  const colorLabels = {
+    preto: 'Preto',
+    ciano: 'Ciano',
+    magenta: 'Magenta',
+    amarelo: 'Amarelo',
+    outro: 'Outro',
+  };
+
+  const byCor = countByField(list, 'cor', 'Sem cor').map(({ label, value }) => ({
+    key: label,
+    label: colorLabels[label] ?? label,
+    value,
+  }));
+
+  return {
+    total: list.length,
+    byCor: byCor.slice(0, 8),
+  };
+}
+
 export function buildChamadoStats(chamados) {
   const list = Array.isArray(chamados) ? chamados : [];
   const openStatuses = ['ABERTO', 'EM_ATENDIMENTO', 'AGUARDANDO_USUARIO'];
