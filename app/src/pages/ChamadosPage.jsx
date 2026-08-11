@@ -21,7 +21,7 @@ function handleAuthFailure(logout, navigate) {
 export default function ChamadosPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getToken, logout, user } = useAuth();
+  const { logout, user } = useAuth();
   const [chamados, setChamados] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -33,14 +33,12 @@ export default function ChamadosPage() {
   const handledDeepLink = useRef(false);
 
   async function loadChamados() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
-      const data = await listMyChamados(token);
+      const data = await listMyChamados();
       setChamados(Array.isArray(data) ? data : []);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -103,12 +101,10 @@ export default function ChamadosPage() {
       markChamadoRead(user.id, chamado.id);
     }
 
-    const token = getToken();
-    if (!token) return;
 
     setExpandedLoadingId(chamado.id);
     try {
-      const fresh = await getMyChamado(token, chamado.id);
+      const fresh = await getMyChamado(chamado.id);
       setChamados((prev) => prev.map((item) => (item.id === fresh.id ? fresh : item)));
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -120,11 +116,9 @@ export default function ChamadosPage() {
   }
 
   async function refreshChamado(chamadoId) {
-    const token = getToken();
-    if (!token) return;
 
     try {
-      const fresh = await getMyChamado(token, chamadoId);
+      const fresh = await getMyChamado(chamadoId);
       setChamados((prev) => prev.map((item) => (item.id === fresh.id ? fresh : item)));
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -134,15 +128,13 @@ export default function ChamadosPage() {
   }
 
   async function handleOpenChamado(payload) {
-    const token = getToken();
-    if (!token) return false;
 
     setSubmitLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      const created = await openChamado(token, payload);
+      const created = await openChamado(payload);
       setChamados((prev) => [created, ...prev]);
       setSuccess('Chamado aberto com sucesso!');
       closeForm();
@@ -261,7 +253,6 @@ export default function ChamadosPage() {
                           <ChamadoMessagesPanel
                             chamado={chamado}
                             mode="user"
-                            getToken={getToken}
                             onMessageSent={() => refreshChamado(chamado.id)}
                           />
                         </div>

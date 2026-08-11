@@ -14,6 +14,14 @@ export async function login({ email, senha }) {
   });
 }
 
+export async function logout() {
+  try {
+    await apiRequest('/api/auth/logout', { method: 'POST' });
+  } catch {
+ 
+  }
+}
+
 export async function activateAccount(token) {
   return apiRequest('/api/auth/ativar', {
     method: 'POST',
@@ -21,8 +29,6 @@ export async function activateAccount(token) {
   });
 }
 
-export async function getMe(token) {
-  return apiRequest('/api/auth/me', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function getMe() {
+  return apiRequest('/api/auth/me');
 }

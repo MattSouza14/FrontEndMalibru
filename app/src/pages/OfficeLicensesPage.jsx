@@ -163,7 +163,7 @@ function LicenseUsersModal({
 
 export default function OfficeLicensesPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const [licenses, setLicenses] = useState([]);
   const [users, setUsers] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -182,11 +182,11 @@ export default function OfficeLicensesPage() {
   const [modalLoading, setModalLoading] = useState(false);
   const [tablePage, setTablePage] = useState(1);
 
-  async function resolveLicenseUsers(token, license, currentUsers) {
+  async function resolveLicenseUsers(license, currentUsers) {
     const licenseId = Number(license.id);
 
     try {
-      const data = await listOfficeLicenseUsers(token, licenseId);
+      const data = await listOfficeLicenseUsers(licenseId);
       const fromEndpoint = normalizeAdminUsers(
         Array.isArray(data) ? data : data?.usuarios ?? [],
       );
@@ -195,13 +195,13 @@ export default function OfficeLicensesPage() {
       if (err.status !== 404) throw err;
     }
 
-    const detail = await getOfficeLicense(token, licenseId);
+    const detail = await getOfficeLicense(licenseId);
     const fromDetail = normalizeAdminUsers(
       Array.isArray(detail?.usuarios) ? detail.usuarios : [],
     );
     if (fromDetail.length > 0) return fromDetail;
 
-    const freshUsers = normalizeAdminUsers(await listUsers(token));
+    const freshUsers = normalizeAdminUsers(await listUsers());
     const fromFreshList = freshUsers.filter(
       (user) => getUserOfficeLicenseId(user) === licenseId,
     );
@@ -214,15 +214,13 @@ export default function OfficeLicensesPage() {
   }
 
   async function openLicenseModal(license) {
-    const token = getToken();
-    if (!token) return;
 
     setSelectedLicense(license);
     setModalLoading(true);
     setModalUsers([]);
 
     try {
-      const linked = await resolveLicenseUsers(token, license, users);
+      const linked = await resolveLicenseUsers(license, users);
       setModalUsers(linked);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -237,10 +235,9 @@ export default function OfficeLicensesPage() {
   }
 
   async function refreshModalUsers(license) {
-    const token = getToken();
-    if (!token || !license) return;
+    if (!license) return;
 
-    const linked = await resolveLicenseUsers(token, license, users);
+    const linked = await resolveLicenseUsers(license, users);
     setModalUsers(linked);
   }
 
@@ -250,16 +247,14 @@ export default function OfficeLicensesPage() {
   }
 
   async function loadData() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
       const [licensesData, usersData] = await Promise.all([
-        listOfficeLicenses(token),
-        listUsers(token),
+        listOfficeLicenses(),
+        listUsers(),
       ]);
       setLicenses(Array.isArray(licensesData) ? licensesData : []);
       setUsers(normalizeAdminUsers(usersData));
@@ -349,8 +344,8 @@ export default function OfficeLicensesPage() {
     setSuccess(null);
   }
 
-  async function refreshLicenses(token) {
-    const licensesData = await listOfficeLicenses(token);
+  async function refreshLicenses() {
+    const licensesData = await listOfficeLicenses();
     const nextLicenses = Array.isArray(licensesData) ? licensesData : [];
     setLicenses(nextLicenses);
     return nextLicenses;
@@ -358,8 +353,6 @@ export default function OfficeLicensesPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const email = form.email.trim();
     const senha = form.senha.trim();
@@ -383,11 +376,11 @@ export default function OfficeLicensesPage() {
 
     try {
       if (editingId) {
-        const updated = await updateOfficeLicense(token, editingId, payload);
+        const updated = await updateOfficeLicense(editingId, payload);
         setLicenses((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         setSuccess('Licença atualizada com sucesso!');
       } else {
-        const created = await createOfficeLicense(token, payload);
+        const created = await createOfficeLicense(payload);
         setLicenses((prev) => [...prev, created]);
         setSuccess('Licença cadastrada com sucesso!');
       }
@@ -409,15 +402,13 @@ export default function OfficeLicensesPage() {
     );
     if (!confirmed) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(license.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await deleteOfficeLicense(token, license.id);
+      await deleteOfficeLicense(license.id);
       setLicenses((prev) => prev.filter((item) => item.id !== license.id));
       setUsers((prev) =>
         prev.map((u) =>
@@ -439,8 +430,6 @@ export default function OfficeLicensesPage() {
 
   async function handleLink(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const usuarioId = Number(linkForm.usuarioId);
     const officeLicenseId = Number(linkForm.officeLicenseId);
@@ -455,13 +444,13 @@ export default function OfficeLicensesPage() {
     setSuccess(null);
 
     try {
-      await linkOfficeLicenseToUser(token, usuarioId, officeLicenseId);
+      await linkOfficeLicenseToUser(usuarioId, officeLicenseId);
       setUsers((prev) =>
         prev.map((u) =>
           u.id === usuarioId ? normalizeAdminUser({ ...u, officeLicenseId }) : u,
         ),
       );
-      await refreshLicenses(token);
+      await refreshLicenses();
       if (selectedLicense?.id === officeLicenseId) {
         await refreshModalUsers(selectedLicense);
       }
@@ -479,20 +468,18 @@ export default function OfficeLicensesPage() {
   }
 
   async function handleUnlink(user) {
-    const token = getToken();
-    if (!token) return;
 
     setUnlinkingUserId(user.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await unlinkOfficeLicenseFromUser(token, user.id);
+      await unlinkOfficeLicenseFromUser(user.id);
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, officeLicenseId: null } : u)),
       );
       setModalUsers((prev) => prev.filter((u) => u.id !== user.id));
-      const nextLicenses = await refreshLicenses(token);
+      const nextLicenses = await refreshLicenses();
       if (selectedLicense) {
         const updated = nextLicenses.find((l) => l.id === selectedLicense.id);
         if (updated) setSelectedLicense(updated);

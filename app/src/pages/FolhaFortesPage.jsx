@@ -43,7 +43,7 @@ function formatFileSize(bytes) {
 }
 
 export default function FolhaFortesPage() {
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const [file, setFile] = useState(null);
@@ -67,8 +67,7 @@ export default function FolhaFortesPage() {
   }
 
   async function runAnalysis(selectedFile) {
-    const token = getToken();
-    if (!selectedFile || !token) return;
+    if (!selectedFile) return;
 
     setAnalyzing(true);
     setError('');
@@ -76,7 +75,7 @@ export default function FolhaFortesPage() {
     setAnalysis(null);
 
     try {
-      const result = await analisarFolhaFortes(token, selectedFile);
+      const result = await analisarFolhaFortes(selectedFile);
       setAnalysis(result);
 
       if (result.sugestoesDivisao?.length) {
@@ -104,8 +103,7 @@ export default function FolhaFortesPage() {
 
   async function handleDividir(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!file || !token) return;
+    if (!file) return;
 
     const parsed = Number(cpfsPorParte);
     if (!Number.isFinite(parsed) || parsed < 1) {
@@ -118,7 +116,7 @@ export default function FolhaFortesPage() {
     setSuccess('');
 
     try {
-      const blob = await dividirFolhaFortes(token, file, parsed, incluirLinhasSemCpf);
+      const blob = await dividirFolhaFortes(file, parsed, incluirLinhasSemCpf);
       downloadBlob(blob, 'folha_dividida.zip');
       setSuccess('Arquivo dividido com sucesso. O download do ZIP foi iniciado.');
     } catch (err) {
@@ -131,8 +129,7 @@ export default function FolhaFortesPage() {
 
   async function handleExtrair(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!file || !token) return;
+    if (!file) return;
 
     const cpfs = parseCpfsInput(cpfsText);
     if (!cpfs.length) {
@@ -145,7 +142,7 @@ export default function FolhaFortesPage() {
     setSuccess('');
 
     try {
-      const blob = await extrairFolhaFortes(token, file, cpfs, formatoSaida);
+      const blob = await extrairFolhaFortes(file, cpfs, formatoSaida);
       downloadBlob(blob, 'folha_extraida.zip');
       setSuccess('Extração concluída. O download do ZIP foi iniciado (consulte resumo.json dentro do arquivo).');
     } catch (err) {

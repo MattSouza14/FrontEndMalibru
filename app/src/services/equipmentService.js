@@ -1,71 +1,67 @@
-import { apiRequest, uploadApiRequest } from './api';
+import { apiRequest, uploadApiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listEquipments(token) {
+export async function listEquipments() {
   return apiRequest('/api/admin/equipamentos', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listEquipmentCompanies(token) {
+export async function listEquipmentCompanies() {
   return apiRequest('/api/admin/equipamentos/empresas', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getEquipment(token, id) {
+export async function getEquipment(id) {
   return apiRequest(`/api/admin/equipamentos/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createEquipment(token, payload) {
+export async function createEquipment(payload) {
   return apiRequest('/api/admin/equipamentos', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateEquipment(token, id, payload) {
+export async function updateEquipment(id, payload) {
   return apiRequest(`/api/admin/equipamentos/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deleteEquipment(token, id) {
+export async function deleteEquipment(id) {
   return apiRequest(`/api/admin/equipamentos/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function linkEquipmentToUser(token, usuarioId, equipamentoId) {
+export async function linkEquipmentToUser(usuarioId, equipamentoId) {
   return apiRequest(`/api/admin/equipamentos/usuarios/${usuarioId}/vincular`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify({ equipamentoId }),
   });
 }
 
-export async function unlinkEquipmentFromUser(token, usuarioId, equipamentoId) {
+export async function unlinkEquipmentFromUser(usuarioId, equipamentoId) {
   return apiRequest(
     `/api/admin/equipamentos/usuarios/${usuarioId}/desvincular/${equipamentoId}`,
     {
       method: 'POST',
-      headers: authHeaders(token),
+      headers: authHeaders(),
     },
   );
 }
 
-export async function importEquipmentsCsv(token, file) {
+export async function importEquipmentsCsv(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  return uploadApiRequest('/api/admin/equipamentos/import', token, formData);
+  return uploadApiRequest('/api/admin/equipamentos/import', formData);
 }

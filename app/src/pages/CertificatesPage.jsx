@@ -44,7 +44,7 @@ function handleAuthFailure(logout, navigate) {
 
 export default function CertificatesPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const [certificates, setCertificates] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,14 +66,12 @@ export default function CertificatesPage() {
   }, [certificates.length]);
 
   async function loadCertificates() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
-      const data = await listCertificates(token);
+      const data = await listCertificates();
       setCertificates(Array.isArray(data) ? data : []);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -127,8 +125,6 @@ export default function CertificatesPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const nome = form.nome.trim();
     const dataVencimento = form.dataVencimento.trim();
@@ -151,11 +147,11 @@ export default function CertificatesPage() {
 
     try {
       if (editingId) {
-        const updated = await updateCertificate(token, editingId, payload);
+        const updated = await updateCertificate(editingId, payload);
         setCertificates((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         setSuccess('Certificado atualizado com sucesso!');
       } else {
-        const created = await createCertificate(token, payload);
+        const created = await createCertificate(payload);
         setCertificates((prev) => [...prev, created]);
         setSuccess('Certificado cadastrado com sucesso!');
       }
@@ -177,15 +173,13 @@ export default function CertificatesPage() {
     );
     if (!confirmed) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(certificate.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await deleteCertificate(token, certificate.id);
+      await deleteCertificate(certificate.id);
       setCertificates((prev) => prev.filter((item) => item.id !== certificate.id));
       setSuccess('Certificado excluído com sucesso!');
       if (editingId === certificate.id) closeForm();

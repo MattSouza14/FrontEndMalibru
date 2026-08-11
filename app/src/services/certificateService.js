@@ -1,40 +1,36 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listCertificates(token) {
+export async function listCertificates() {
   return apiRequest('/api/admin/certificates', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getCertificate(token, id) {
+export async function getCertificate(id) {
   return apiRequest(`/api/admin/certificates/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createCertificate(token, payload) {
+export async function createCertificate(payload) {
   return apiRequest('/api/admin/certificates', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateCertificate(token, id, payload) {
+export async function updateCertificate(id, payload) {
   return apiRequest(`/api/admin/certificates/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deleteCertificate(token, id) {
+export async function deleteCertificate(id) {
   return apiRequest(`/api/admin/certificates/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }

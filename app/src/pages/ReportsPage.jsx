@@ -49,7 +49,7 @@ function IconChart() {
 
 export default function ReportsPage() {
   const navigate = useNavigate();
-  const { user, getToken, logout } = useAuth();
+  const { user, logout } = useAuth();
   const showAdmin = isAdmin(user);
   const showTi = canAccessTiModules(user);
   const showChamadosAdmin = canAccessChamadosAdmin(user);
@@ -70,8 +70,6 @@ export default function ReportsPage() {
 
   useEffect(() => {
     async function loadReports() {
-      const token = getToken();
-      if (!token) return;
 
       setLoading(true);
       setError(null);
@@ -80,29 +78,29 @@ export default function ReportsPage() {
         const tasks = [];
 
         if (showAdmin) {
-          tasks.push(listUsers(token).then((d) => setUsers(Array.isArray(d) ? d : [])));
+          tasks.push(listUsers().then((d) => setUsers(Array.isArray(d) ? d : [])));
         }
 
         if (showChamadosAdmin) {
           tasks.push(
-            listAdminChamados(token).then((d) => setChamados(Array.isArray(d) ? d : [])),
+            listAdminChamados().then((d) => setChamados(Array.isArray(d) ? d : [])),
           );
         } else {
           tasks.push(
-            listMyChamados(token).then((d) => setChamados(Array.isArray(d) ? d : [])),
+            listMyChamados().then((d) => setChamados(Array.isArray(d) ? d : [])),
           );
         }
 
         if (showTi) {
           tasks.push(
             Promise.all([
-              listOfficeLicenses(token),
-              listSoftwareLicenses(token),
-              listCertificates(token),
-              listEquipments(token),
-              listSignedTerms(token),
-              listPrinters(token),
-              listToners(token),
+              listOfficeLicenses(),
+              listSoftwareLicenses(),
+              listCertificates(),
+              listEquipments(),
+              listSignedTerms(),
+              listPrinters(),
+              listToners(),
             ]).then(([office, software, certs, equips, signed, printerList, tonerList]) => {
               setOfficeLicenses(Array.isArray(office) ? office : []);
               setSoftwareLicenses(Array.isArray(software) ? software : []);
@@ -129,7 +127,7 @@ export default function ReportsPage() {
     }
 
     loadReports();
-  }, [getToken, logout, navigate, showAdmin, showTi, showChamadosAdmin]);
+  }, [logout, navigate, showAdmin, showTi, showChamadosAdmin]);
 
   const userStats = useMemo(() => buildUserStats(users), [users]);
   const chamadoStats = useMemo(() => buildChamadoStats(chamados), [chamados]);

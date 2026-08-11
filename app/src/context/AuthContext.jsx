@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { getMe } from '../services/authService';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { getMe, logout as logoutRequest } from '../services/authService';
 import {
   clearAuth,
-  getToken,
-  saveAuth,
+  getStoredUser,
   saveUser,
+  saveUserProfile,
 } from '../services/authStorage';
 import { normalizeUser } from '../utils/roles';
 
@@ -27,33 +27,48 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadUser() {
-    const token = getToken();
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+  const loadUser = useCallback(async () => {
+    setLoading(true);
 
     try {
-      const data = await getMe(token);
+      const data = await getMe();
       const normalized = normalizeUser(data);
       setUser(normalized);
-      saveUser(normalized);
+      saveUserProfile(normalized);
     } catch {
       clearAuth();
       setUser(null);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  function loginSuccess({ token, user: loggedUser }, manterConectado = false) {
+  useEffect(() => {
+    const cached = getStoredUser();
+    if (cached) {
+      setUser(normalizeUser(cached));
+    }
+    loadUser();
+  }, [loadUser]);
+
+  useEffect(() => {
+    function handleUnauthorized() {
+      clearAuth();
+      setUser(null);
+    }
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
+  function loginSuccess({ user: loggedUser }, manterConectado = false) {
     const normalized = normalizeUser(loggedUser);
-    saveAuth({ token, user: normalized }, manterConectado);
+    saveUser(normalized, manterConectado);
     setUser(normalized);
   }
-  function logout() {
+
+  async function logout() {
+    await logoutRequest();
     clearAuth();
     setUser(null);
   }
@@ -61,15 +76,18 @@ export function AuthProvider({ children }) {
   function updateUser(profile) {
     const nextUser = toUsuarioResponde(profile);
     setUser(nextUser);
-    saveUser(nextUser);
+    saveUserProfile(nextUser);
   }
 
-  useEffect(() => {
-    loadUser();
-  }, []);
+  /** @deprecated Sessão autenticada via cookie HttpOnly — não há token no cliente. */
+  function getToken() {
+    return null;
+  }
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginSuccess, logout, getToken, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, loginSuccess, logout, getToken, updateUser, refreshUser: loadUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

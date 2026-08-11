@@ -1,61 +1,57 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listOfficeLicenses(token) {
+export async function listOfficeLicenses() {
   return apiRequest('/api/admin/office-licenses', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getOfficeLicense(token, id) {
+export async function getOfficeLicense(id) {
   return apiRequest(`/api/admin/office-licenses/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listOfficeLicenseUsers(token, licenseId) {
+export async function listOfficeLicenseUsers(licenseId) {
   return apiRequest(`/api/admin/office-licenses/${licenseId}/usuarios`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createOfficeLicense(token, payload) {
+export async function createOfficeLicense(payload) {
   return apiRequest('/api/admin/office-licenses', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateOfficeLicense(token, id, payload) {
+export async function updateOfficeLicense(id, payload) {
   return apiRequest(`/api/admin/office-licenses/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deleteOfficeLicense(token, id) {
+export async function deleteOfficeLicense(id) {
   return apiRequest(`/api/admin/office-licenses/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function linkOfficeLicenseToUser(token, usuarioId, officeLicenseId) {
+export async function linkOfficeLicenseToUser(usuarioId, officeLicenseId) {
   return apiRequest(`/api/admin/office-licenses/usuarios/${usuarioId}/vincular`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify({ officeLicenseId }),
   });
 }
 
-export async function unlinkOfficeLicenseFromUser(token, usuarioId) {
+export async function unlinkOfficeLicenseFromUser(usuarioId) {
   return apiRequest(`/api/admin/office-licenses/usuarios/${usuarioId}/desvincular`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }

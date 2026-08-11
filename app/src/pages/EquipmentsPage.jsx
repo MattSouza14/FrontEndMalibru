@@ -57,7 +57,7 @@ function handleAuthFailure(logout, navigate) {
 
 export default function EquipmentsPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const [equipments, setEquipments] = useState([]);
   const [users, setUsers] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -78,17 +78,15 @@ export default function EquipmentsPage() {
   const [importResult, setImportResult] = useState(null);
 
   async function loadData() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
       const [equipmentsData, usersData, companiesData] = await Promise.all([
-        listEquipments(token),
-        listUsers(token),
-        listEquipmentCompanies(token),
+        listEquipments(),
+        listUsers(),
+        listEquipmentCompanies(),
       ]);
       setEquipments(Array.isArray(equipmentsData) ? equipmentsData : []);
       setUsers(Array.isArray(usersData) ? usersData : []);
@@ -165,8 +163,6 @@ export default function EquipmentsPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const nome = form.nome.trim();
     const empresa = form.empresa.trim();
@@ -196,11 +192,11 @@ export default function EquipmentsPage() {
 
     try {
       if (editingId) {
-        const updated = await updateEquipment(token, editingId, payload);
+        const updated = await updateEquipment(editingId, payload);
         setEquipments((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         setSuccess('Equipamento atualizado com sucesso!');
       } else {
-        const created = await createEquipment(token, payload);
+        const created = await createEquipment(payload);
         setEquipments((prev) => [...prev, created]);
         setSuccess('Equipamento cadastrado com sucesso!');
       }
@@ -222,15 +218,13 @@ export default function EquipmentsPage() {
     );
     if (!confirmed) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(equipment.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await deleteEquipment(token, equipment.id);
+      await deleteEquipment(equipment.id);
       setEquipments((prev) => prev.filter((item) => item.id !== equipment.id));
       setSuccess('Equipamento excluído com sucesso!');
       if (editingId === equipment.id) closeForm();
@@ -247,8 +241,6 @@ export default function EquipmentsPage() {
 
   async function handleLink(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const usuarioId = Number(linkForm.usuarioId);
     const equipamentoId = Number(linkForm.equipamentoId);
@@ -263,7 +255,7 @@ export default function EquipmentsPage() {
     setSuccess(null);
 
     try {
-      await linkEquipmentToUser(token, usuarioId, equipamentoId);
+      await linkEquipmentToUser(usuarioId, equipamentoId);
       setEquipments((prev) =>
         prev.map((item) =>
           item.id === equipamentoId ? { ...item, usuarioId } : item,
@@ -283,8 +275,6 @@ export default function EquipmentsPage() {
   }
 
   async function handleImportCsv(file) {
-    const token = getToken();
-    if (!token) return;
 
     setImporting(true);
     setError(null);
@@ -292,7 +282,7 @@ export default function EquipmentsPage() {
     setImportResult(null);
 
     try {
-      const result = await importEquipmentsCsv(token, file);
+      const result = await importEquipmentsCsv(file);
       setImportResult(result);
       setSuccess(
         `${result.importados ?? 0} equipamento(s) importado(s) com sucesso.` +
@@ -311,15 +301,14 @@ export default function EquipmentsPage() {
   }
 
   async function handleUnlink(equipment) {
-    const token = getToken();
-    if (!token || !equipment.usuarioId) return;
+    if (!equipment.usuarioId) return;
 
     setUnlinkingKey(`${equipment.usuarioId}-${equipment.id}`);
     setError(null);
     setSuccess(null);
 
     try {
-      await unlinkEquipmentFromUser(token, equipment.usuarioId, equipment.id);
+      await unlinkEquipmentFromUser(equipment.usuarioId, equipment.id);
       setEquipments((prev) =>
         prev.map((item) =>
           item.id === equipment.id ? { ...item, usuarioId: null } : item,

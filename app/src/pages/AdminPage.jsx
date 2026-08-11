@@ -66,7 +66,7 @@ const USERS_CSV_ERROR_COLUMNS = [
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const { user, getToken, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [users, setUsers] = useState([]);
   const [licenses, setLicenses] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -84,17 +84,15 @@ export default function AdminPage() {
   const [success, setSuccess] = useState(null);
 
   async function loadData() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
       const [usersData, licensesData, rolesData] = await Promise.all([
-        listUsers(token),
-        listOfficeLicenses(token),
-        listAvailableRoles(token),
+        listUsers(),
+        listOfficeLicenses(),
+        listAvailableRoles(),
       ]);
       setUsers(normalizeAdminUsers(usersData));
       setLicenses(Array.isArray(licensesData) ? licensesData : []);
@@ -143,14 +141,12 @@ export default function AdminPage() {
     [users],
   );
 
-  async function refreshLicenses(token) {
-    const licensesData = await listOfficeLicenses(token);
+  async function refreshLicenses() {
+    const licensesData = await listOfficeLicenses();
     setLicenses(Array.isArray(licensesData) ? licensesData : []);
   }
 
   async function handleToggleStatus(targetUser) {
-    const token = getToken();
-    if (!token) return;
 
     if (targetUser.id === user?.id) {
       setError('Você não pode alterar o status da sua própria conta.');
@@ -163,8 +159,8 @@ export default function AdminPage() {
 
     try {
       const updated = targetUser.enabled
-        ? await deactivateUser(token, targetUser.id)
-        : await activateUser(token, targetUser.id);
+        ? await deactivateUser(targetUser.id)
+        : await activateUser(targetUser.id);
 
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)));
       setSuccess(
@@ -184,8 +180,6 @@ export default function AdminPage() {
   }
 
   async function handleLinkLicense(targetUser) {
-    const token = getToken();
-    if (!token) return;
 
     const officeLicenseId = Number(licenseSelect[targetUser.id]);
     if (!officeLicenseId) {
@@ -198,7 +192,7 @@ export default function AdminPage() {
     setSuccess(null);
 
     try {
-      await linkOfficeLicenseToUser(token, targetUser.id, officeLicenseId);
+      await linkOfficeLicenseToUser(targetUser.id, officeLicenseId);
       setUsers((prev) =>
         prev.map((u) =>
           u.id === targetUser.id
@@ -206,7 +200,7 @@ export default function AdminPage() {
             : u,
         ),
       );
-      await refreshLicenses(token);
+      await refreshLicenses();
       setLicenseSelect((prev) => ({ ...prev, [targetUser.id]: '' }));
       setSuccess(`Licença Office vinculada a ${targetUser.nome}.`);
     } catch (err) {
@@ -249,8 +243,6 @@ export default function AdminPage() {
   }
 
   async function handleSaveRoles(targetUser) {
-    const token = getToken();
-    if (!token) return;
 
     const roles = roleEdits[targetUser.id] ?? [];
     if (roles.length === 0) {
@@ -263,7 +255,7 @@ export default function AdminPage() {
     setSuccess(null);
 
     try {
-      const updated = await updateUserRoles(token, targetUser.id, roles);
+      const updated = await updateUserRoles(targetUser.id, roles);
       setUsers((prev) =>
         prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)),
       );
@@ -281,21 +273,19 @@ export default function AdminPage() {
   }
 
   async function handleUnlinkLicense(targetUser) {
-    const token = getToken();
-    if (!token) return;
 
     setLicenseActionId(targetUser.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await unlinkOfficeLicenseFromUser(token, targetUser.id);
+      await unlinkOfficeLicenseFromUser(targetUser.id);
       setUsers((prev) =>
         prev.map((u) =>
           u.id === targetUser.id ? { ...u, officeLicenseId: null } : u,
         ),
       );
-      await refreshLicenses(token);
+      await refreshLicenses();
       setSuccess(`Licença Office desvinculada de ${targetUser.nome}.`);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -309,8 +299,6 @@ export default function AdminPage() {
   }
 
   async function handleImportCsv(file) {
-    const token = getToken();
-    if (!token) return;
 
     setImporting(true);
     setError(null);
@@ -318,7 +306,7 @@ export default function AdminPage() {
     setImportResult(null);
 
     try {
-      const result = await importUsersCsv(token, file);
+      const result = await importUsersCsv(file);
       setImportResult(result);
       setSuccess(
         `${result.importados ?? 0} usuário(s) importado(s) com sucesso.` +

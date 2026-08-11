@@ -99,7 +99,7 @@ function matchesFilter(text, filter) {
 
 export default function PrintersPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
 
   const [tab, setTab] = useState('printers');
   const [printers, setPrinters] = useState([]);
@@ -135,16 +135,14 @@ export default function PrintersPage() {
   }
 
   const loadLists = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
       const [printersData, tonersData] = await Promise.all([
-        listPrinters(token, empresaFilter || undefined),
-        listToners(token),
+        listPrinters(empresaFilter || undefined),
+        listToners(),
       ]);
       setPrinters(Array.isArray(printersData) ? printersData : []);
       setToners(Array.isArray(tonersData) ? tonersData : []);
@@ -161,7 +159,7 @@ export default function PrintersPage() {
     } finally {
       setPageLoading(false);
     }
-  }, [empresaFilter, getToken, logout, navigate]);
+  }, [empresaFilter, logout, navigate]);
 
   useEffect(() => {
     loadLists();
@@ -209,12 +207,10 @@ export default function PrintersPage() {
   );
 
   async function loadPrinterDetail(id) {
-    const token = getToken();
-    if (!token || !id) return;
 
     setDetailLoading(true);
     try {
-      const data = await getPrinter(token, id);
+      const data = await getPrinter(id);
       setPrinterDetail(data);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -229,12 +225,10 @@ export default function PrintersPage() {
   }
 
   async function loadTonerDetail(id) {
-    const token = getToken();
-    if (!token || !id) return;
 
     setDetailLoading(true);
     try {
-      const data = await getToner(token, id);
+      const data = await getToner(id);
       setTonerDetail(data);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -301,8 +295,6 @@ export default function PrintersPage() {
 
   async function handleSavePrinter(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     setSaving(true);
     setError(null);
@@ -318,13 +310,13 @@ export default function PrintersPage() {
 
     try {
       if (editingPrinterId) {
-        await updatePrinter(token, editingPrinterId, payload);
+        await updatePrinter(editingPrinterId, payload);
         setSuccess('Impressora atualizada.');
         if (selectedPrinterId === editingPrinterId) {
           await loadPrinterDetail(editingPrinterId);
         }
       } else {
-        const created = await createPrinter(token, payload);
+        const created = await createPrinter(payload);
         setSuccess('Impressora cadastrada.');
         if (created?.id) selectPrinter(created.id);
       }
@@ -343,8 +335,6 @@ export default function PrintersPage() {
 
   async function handleSaveToner(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     setSaving(true);
     setError(null);
@@ -357,13 +347,13 @@ export default function PrintersPage() {
 
     try {
       if (editingTonerId) {
-        await updateToner(token, editingTonerId, payload);
+        await updateToner(editingTonerId, payload);
         setSuccess('Toner atualizado.');
         if (selectedTonerId === editingTonerId) {
           await loadTonerDetail(editingTonerId);
         }
       } else {
-        const created = await createToner(token, payload);
+        const created = await createToner(payload);
         setSuccess('Toner cadastrado.');
         if (created?.id) selectToner(created.id);
       }
@@ -383,14 +373,12 @@ export default function PrintersPage() {
   async function handleDeletePrinter(id) {
     if (!window.confirm('Excluir esta impressora? Os vínculos com toners serão removidos.')) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(id);
     setError(null);
 
     try {
-      await deletePrinter(token, id);
+      await deletePrinter(id);
       setSuccess('Impressora excluída.');
       if (selectedPrinterId === id) {
         setSelectedPrinterId(null);
@@ -411,14 +399,12 @@ export default function PrintersPage() {
   async function handleDeleteToner(id) {
     if (!window.confirm('Excluir este toner?')) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(id);
     setError(null);
 
     try {
-      await deleteToner(token, id);
+      await deleteToner(id);
       setSuccess('Toner excluído.');
       if (selectedTonerId === id) {
         setSelectedTonerId(null);
@@ -440,14 +426,12 @@ export default function PrintersPage() {
   async function handleLinkToner() {
     if (!selectedPrinterId || !linkTonerId) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setLinking(true);
     setError(null);
 
     try {
-      await linkTonerToPrinter(token, selectedPrinterId, Number(linkTonerId));
+      await linkTonerToPrinter(selectedPrinterId, Number(linkTonerId));
       setSuccess('Toner vinculado.');
       setLinkTonerId('');
       await loadLists();
@@ -466,14 +450,12 @@ export default function PrintersPage() {
   async function handleUnlinkToner(tonerId) {
     if (!selectedPrinterId) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setUnlinkingId(tonerId);
     setError(null);
 
     try {
-      await unlinkTonerFromPrinter(token, selectedPrinterId, tonerId);
+      await unlinkTonerFromPrinter(selectedPrinterId, tonerId);
       setSuccess('Toner desvinculado.');
       await loadLists();
       await loadPrinterDetail(selectedPrinterId);

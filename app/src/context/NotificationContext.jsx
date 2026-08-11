@@ -22,7 +22,7 @@ function notificationToastVariant(type) {
 
 export function NotificationProvider({ children }) {
   const navigate = useNavigate();
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const { showToast } = useToast();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,22 +37,21 @@ export function NotificationProvider({ children }) {
   }, [user?.id]);
 
   const refresh = useCallback(async () => {
-    const token = getToken();
-    if (!token || !user?.id) {
+    if (!user?.id) {
       setNotifications([]);
       return;
     }
 
     setLoading(true);
     try {
-      const items = await fetchNotifications(token, user);
+      const items = await fetchNotifications(user);
       setNotifications(items);
     } catch {
       setNotifications([]);
     } finally {
       setLoading(false);
     }
-  }, [getToken, user]);
+  }, [user]);
 
   useEffect(() => {
     refresh();

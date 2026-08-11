@@ -45,7 +45,7 @@ function handleAuthFailure(logout, navigate) {
 export default function AdminChamadosPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getToken, logout, user } = useAuth();
+  const { logout, user } = useAuth();
   const [chamados, setChamados] = useState([]);
   const [filter, setFilter] = useState('');
   const [pageLoading, setPageLoading] = useState(true);
@@ -75,14 +75,12 @@ export default function AdminChamadosPage() {
   }
 
   async function loadChamados(status = filter) {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
-      const data = await listAdminChamados(token, status || undefined);
+      const data = await listAdminChamados(status || undefined);
       setChamados(Array.isArray(data) ? data : []);
     } catch (err) {
       if (isUnauthorized(err)) {
@@ -150,15 +148,13 @@ export default function AdminChamadosPage() {
   }
 
   async function handleOpenChamado(payload) {
-    const token = getToken();
-    if (!token) return false;
 
     setSubmitLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
-      await openChamado(token, payload);
+      await openChamado(payload);
       setSuccess('Chamado aberto com sucesso!');
       closeForm();
       await loadChamados();
@@ -178,15 +174,13 @@ export default function AdminChamadosPage() {
   async function handleStatusChange(chamado, newStatus) {
     if (chamado.status === newStatus) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setUpdatingId(chamado.id);
     setError(null);
     setSuccess(null);
 
     try {
-      const updated = await updateChamadoStatus(token, chamado.id, newStatus);
+      const updated = await updateChamadoStatus(chamado.id, newStatus);
       setChamados((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       setSuccess(`Status do chamado #${updated.id} atualizado.`);
     } catch (err) {
@@ -201,11 +195,9 @@ export default function AdminChamadosPage() {
   }
 
   async function handleAdminMessageSent(chamadoId) {
-    const token = getToken();
-    if (!token) return;
 
     try {
-      const updated = await getAdminChamado(token, chamadoId);
+      const updated = await getAdminChamado(chamadoId);
       setChamados((prev) => prev.map((chamado) => (chamado.id === updated.id ? updated : chamado)));
     } catch {
       setChamados((prev) =>
@@ -384,7 +376,6 @@ export default function AdminChamadosPage() {
                             <ChamadoMessagesPanel
                               chamado={chamado}
                               mode="admin"
-                              getToken={getToken}
                               onMessageSent={() => handleAdminMessageSent(chamado.id)}
                             />
                           </div>

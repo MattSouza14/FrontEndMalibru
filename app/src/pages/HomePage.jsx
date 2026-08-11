@@ -94,7 +94,7 @@ function QuickLinkCard({ title, description, badge, onClick }) {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { user, getToken } = useAuth();
+  const { user } = useAuth();
   const showTiAlerts = canAccessTiModules(user);
   const showChamadosAdmin = canAccessChamadosAdmin(user);
   const [loading, setLoading] = useState(false);
@@ -111,15 +111,13 @@ export default function HomePage() {
 
   useEffect(() => {
     async function loadMyResources() {
-      const token = getToken();
-      if (!token) return;
 
       setResourcesLoading(true);
 
       const [officeResult, softwareResult, equipmentsResult] = await Promise.allSettled([
-        getMyOfficeLicense(token),
-        getMySoftwareLicenses(token),
-        getMyEquipments(token),
+        getMyOfficeLicense(),
+        getMySoftwareLicenses(),
+        getMyEquipments(),
       ]);
 
       if (officeResult.status === 'fulfilled') {
@@ -133,7 +131,7 @@ export default function HomePage() {
         softwareLicenses = Array.isArray(softwareResult.value) ? softwareResult.value : [];
       } else if (hasAnyRole(user, ['ADMIN', 'TI']) && user?.id) {
         try {
-          const adminData = await listSoftwareLicensesByUser(token, user.id);
+          const adminData = await listSoftwareLicensesByUser(user.id);
           softwareLicenses = Array.isArray(adminData) ? adminData : [];
         } catch {
           softwareLicenses = [];
@@ -152,21 +150,19 @@ export default function HomePage() {
     }
 
     loadMyResources();
-  }, [getToken, user]);
+  }, [user]);
 
   useEffect(() => {
     if (!showTiAlerts) return;
 
     async function loadExpiringItems() {
-      const token = getToken();
-      if (!token) return;
 
       setLoading(true);
       try {
         const [licensesData, softwareLicensesData, certificatesData] = await Promise.all([
-          listOfficeLicenses(token),
-          listSoftwareLicenses(token),
-          listCertificates(token),
+          listOfficeLicenses(),
+          listSoftwareLicenses(),
+          listCertificates(),
         ]);
 
         const licenses = Array.isArray(licensesData) ? licensesData : [];
@@ -186,17 +182,15 @@ export default function HomePage() {
     }
 
     loadExpiringItems();
-  }, [showTiAlerts, getToken]);
+  }, [showTiAlerts]);
 
   useEffect(() => {
     if (!showChamadosAdmin) return;
 
     async function loadOpenChamados() {
-      const token = getToken();
-      if (!token) return;
 
       try {
-        const chamadosData = await listAdminChamados(token, 'ABERTO');
+        const chamadosData = await listAdminChamados('ABERTO');
         const chamados = Array.isArray(chamadosData) ? chamadosData : [];
         setOpenChamadosCount(chamados.length);
       } catch {
@@ -205,7 +199,7 @@ export default function HomePage() {
     }
 
     loadOpenChamados();
-  }, [showChamadosAdmin, getToken]);
+  }, [showChamadosAdmin]);
 
   const urgentLicenses = useMemo(
     () => expiringLicenses.filter((l) => daysUntil(l.vencimento) <= 7).length,

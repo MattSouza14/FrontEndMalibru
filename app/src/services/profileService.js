@@ -1,19 +1,15 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function getMyProfile(token) {
+export async function getMyProfile() {
   return apiRequest('/api/usuarios/me', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function updateProfile(token, payload) {
+export async function updateProfile(payload) {
   return apiRequest('/api/usuarios/me', {
     method: 'PATCH',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }

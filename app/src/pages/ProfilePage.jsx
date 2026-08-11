@@ -120,7 +120,7 @@ function Field({
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const { getToken, updateUser, logout } = useAuth();
+  const { updateUser, logout } = useAuth();
   const [pageLoading, setPageLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -131,14 +131,12 @@ function ProfilePage() {
 
   useEffect(() => {
     async function loadProfile() {
-      const token = getToken();
-      if (!token) return;
 
       setPageLoading(true);
       setError(null);
 
       try {
-        const profile = await getMyProfile(token);
+        const profile = await getMyProfile();
         const nextForm = profileToForm(profile);
         setForm(nextForm);
         setInitialForm(nextForm);
@@ -163,8 +161,6 @@ function ProfilePage() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const nextForm = {
       ...form,
@@ -191,7 +187,7 @@ function ProfilePage() {
     setSuccess(null);
 
     try {
-      const updated = await updateProfile(token, payload);
+      const updated = await updateProfile(payload);
       const nextForm = profileToForm(updated);
       setForm(nextForm);
       setInitialForm(nextForm);

@@ -1,40 +1,36 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listToners(token) {
+export async function listToners() {
   return apiRequest('/api/admin/toners', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getToner(token, id) {
+export async function getToner(id) {
   return apiRequest(`/api/admin/toners/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createToner(token, payload) {
+export async function createToner(payload) {
   return apiRequest('/api/admin/toners', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateToner(token, id, payload) {
+export async function updateToner(id, payload) {
   return apiRequest(`/api/admin/toners/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deleteToner(token, id) {
+export async function deleteToner(id) {
   return apiRequest(`/api/admin/toners/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }

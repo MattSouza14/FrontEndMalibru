@@ -1,54 +1,50 @@
-import { apiRequest, uploadApiRequest } from './api';
+import { apiRequest, uploadApiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listUsers(token) {
+export async function listUsers() {
   return apiRequest('/api/admin/usuarios', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function activateUser(token, id) {
+export async function activateUser(id) {
   return apiRequest(`/api/admin/usuarios/${id}/ativar`, {
     method: 'PATCH',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function deactivateUser(token, id) {
+export async function deactivateUser(id) {
   return apiRequest(`/api/admin/usuarios/${id}/desativar`, {
     method: 'PATCH',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listAvailableRoles(token) {
+export async function listAvailableRoles() {
   return apiRequest('/api/admin/usuarios/roles', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function updateUserRoles(token, id, roles) {
+export async function updateUserRoles(id, roles) {
   return apiRequest(`/api/admin/usuarios/${id}/roles`, {
     method: 'PATCH',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify({ roles }),
   });
 }
 
-export async function updateUser(token, id, payload) {
+export async function updateUser(id, payload) {
   return apiRequest(`/api/admin/usuarios/${id}`, {
     method: 'PATCH',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function importUsersCsv(token, file) {
+export async function importUsersCsv(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  return uploadApiRequest('/api/admin/usuarios/import', token, formData);
+  return uploadApiRequest('/api/admin/usuarios/import', formData);
 }

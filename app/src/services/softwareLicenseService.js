@@ -1,46 +1,42 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listSoftwareLicenses(token) {
+export async function listSoftwareLicenses() {
   return apiRequest('/api/admin/software-licenses', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getSoftwareLicense(token, id) {
+export async function getSoftwareLicense(id) {
   return apiRequest(`/api/admin/software-licenses/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listSoftwareLicensesByUser(token, usuarioId) {
+export async function listSoftwareLicensesByUser(usuarioId) {
   return apiRequest(`/api/admin/software-licenses/usuarios/${usuarioId}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createSoftwareLicense(token, payload) {
+export async function createSoftwareLicense(payload) {
   return apiRequest('/api/admin/software-licenses', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updateSoftwareLicense(token, id, payload) {
+export async function updateSoftwareLicense(id, payload) {
   return apiRequest(`/api/admin/software-licenses/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deleteSoftwareLicense(token, id) {
+export async function deleteSoftwareLicense(id) {
   return apiRequest(`/api/admin/software-licenses/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }

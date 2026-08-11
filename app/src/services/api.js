@@ -6,10 +6,17 @@ export function resolveApiUrl(endpoint) {
   return endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 }
 
+export function authHeaders() {
+  return {};
+}
+
 async function parseResponse(response) {
   const data =
     response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    }
     throw {
       status: response.status,
       ...data,
@@ -19,10 +26,11 @@ async function parseResponse(response) {
 }
 
 export async function apiRequest(endpoint, options = {}) {
-  const { headers = {}, ...rest } = options;
+  const { headers = {}, credentials = 'include', ...rest } = options;
 
   const response = await fetch(resolveApiUrl(endpoint), {
     ...rest,
+    credentials,
     headers: {
       'Content-Type': 'application/json',
       ...headers,
@@ -31,13 +39,27 @@ export async function apiRequest(endpoint, options = {}) {
   return parseResponse(response);
 }
 
-export async function uploadApiRequest(endpoint, token, formData) {
+export async function uploadApiRequest(endpoint, formData, options = {}) {
+  const { credentials = 'include', ...rest } = options;
+
   const response = await fetch(resolveApiUrl(endpoint), {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials,
+    ...rest,
     body: formData,
   });
   return parseResponse(response);
+}
+
+export async function authFetch(endpoint, options = {}) {
+  const response = await fetch(resolveApiUrl(endpoint), {
+    credentials: 'include',
+    ...options,
+  });
+
+  if (response.status === 401) {
+    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+  }
+
+  return response;
 }

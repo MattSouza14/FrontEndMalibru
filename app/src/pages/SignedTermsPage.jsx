@@ -84,7 +84,7 @@ function getPreviewLabel(mime) {
   return 'Ver';
 }
 
-function TermPreviewCell({ termo, token, onOpenPreview }) {
+function TermPreviewCell({ termo, onOpenPreview }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -93,13 +93,13 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
     let objectUrl = null;
 
     async function loadPreview() {
-      if (!token || !termo?.previewUrl || !isImageMime(termo.tipoMime)) {
+      if (!termo?.previewUrl || !isImageMime(termo.tipoMime)) {
         return;
       }
 
       setLoading(true);
       try {
-        const blob = await fetchSignedTermFileBlob(token, termo.previewUrl);
+        const blob = await fetchSignedTermFileBlob(termo.previewUrl);
         if (!active) return;
         objectUrl = URL.createObjectURL(blob);
         setPreviewUrl(objectUrl);
@@ -116,7 +116,7 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [termo?.id, termo?.previewUrl, termo?.tipoMime, token]);
+  }, [termo?.id, termo?.previewUrl, termo?.tipoMime]);
 
   if (loading) {
     return (
@@ -151,7 +151,7 @@ function TermPreviewCell({ termo, token, onOpenPreview }) {
 
 export default function SignedTermsPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const [termos, setTermos] = useState([]);
   const [users, setUsers] = useState([]);
   const [filterUsuarioId, setFilterUsuarioId] = useState('');
@@ -191,9 +191,9 @@ export default function SignedTermsPage() {
     };
   }, [previewBlobUrl]);
 
-  async function loadUsers(token) {
+  async function loadUsers() {
     try {
-      const usersData = await listUsers(token);
+      const usersData = await listUsers();
       setUsers(Array.isArray(usersData) ? usersData : []);
     } catch (err) {
       if (err.code !== 'ACESSO_NEGADO') throw err;
@@ -201,20 +201,18 @@ export default function SignedTermsPage() {
     }
   }
 
-  async function loadTermos(token, usuarioId = filterUsuarioId) {
-    const data = await listSignedTerms(token, usuarioId || undefined);
+  async function loadTermos(usuarioId = filterUsuarioId) {
+    const data = await listSignedTerms(usuarioId || undefined);
     setTermos(Array.isArray(data) ? data : []);
   }
 
   async function loadData() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
-      await Promise.all([loadTermos(token), loadUsers(token)]);
+      await Promise.all([loadTermos(), loadUsers()]);
     } catch (err) {
       if (isUnauthorized(err)) {
         handleAuthFailure(logout, navigate);
@@ -238,12 +236,10 @@ export default function SignedTermsPage() {
     setFilterUsuarioId(usuarioId);
     setTablePage(1);
 
-    const token = getToken();
-    if (!token) return;
 
     setError(null);
     try {
-      await loadTermos(token, usuarioId);
+      await loadTermos(usuarioId);
     } catch (err) {
       if (isUnauthorized(err)) {
         handleAuthFailure(logout, navigate);
@@ -287,8 +283,6 @@ export default function SignedTermsPage() {
 
   async function handleUploadSubmit(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const titulo = uploadForm.titulo.trim();
     if (!titulo) {
@@ -311,7 +305,7 @@ export default function SignedTermsPage() {
     setSuccess(null);
 
     try {
-      const created = await uploadSignedTerm(token, {
+      const created = await uploadSignedTerm({
         file: uploadFile,
         titulo,
         usuarioId: uploadForm.usuarioId || undefined,
@@ -333,8 +327,7 @@ export default function SignedTermsPage() {
 
   async function handleEditSubmit(event) {
     event.preventDefault();
-    const token = getToken();
-    if (!token || !editingId) return;
+    if (!editingId) return;
 
     const titulo = editForm.titulo.trim();
     if (!titulo) {
@@ -352,7 +345,7 @@ export default function SignedTermsPage() {
         usuarioId: editForm.usuarioId ? Number(editForm.usuarioId) : null,
         dataAssinatura: editForm.dataAssinatura || null,
       };
-      const updated = await updateSignedTerm(token, editingId, payload);
+      const updated = await updateSignedTerm(editingId, payload);
       setTermos((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
       cancelEdit();
       setSuccess('Termo atualizado com sucesso!');
@@ -368,8 +361,6 @@ export default function SignedTermsPage() {
   }
 
   async function handleDelete(termo) {
-    const token = getToken();
-    if (!token) return;
 
     if (!window.confirm(`Excluir o termo "${termo.titulo}"?`)) return;
 
@@ -378,7 +369,7 @@ export default function SignedTermsPage() {
     setSuccess(null);
 
     try {
-      await deleteSignedTerm(token, termo.id);
+      await deleteSignedTerm(termo.id);
       setTermos((prev) => prev.filter((item) => item.id !== termo.id));
       if (editingId === termo.id) cancelEdit();
       setSuccess('Termo excluído com sucesso!');
@@ -394,15 +385,14 @@ export default function SignedTermsPage() {
   }
 
   async function openPreview(termo) {
-    const token = getToken();
-    if (!token || !termo?.previewUrl) return;
+    if (!termo?.previewUrl) return;
 
     setPreviewTermo(termo);
     setPreviewLoading(true);
     setPreviewBlobUrl(null);
 
     try {
-      const blob = await fetchSignedTermFileBlob(token, termo.previewUrl);
+      const blob = await fetchSignedTermFileBlob(termo.previewUrl);
       const url = URL.createObjectURL(blob);
       setPreviewBlobUrl(url);
     } catch (err) {
@@ -635,7 +625,6 @@ export default function SignedTermsPage() {
                       <td>
                         <TermPreviewCell
                           termo={termo}
-                          token={getToken()}
                           onOpenPreview={openPreview}
                         />
                       </td>

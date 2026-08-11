@@ -47,7 +47,6 @@ function MessageBubble({ author, message, createdAt, isAttendant }) {
 export default function ChamadoMessagesPanel({
   chamado,
   mode = 'user',
-  getToken,
   onMessageSent,
 }) {
   const [messages, setMessages] = useState([]);
@@ -76,8 +75,6 @@ export default function ChamadoMessagesPanel({
     let cancelled = false;
 
     async function loadMessages() {
-      const token = getToken();
-      if (!token) return;
 
       setLoading(true);
       setError(null);
@@ -85,8 +82,8 @@ export default function ChamadoMessagesPanel({
       try {
         const data =
           mode === 'admin'
-            ? await listAdminChamadoMessages(token, chamado.id)
-            : await listMyChamadoMessages(token, chamado.id);
+            ? await listAdminChamadoMessages(chamado.id)
+            : await listMyChamadoMessages(chamado.id);
 
         if (!cancelled) {
           setMessages(Array.isArray(data) ? data : []);
@@ -108,7 +105,7 @@ export default function ChamadoMessagesPanel({
     return () => {
       cancelled = true;
     };
-  }, [chamado.id, getToken, mode]);
+  }, [chamado.id, mode]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -116,8 +113,6 @@ export default function ChamadoMessagesPanel({
     const text = draft.trim();
     if (!text || sending || encerrado) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setSending(true);
     setError(null);
@@ -125,8 +120,8 @@ export default function ChamadoMessagesPanel({
     try {
       const created =
         mode === 'admin'
-          ? await postAdminChamadoMessage(token, chamado.id, text)
-          : await postMyChamadoMessage(token, chamado.id, text);
+          ? await postAdminChamadoMessage(chamado.id, text)
+          : await postMyChamadoMessage(chamado.id, text);
 
       setMessages((prev) => [...prev, created]);
       setDraft('');

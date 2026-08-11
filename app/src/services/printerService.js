@@ -1,68 +1,64 @@
-import { apiRequest } from './api';
+import { apiRequest, authHeaders } from './api';
 
-function authHeaders(token) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function listPrinters(token, empresa) {
+export async function listPrinters(empresa) {
   const query = empresa ? `?empresa=${encodeURIComponent(empresa)}` : '';
   return apiRequest(`/api/admin/impressoras${query}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listPrinterCompanies(token) {
+export async function listPrinterCompanies() {
   return apiRequest('/api/admin/impressoras/empresas', {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function getPrinter(token, id) {
+export async function getPrinter(id) {
   return apiRequest(`/api/admin/impressoras/${id}`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function listPrinterToners(token, id) {
+export async function listPrinterToners(id) {
   return apiRequest(`/api/admin/impressoras/${id}/toners`, {
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function createPrinter(token, payload) {
+export async function createPrinter(payload) {
   return apiRequest('/api/admin/impressoras', {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function updatePrinter(token, id, payload) {
+export async function updatePrinter(id, payload) {
   return apiRequest(`/api/admin/impressoras/${id}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify(payload),
   });
 }
 
-export async function deletePrinter(token, id) {
+export async function deletePrinter(id) {
   return apiRequest(`/api/admin/impressoras/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }
 
-export async function linkTonerToPrinter(token, printerId, tonerId) {
+export async function linkTonerToPrinter(printerId, tonerId) {
   return apiRequest(`/api/admin/impressoras/${printerId}/toners/vincular`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
     body: JSON.stringify({ tonerId }),
   });
 }
 
-export async function unlinkTonerFromPrinter(token, printerId, tonerId) {
+export async function unlinkTonerFromPrinter(printerId, tonerId) {
   return apiRequest(`/api/admin/impressoras/${printerId}/toners/${tonerId}/desvincular`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers: authHeaders(),
   });
 }

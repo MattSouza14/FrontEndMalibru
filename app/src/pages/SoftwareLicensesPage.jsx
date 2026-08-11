@@ -46,7 +46,7 @@ function handleAuthFailure(logout, navigate) {
 
 export default function SoftwareLicensesPage() {
   const navigate = useNavigate();
-  const { getToken, logout } = useAuth();
+  const { logout } = useAuth();
   const [licenses, setLicenses] = useState([]);
   const [users, setUsers] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -69,16 +69,14 @@ export default function SoftwareLicensesPage() {
   }, [licenses.length]);
 
   async function loadData() {
-    const token = getToken();
-    if (!token) return;
 
     setPageLoading(true);
     setError(null);
 
     try {
       const [licensesData, usersData] = await Promise.all([
-        listSoftwareLicenses(token),
-        listUsers(token),
+        listSoftwareLicenses(),
+        listUsers(),
       ]);
       setLicenses(Array.isArray(licensesData) ? licensesData : []);
       setUsers(Array.isArray(usersData) ? usersData : []);
@@ -135,8 +133,6 @@ export default function SoftwareLicensesPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    if (!token) return;
 
     const nome = form.nome.trim();
     const dataVencimento = form.dataVencimento.trim();
@@ -171,11 +167,11 @@ export default function SoftwareLicensesPage() {
 
     try {
       if (editingId) {
-        const updated = await updateSoftwareLicense(token, editingId, payload);
+        const updated = await updateSoftwareLicense(editingId, payload);
         setLicenses((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
         setSuccess('Licença de software atualizada com sucesso!');
       } else {
-        const created = await createSoftwareLicense(token, payload);
+        const created = await createSoftwareLicense(payload);
         setLicenses((prev) => [...prev, created]);
         setSuccess('Licença de software cadastrada com sucesso!');
       }
@@ -197,15 +193,13 @@ export default function SoftwareLicensesPage() {
     );
     if (!confirmed) return;
 
-    const token = getToken();
-    if (!token) return;
 
     setDeletingId(license.id);
     setError(null);
     setSuccess(null);
 
     try {
-      await deleteSoftwareLicense(token, license.id);
+      await deleteSoftwareLicense(license.id);
       setLicenses((prev) => prev.filter((item) => item.id !== license.id));
       setSuccess('Licença de software excluída com sucesso!');
       if (editingId === license.id) closeForm();

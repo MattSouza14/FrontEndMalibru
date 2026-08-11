@@ -117,7 +117,7 @@ function truncateMessage(text, max = 90) {
   return `${value.slice(0, max).trim()}…`;
 }
 
-async function appendChamadoReplyNotifications(token, userId, chamados, mode, notifications) {
+async function appendChamadoReplyNotifications(userId, chamados, mode, notifications) {
   const active = (Array.isArray(chamados) ? chamados : [])
     .filter((chamado) => !isChamadoEncerrado(chamado.status))
     .slice(0, MAX_CHAMADOS_TO_CHECK);
@@ -127,8 +127,8 @@ async function appendChamadoReplyNotifications(token, userId, chamados, mode, no
       try {
         const messages =
           mode === 'admin'
-            ? await listAdminChamadoMessages(token, chamado.id)
-            : await listMyChamadoMessages(token, chamado.id);
+            ? await listAdminChamadoMessages(chamado.id)
+            : await listMyChamadoMessages(chamado.id);
 
         const list = Array.isArray(messages) ? messages : [];
         if (list.length === 0) return;
@@ -174,8 +174,8 @@ async function appendChamadoReplyNotifications(token, userId, chamados, mode, no
   );
 }
 
-export async function fetchNotifications(token, user) {
-  if (!token || !user?.id) return [];
+export async function fetchNotifications(user) {
+  if (!user?.id) return [];
 
   const notifications = [];
   const userId = user.id;
@@ -183,8 +183,8 @@ export async function fetchNotifications(token, user) {
   const showChamadosAdmin = canAccessChamadosAdmin(user);
 
   const [officeResult, softwareResult] = await Promise.allSettled([
-    getMyOfficeLicense(token),
-    getMySoftwareLicenses(token),
+    getMyOfficeLicense(),
+    getMySoftwareLicenses(),
   ]);
 
   appendMyLicenseNotifications(
@@ -196,9 +196,9 @@ export async function fetchNotifications(token, user) {
   if (showTiAlerts) {
     try {
       const [licensesData, softwareLicensesData, certificatesData] = await Promise.all([
-        listOfficeLicenses(token),
-        listSoftwareLicenses(token),
-        listCertificates(token),
+        listOfficeLicenses(),
+        listSoftwareLicenses(),
+        listCertificates(),
       ]);
 
       appendTiLicenseNotifications(
@@ -214,7 +214,7 @@ export async function fetchNotifications(token, user) {
 
   if (showChamadosAdmin) {
     try {
-      const chamadosData = await listAdminChamados(token);
+      const chamadosData = await listAdminChamados();
       const chamados = Array.isArray(chamadosData) ? chamadosData : [];
 
       chamados
@@ -235,16 +235,15 @@ export async function fetchNotifications(token, user) {
           });
         });
 
-      await appendChamadoReplyNotifications(token, userId, chamados, 'admin', notifications);
+      await appendChamadoReplyNotifications(userId, chamados, 'admin', notifications);
     } catch {
       // Ignora falha no módulo admin de chamados.
     }
   }
 
   try {
-    const myChamadosData = await listMyChamados(token);
+    const myChamadosData = await listMyChamados();
     await appendChamadoReplyNotifications(
-      token,
       userId,
       Array.isArray(myChamadosData) ? myChamadosData : [],
       'user',
