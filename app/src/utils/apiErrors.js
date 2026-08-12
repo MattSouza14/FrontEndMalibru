@@ -1,6 +1,15 @@
 export function getApiErrorMessage(err, fallback) {
-  if (err.status === 401 || err.code === 'CREDENCIAIS_INVALIDAS') {
+  if (err.status === 401 || err.code === 'CREDENCIAIS_INVALIDAS' || err.code === 'TOKEN_INVALIDO') {
     return 'Sessão expirada. Faça login novamente.';
+  }
+  if (err.code === 'CONTA_BLOQUEADA') {
+    return err.message || 'Conta temporariamente bloqueada após várias tentativas de login. Tente novamente em 30 minutos.';
+  }
+  if (err.code === 'MUITAS_TENTATIVAS') {
+    if (err.retryAfter) {
+      return `Muitas tentativas. Aguarde ${err.retryAfter} segundos e tente novamente.`;
+    }
+    return err.message || 'Muitas tentativas. Aguarde um momento e tente novamente.';
   }
   if (err.code === 'VALIDATION_ERROR') {
     if (err.details) {
@@ -111,7 +120,11 @@ export function getApiErrorMessage(err, fallback) {
 }
 
 export function isUnauthorized(err) {
-  return err.status === 401 || err.code === 'CREDENCIAIS_INVALIDAS';
+  return (
+    err.status === 401 ||
+    err.code === 'CREDENCIAIS_INVALIDAS' ||
+    err.code === 'TOKEN_INVALIDO'
+  );
 }
 
 export function isNotFound(err) {

@@ -1,9 +1,13 @@
 import { apiRequest } from './api';
 
-export async function register({ nome, email, senha, setor }) {
+export async function refreshSession() {
+  return apiRequest('/api/auth/refresh', { method: 'POST' });
+}
+
+export async function register({ nome, email, senha, setor, empresa }) {
   return apiRequest('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ nome, email, senha, setor }),
+    body: JSON.stringify({ nome, email, senha, setor, empresa }),
   });
 }
 

@@ -4,6 +4,7 @@ import { register } from '../services/authService';
 import { getApiErrorMessage } from '../utils/apiErrors';
 import { validateRegisterForm } from '../utils/validation';
 import AlertBanner from '../components/ui/AlertBanner';
+import EmpresaSelect from '../components/EmpresaSelect';
 
 function Field({ label, children }) {
   return (
@@ -24,6 +25,7 @@ export default function RegisterPage() {
     email: '',
     senha: '',
     setor: '',
+    empresa: '',
   });
 
   const [error, setError] = useState(null);
@@ -56,6 +58,7 @@ export default function RegisterPage() {
         email: form.email.trim(),
         senha: form.senha,
         setor: form.setor.trim() || undefined,
+        empresa: form.empresa.trim(),
       };
       await register(payload);
       setSuccess(true);
@@ -142,8 +145,11 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     maxLength={100}
                     className="form-input"
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Mín. 8 caracteres, 1 maiúscula e 1 número"
                   />
+                  <p className="text-[11px] text-ws-muted mt-1">
+                    Use pelo menos 8 caracteres, incluindo uma letra maiúscula e um número.
+                  </p>
                   {fieldErrors.senha && (
                     <p className="text-xs text-ws-red mt-1">{fieldErrors.senha}</p>
                   )}
@@ -177,6 +183,18 @@ export default function RegisterPage() {
                   {fieldErrors.setor && (
                     <p className="text-xs text-ws-red mt-1">{fieldErrors.setor}</p>
                   )}
+                </Field>
+
+                <Field label="Empresa">
+                  <EmpresaSelect
+                    value={form.empresa}
+                    onChange={(value) => {
+                      setForm((prev) => ({ ...prev, empresa: value }));
+                      setFieldErrors((prev) => ({ ...prev, empresa: undefined }));
+                    }}
+                    required
+                    error={fieldErrors.empresa}
+                  />
                 </Field>
               </div>
 

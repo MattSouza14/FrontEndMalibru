@@ -77,8 +77,10 @@ export default function LoginPage() {
       loginSuccess(data, manterConectado);
       navigate('/HomePage');
     } catch (err) {
-      if (err.code === 'CREDENCIAIS_INVALIDAS') {
+      if (err.code === 'CREDENCIAIS_INVALIDAS' || err.status === 401) {
         setError('E-mail ou senha incorretos.');
+      } else if (err.status === 429) {
+        setError(getApiErrorMessage(err, 'Muitas tentativas. Aguarde e tente novamente.'));
       } else {
         setError(getApiErrorMessage(err, 'Não foi possível acessar o sistema.'));
       }

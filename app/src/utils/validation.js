@@ -23,10 +23,25 @@ export function validateEmail(value) {
   return null;
 }
 
-export function validateSenha(value) {
+export function validateSenha(value, { register = false } = {}) {
   if (!value) return 'Senha é obrigatória.';
-  if (value.length < 6) return 'Senha deve ter no mínimo 6 caracteres.';
+  const minLength = register ? 8 : 6;
+  if (value.length < minLength) {
+    return register
+      ? 'Senha deve ter no mínimo 8 caracteres.'
+      : 'Senha deve ter no mínimo 6 caracteres.';
+  }
   if (value.length > 100) return 'Senha deve ter no máximo 100 caracteres.';
+  if (register) {
+    if (!/[A-Z]/.test(value)) return 'Senha deve conter pelo menos uma letra maiúscula.';
+    if (!/\d/.test(value)) return 'Senha deve conter pelo menos um número.';
+  }
+  return null;
+}
+
+export function validateEmpresa(value) {
+  const empresa = String(value ?? '').trim();
+  if (!empresa) return 'Empresa é obrigatória.';
   return null;
 }
 
@@ -84,13 +99,15 @@ export function validateRegisterForm(form) {
   const errors = {};
   const nomeError = validateNome(form.nome);
   const emailError = validateEmail(form.email);
-  const senhaError = validateSenha(form.senha);
+  const senhaError = validateSenha(form.senha, { register: true });
   const setorError = validateSetor(form.setor);
+  const empresaError = validateEmpresa(form.empresa);
 
   if (nomeError) errors.nome = nomeError;
   if (emailError) errors.email = emailError;
   if (senhaError) errors.senha = senhaError;
   if (setorError) errors.setor = setorError;
+  if (empresaError) errors.empresa = empresaError;
 
   return errors;
 }
