@@ -41,17 +41,18 @@ export function clearAuth() {
   });
 }
 
-export function saveUser(user, persistent = false) {
+export function saveUser(user, persistent = false, token = null) {
   clearAuth();
   const storage = persistent ? localStorage : sessionStorage;
   storage.setItem(USER_KEY, JSON.stringify(user));
+  if (token) storage.setItem(LEGACY_TOKEN_KEY_NAMED, token);
 }
 
 export function saveUserProfile(user) {
   getActiveStorage().setItem(USER_KEY, JSON.stringify(user));
 }
 
-/** @deprecated JWT não é mais armazenado no cliente. Mantido por compatibilidade. */
+// APIs legadas retornam JWT no login; APIs com cookies não precisam deste token.
 export function getToken() {
-  return null;
+  return getActiveStorage().getItem(LEGACY_TOKEN_KEY_NAMED);
 }

@@ -3,6 +3,7 @@ import { getMe, logout as logoutRequest } from '../services/authService';
 import {
   clearAuth,
   getStoredUser,
+  getToken,
   saveUser,
   saveUserProfile,
 } from '../services/authStorage';
@@ -61,9 +62,9 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
-  function loginSuccess({ user: loggedUser }, manterConectado = false) {
+  function loginSuccess({ user: loggedUser, token }, manterConectado = false) {
     const normalized = normalizeUser(loggedUser);
-    saveUser(normalized, manterConectado);
+    saveUser(normalized, manterConectado, token);
     setUser(normalized);
   }
 
@@ -77,11 +78,6 @@ export function AuthProvider({ children }) {
     const nextUser = toUsuarioResponde(profile);
     setUser(nextUser);
     saveUserProfile(nextUser);
-  }
-
-  /** @deprecated Sessão autenticada via cookie HttpOnly — não há token no cliente. */
-  function getToken() {
-    return null;
   }
 
   return (

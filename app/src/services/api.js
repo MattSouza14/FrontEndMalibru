@@ -1,3 +1,5 @@
+import { getToken } from './authStorage.js';
+
 export function resolveApiUrl(endpoint) {
   if (!endpoint) return '';
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
@@ -7,7 +9,8 @@ export function resolveApiUrl(endpoint) {
 }
 
 export function authHeaders() {
-  return {};
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 const AUTH_PUBLIC_PATHS = new Set([
@@ -52,9 +55,16 @@ function dispatchUnauthorized() {
 
 async function fetchWithAuthRetry(endpoint, options = {}) {
   const url = resolveApiUrl(endpoint);
+  const headers = new Headers(options.headers);
+  const isSameOrigin = new URL(url, window.location.origin).origin === window.location.origin;
+  if (isSameOrigin && !isAuthPublicEndpoint(endpoint) && !headers.has('Authorization')) {
+    const token = getToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+  }
+  options = { ...options, headers };
   let response = await fetch(url, options);
 
-  if (response.status === 401 && !isAuthPublicEndpoint(endpoint)) {
+  if (response.status === 401 && !isAuthPublicEndpoint(endpoint) && !getToken()) {
     try {
       await tryRefreshSession();
       response = await fetch(url, options);
@@ -71,15 +81,31 @@ async function fetchWithAuthRetry(endpoint, options = {}) {
 }
 
 async function parseResponse(response) {
-  const data =
-    response.status === 204 ? null : await response.json().catch(() => null);
+  const body = response.status === 204 ? '' : await response.text();
+  let data = null;
+  if (body.trim()) {
+    try {
+      data = JSON.parse(body);
+    } catch {
+      if (response.ok) {
+        throw {
+          status: response.status,
+          code: 'RESPOSTA_INVALIDA',
+          message: 'A API retornou uma resposta inválida. Verifique a configuração do servidor.',
+        };
+      }
+    }
+  }
 
   if (!response.ok) {
     const retryAfter = response.headers.get('Retry-After');
     throw {
+      message: [502, 503, 504].includes(response.status)
+        ? 'Não foi possível conectar à API. Verifique se ela está rodando e se a porta configurada está correta.'
+        : `A API retornou um erro (HTTP ${response.status}).`,
+      ...(data && typeof data === 'object' ? data : {}),
       status: response.status,
       ...(retryAfter ? { retryAfter: Number(retryAfter) } : {}),
-      ...data,
     };
   }
 
