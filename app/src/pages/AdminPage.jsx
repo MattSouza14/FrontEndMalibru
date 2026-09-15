@@ -402,6 +402,7 @@ export default function AdminPage() {
               <tr>
                 <th>Nome</th>
                 <th>E-mail</th>
+                <th>Empresa</th>
                 <th>Setor</th>
                 <th>Roles</th>
                 <th>Status</th>
@@ -413,7 +414,7 @@ export default function AdminPage() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-ws-muted">
+                  <td colSpan={9} className="px-6 py-10 text-center text-ws-muted">
                     Nenhum usuário encontrado para este filtro.
                   </td>
                 </tr>
@@ -430,6 +431,7 @@ export default function AdminPage() {
                     <tr key={u.id}>
                       <td className="font-medium text-ws-bright">{u.nome}</td>
                       <td className="text-ws-secondary">{u.email}</td>
+                      <td className="text-ws-secondary capitalize">{u.empresa || 'Não informada'}</td>
                       <td className="text-ws-secondary">{u.setor || '—'}</td>
                       <td className="px-6 py-4 min-w-[220px]">
                         {roleEdits[u.id] ? (

@@ -1,3 +1,4 @@
+import SupportReportPanel from '../components/reports/SupportReportPanel';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +20,6 @@ import { listSignedTerms } from '../services/signedTermService';
 import { listSoftwareLicenses } from '../services/softwareLicenseService';
 import { listToners } from '../services/tonerService';
 import { getApiErrorMessage, isUnauthorized } from '../utils/apiErrors';
-import { formatDateTime } from '../utils/chamadoStatus';
 import { formatEmpresaLabel } from '../utils/equipment';
 import {
   buildCertificateStats,
@@ -251,7 +251,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <SectionCard
           title={showChamadosAdmin ? 'Chamados de suporte' : 'Meus chamados'}
-          subtitle="Distribuição por status e ferramenta remota"
+          subtitle="Indicadores por empresa, tickets e atendimento"
           icon={<IconChart />}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 -mt-2">
@@ -270,21 +270,7 @@ export default function ReportsPage() {
               />
             </div>
           </div>
-          {chamadoStats.recent.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-ws-border">
-              <p className="form-label mb-2">Últimos chamados</p>
-              <ul className="space-y-2 text-sm">
-                {chamadoStats.recent.map((c) => (
-                  <li key={c.id} className="flex justify-between gap-3">
-                    <span className="text-ws-bright truncate">{c.assunto}</span>
-                    <span className="text-ws-muted text-xs tabular-nums shrink-0">
-                      {formatDateTime(c.createdAt)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <SupportReportPanel chamados={chamados} />
         </SectionCard>
 
         {showAdmin && (

@@ -1,6 +1,13 @@
-import { apiRequest, authHeaders } from './api';
+import { apiRequest, authHeaders, uploadApiRequest } from './api';
 
 export async function openChamado(payload) {
+  const { arquivos = [], ...chamado } = payload;
+  if (arquivos.length) {
+    const data = new FormData();
+    data.append('chamado', new Blob([JSON.stringify(chamado)], { type: 'application/json' }));
+    arquivos.forEach((file) => data.append('arquivos', file));
+    return uploadApiRequest('/api/chamados', data, { headers: authHeaders() });
+  }
   return apiRequest('/api/chamados', {
     method: 'POST',
     headers: authHeaders(),

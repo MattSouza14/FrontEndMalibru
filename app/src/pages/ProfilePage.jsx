@@ -10,7 +10,9 @@ import { getApiErrorMessage, isUnauthorized } from "../utils/apiErrors";
 import { formatRoles, isAdmin, normalizeRoles } from "../utils/roles";
 import { validateProfileForm } from "../utils/validation";
 
+import EmpresaSelect from '../components/EmpresaSelect';
 const EMPTY_FORM = {
+  empresa: '',
   nome: "",
   email: "",
   setor: "",
@@ -72,6 +74,7 @@ function profileToForm(profile) {
     nome: profile.nome ?? "",
     email: profile.email ?? "",
     setor: profile.setor ?? "",
+    empresa: profile.empresa ?? "",
     roles: normalizeRoles(profile),
     enabled: profile.enabled ?? false,
   };
@@ -79,6 +82,7 @@ function profileToForm(profile) {
 
 function buildPatchPayload(initial, current) {
   const payload = {};
+  if (current.empresa !== initial.empresa) payload.empresa = current.empresa;
   if (current.nome !== initial.nome) payload.nome = current.nome;
   if (current.email !== initial.email) payload.email = current.email;
   if (current.setor !== initial.setor) payload.setor = current.setor;
@@ -236,7 +240,7 @@ function ProfilePage() {
             <div className="mt-4 pt-4 border-t border-ws-border space-y-2 text-left">
                 <div className="flex items-center gap-2 text-xs text-ws-muted">
                   <Building2Icon />
-                  <span>{form.setor || "Setor não informado"}</span>
+                  <span>{form.empresa || "Empresa não informada"} · {form.setor || "Setor não informado"}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-ws-muted">
                   <ShieldIcon />
@@ -287,6 +291,9 @@ function ProfilePage() {
                 error={fieldErrors.setor}
               />
 
+              <label className="block space-y-1.5"><span className="form-label">Empresa</span>
+                <EmpresaSelect value={form.empresa} onChange={(v) => update('empresa', v)} required />
+              </label>
               <div className="pt-4 flex justify-end">
                 <button
                   type="submit"

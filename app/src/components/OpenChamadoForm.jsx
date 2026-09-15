@@ -10,6 +10,8 @@ import {
 
 const EMPTY_FORM = {
   assunto: '',
+  categoria: 'Outros',
+  prioridade: 'BAIXA',
   descricao: '',
   telefoneContato: '',
   ferramentaRemota: 'ANYDESK',
@@ -36,6 +38,8 @@ function FieldError({ message }) {
 
 export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [arquivos, setArquivos] = useState([]);
+  const [fileError, setFileError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
   function updateField(key, value) {
@@ -46,6 +50,7 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
   async function handleSubmit(e) {
     e.preventDefault();
 
+    if (fileError) return;
     const errors = validateOpenChamadoForm(form);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -59,6 +64,9 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
 
     const success = await onSubmit({
       assunto,
+      categoria: form.categoria,
+      prioridade: form.prioridade,
+      arquivos,
       descricao,
       telefoneContato,
       ferramentaRemota: form.ferramentaRemota,
@@ -67,6 +75,7 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
 
     if (success) {
       setForm(EMPTY_FORM);
+      setArquivos([]);
       setFieldErrors({});
     }
   }
@@ -74,11 +83,28 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
   return (
     <SectionCard
       title="Abrir chamado de suporte"
-      subtitle="O e-mail do chamado será o cadastrado no seu perfil. Após abrir, a TI pode receber alerta por WhatsApp (se configurado no servidor)."
+      subtitle="Descreva o problema e seu impacto no trabalho. O ticket usará a empresa do seu perfil."
     >
-      <form onSubmit={handleSubmit} className="space-y-4 -mt-2">
+      <form onSubmit={handleSubmit} className="space-y-4 -mt-2 lg:pr-72 relative">
         {error && <AlertBanner type="error">{error}</AlertBanner>}
 
+        <aside className="rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm text-ws-secondary lg:absolute lg:right-0 lg:top-0 lg:w-64">
+          <strong className="text-ws-bright">Como funciona o SLA</strong>
+          <p>Primeiro atendimento: alta em 2h úteis, média em 4h úteis e baixa em 8h úteis.</p>
+          <p>Segunda a sexta, 8h às 18h (Brasília). Consulte o manual abaixo.</p>
+        </aside>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <label className="block space-y-1.5"><span className="form-label">Categoria</span>
+            <select className="form-input" value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
+              {['Hardware', 'Software', 'Acessos', 'Rede', 'Outros'].map(c => <option key={c}>{c}</option>)}
+            </select>
+          </label>
+          <label className="block space-y-1.5"><span className="form-label">Prioridade</span>
+            <select className="form-input" value={form.prioridade} onChange={(e) => updateField('prioridade', e.target.value)}>
+              <option value="BAIXA">Baixa — dúvidas e solicitações</option><option value="MEDIA">Média — existe alternativa</option><option value="ALTA">Alta — trabalho interrompido</option>
+            </select>
+          </label>
+        </div>
         <label className="block space-y-1.5">
           <span className="form-label">Assunto</span>
           <input
@@ -151,6 +177,19 @@ export default function OpenChamadoForm({ onSubmit, onCancel, loading, error }) 
           </label>
         </div>
 
+        <div className="rounded-xl border border-dashed border-ws-border p-4 space-y-2">
+          <label className="block space-y-2"><span className="form-label">Adicionar imagens</span>
+            <p className="text-xs text-ws-muted">PNG, JPEG ou GIF. Até 5 arquivos, somando 25 MB; até 16 megapixels por imagem.</p>
+            <input type="file" multiple accept="image/png,image/jpeg,image/gif" disabled={loading} onChange={(e) => {
+              const files = Array.from(e.target.files || []);
+              const invalid = files.length > 5 || files.reduce((sum, f) => sum + f.size, 0) > 25 * 1024 * 1024 || files.some(f => !['image/png', 'image/jpeg', 'image/gif'].includes(f.type));
+              setFileError(invalid ? 'Selecione até 5 imagens PNG, JPEG ou GIF, somando no máximo 25 MB.' : null);
+              setArquivos(invalid ? [] : files);
+            }} className="text-sm max-w-full" />
+          </label>
+          {fileError && <AlertBanner type="error">{fileError}</AlertBanner>}
+          <ul className="text-xs space-y-1">{arquivos.map((f, i) => <li key={i} className="flex justify-between gap-2"><span>{f.name} ({(f.size / 1024).toFixed(0)} KB)</span><button type="button" disabled={loading} onClick={() => setArquivos(arquivos.filter((_, index) => index !== i))}>Remover</button></li>)}</ul>
+        </div>
         <div className="flex gap-3 justify-end pt-2">
           {onCancel && (
             <button type="button" onClick={onCancel} className="btn-cancel">
