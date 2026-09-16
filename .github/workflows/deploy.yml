@@ -1,0 +1,81 @@
+name: Frontend CD
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: frontend-production
+  cancel-in-progress: false
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci --prefix app
+      - run: npm run check
+      - run: bash -n deploy/release.sh deploy/ssh-release.sh deploy/smoke.sh
+      - run: shellcheck -S warning deploy/release.sh deploy/ssh-release.sh deploy/smoke.sh deploy/tests/*.sh
+      - run: bash deploy/tests/release.test.sh
+  publish:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build e teste da imagem que será publicada
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          image="ghcr.io/${REPOSITORY,,}:sha-${REVISION}"
+          docker build --label "org.opencontainers.image.source=https://github.com/${REPOSITORY}" --label "org.opencontainers.image.revision=${REVISION}" -t "$image" .
+          bash deploy/smoke.sh "$image"
+          printf 'IMAGE_TAG=%s\n' "$image" >> "$GITHUB_ENV"
+      - name: Publicar no GHCR e obter digest
+        id: publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        run: |
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io' EXIT
+          docker push "$IMAGE_TAG"
+          image=$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMAGE_TAG")
+          [[ "$image" =~ ^ghcr\.io/[a-z0-9._/-]+@sha256:[a-f0-9]{64}$ ]]
+          printf 'image=%s\n' "$image" >> "$GITHUB_OUTPUT"
+          printf '### Imagem publicada\n%s\n' "$image" >> "$GITHUB_STEP_SUMMARY"
+  deploy:
+    needs: publish
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publicar versão validada
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/malibru-frontend' }}
+          IMAGE: ${{ needs.publish.outputs.image }}
+        run: bash deploy/ssh-release.sh deploy "$IMAGE"

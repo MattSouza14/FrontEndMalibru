@@ -1,0 +1,34 @@
+name: Frontend Rollback
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Digest completo do GHCR; deixe vazio para voltar à versão anterior'
+        required: false
+        type: string
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: frontend-production
+  cancel-in-progress: false
+jobs:
+  rollback:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restaurar versão
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/malibru-frontend' }}
+          IMAGE: ${{ inputs.image }}
+        run: bash deploy/ssh-release.sh rollback "$IMAGE"

@@ -1,0 +1,44 @@
+name: Frontend CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: frontend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: app/dist
+          retention-days: 7
+  container:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n deploy/release.sh deploy/ssh-release.sh deploy/smoke.sh
+      - run: shellcheck -S warning deploy/release.sh deploy/ssh-release.sh deploy/smoke.sh deploy/tests/*.sh
+      - run: docker build -t malibru-frontend:ci .
+      - run: bash deploy/smoke.sh malibru-frontend:ci
+      - run: bash deploy/tests/release.test.sh

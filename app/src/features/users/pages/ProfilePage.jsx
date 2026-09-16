@@ -1,0 +1,315 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../auth/context/AuthContext.js";
+import AlertBanner from "../../../shared/ui/AlertBanner.jsx";
+import PageContainer from "../../../shared/ui/PageContainer.jsx";
+import PageHeader from "../../../shared/ui/PageHeader.jsx";
+import SectionCard from "../../../shared/ui/SectionCard.jsx";
+import { getMyProfile, updateProfile } from "../services/profileService.js";
+import { getApiErrorMessage, isUnauthorized } from "../../../shared/lib/apiErrors.js";
+import { formatRoles, isAdmin, normalizeRoles } from "../../../shared/lib/roles.js";
+import { validateProfileForm } from "../../../shared/lib/validation.js";
+
+import EmpresaSelect from '../../companies/components/EmpresaSelect.jsx';
+const EMPTY_FORM = {
+  empresa: '',
+  nome: "",
+  email: "",
+  setor: "",
+  roles: [],
+  enabled: false,
+};
+
+function Loader2() {
+  return (
+    <svg className="size-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle>
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function Building2Icon() {
+  return (
+    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  );
+}
+
+function IdCardIcon() {
+  return (
+    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  );
+}
+
+function profileToForm(profile) {
+  return {
+    nome: profile.nome ?? "",
+    email: profile.email ?? "",
+    setor: profile.setor ?? "",
+    empresa: profile.empresa ?? "",
+    roles: normalizeRoles(profile),
+    enabled: profile.enabled ?? false,
+  };
+}
+
+function buildPatchPayload(initial, current) {
+  const payload = {};
+  if (current.empresa !== initial.empresa) payload.empresa = current.empresa;
+  if (current.nome !== initial.nome) payload.nome = current.nome;
+  if (current.email !== initial.email) payload.email = current.email;
+  if (current.setor !== initial.setor) payload.setor = current.setor;
+  return payload;
+}
+
+function handleAuthFailure(logout, navigate) {
+  logout();
+  navigate("/Login", { replace: true });
+}
+function Field({
+  icon,
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  maxLength,
+  error,
+}) {
+  return (
+    <label className="block group space-y-1.5">
+      <span className="form-label px-0.5 group-focus-within:text-primary transition-colors inline-flex items-center gap-1.5">
+        {icon}
+        {label}
+      </span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        className="w-full px-4 py-3 bg-ws-panel border border-ws-border rounded-lg focus:border-primary focus:ring-1 focus:ring-accent/30 focus:outline-none transition-all text-ws-bright text-sm placeholder:text-ws-muted"
+      />
+      {error && <p className="text-xs text-ws-red">{error}</p>}
+    </label>
+  );
+}
+
+function ProfilePage() {
+  const navigate = useNavigate();
+  const { updateUser, logout } = useAuth();
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [initialForm, setInitialForm] = useState(EMPTY_FORM);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  useEffect(() => {
+    async function loadProfile() {
+
+      setPageLoading(true);
+      setError(null);
+
+      try {
+        const profile = await getMyProfile();
+        const nextForm = profileToForm(profile);
+        setForm(nextForm);
+        setInitialForm(nextForm);
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          handleAuthFailure(logout, navigate);
+          return;
+        }
+        setError(getApiErrorMessage(err, "Não foi possível carregar seu perfil."));
+      } finally {
+        setPageLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, []);
+  function update(k, v) {
+    setForm((f) => ({ ...f, [k]: v }));
+    setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
+    setSuccess(null);
+  }
+
+  async function onSubmit(e) {
+    e.preventDefault();
+
+    const nextForm = {
+      ...form,
+      nome: form.nome.trim(),
+      email: form.email.trim(),
+      setor: form.setor,
+    };
+
+    const errors = validateProfileForm(nextForm);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError(null);
+      return;
+    }
+
+    const payload = buildPatchPayload(initialForm, nextForm);
+    if (Object.keys(payload).length === 0) {
+      setError("Nenhuma alteração foi detectada.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const updated = await updateProfile(payload);
+      const nextForm = profileToForm(updated);
+      setForm(nextForm);
+      setInitialForm(nextForm);
+      updateUser(updated);
+      setSuccess("Perfil atualizado com sucesso!");
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, "Não foi possível atualizar o perfil."));
+    } finally {
+      setLoading(false);
+    }
+  }
+  const initial = (form.nome || form.email || "U")[0]?.toUpperCase();
+
+  if (pageLoading) {
+    return (
+      <PageContainer>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando perfil...</p>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer className="max-w-4xl">
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Conta', 'Meu Perfil']}
+        title="Meu Perfil"
+        subtitle="Atualize seu nome, e-mail e setor."
+      />
+
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
+
+      <div className="grid grid-cols-12 gap-6">
+        <aside className="col-span-12 md:col-span-4">
+          <div className="bg-ws-panel rounded border border-ws-border shadow-card p-6 text-center">
+            <div className="size-24 mx-auto bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center font-bold text-primary text-4xl mb-4">
+              {initial}
+            </div>
+            <p className="font-semibold text-lg text-ws-bright">{form.nome || "—"}</p>
+            <p className="text-xs text-ws-muted mt-1">{form.email}</p>
+            <div className="mt-4 pt-4 border-t border-ws-border space-y-2 text-left">
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
+                  <Building2Icon />
+                  <span>{form.empresa || "Empresa não informada"} · {form.setor || "Setor não informado"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
+                  <ShieldIcon />
+                  <span>Roles: {formatRoles({ roles: form.roles }) || "—"}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-ws-muted">
+                  <IdCardIcon />
+                  <span>{form.enabled ? "Acesso Ativo" : "Aguardando ativação"}</span>
+                </div>
+                {isAdmin({ roles: form.roles }) && (
+                  <Link
+                    to="/admin"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    Painel de usuários
+                  </Link>
+                )}
+              </div>
+            </div>
+          </aside>
+
+          <section className="col-span-12 md:col-span-8">
+            <SectionCard title="Dados pessoais">
+            <form onSubmit={onSubmit} className="space-y-5 -mt-2">
+              <Field
+                icon={<UserIcon />}
+                label="Nome completo"
+                value={form.nome || ""}
+                onChange={(v) => update("nome", v)}
+                maxLength={150}
+                error={fieldErrors.nome}
+              />
+              <Field
+                icon={<MailIcon />}
+                label="E-mail"
+                type="email"
+                value={form.email}
+                onChange={(v) => update("email", v)}
+                maxLength={150}
+                error={fieldErrors.email}
+              />
+              <Field
+                icon={<Building2Icon />}
+                label="Setor"
+                value={form.setor || ""}
+                onChange={(v) => update("setor", v)}
+                maxLength={100}
+                error={fieldErrors.setor}
+              />
+
+              <label className="block space-y-1.5"><span className="form-label">Empresa</span>
+                <EmpresaSelect value={form.empresa} onChange={(v) => update('empresa', v)} required />
+              </label>
+              <div className="pt-4 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary inline-flex items-center gap-2 disabled:opacity-50"
+                >
+                  {loading && <Loader2 />}
+                  Salvar alterações
+                </button>
+              </div>
+            </form>
+            </SectionCard>
+          </section>
+        </div>
+    </PageContainer>
+  );
+}
+
+export default ProfilePage;

@@ -1,0 +1,601 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext.js';
+import CsvImportPanel from '../../../shared/components/CsvImportPanel.jsx';
+import AlertBanner from '../../../shared/ui/AlertBanner.jsx';
+import KpiCard from '../../../shared/ui/KpiCard.jsx';
+import PageContainer from '../../../shared/ui/PageContainer.jsx';
+import PageHeader from '../../../shared/ui/PageHeader.jsx';
+import SectionCard from '../../../shared/ui/SectionCard.jsx';
+import {
+  activateUser,
+  deactivateUser,
+  importUsersCsv,
+  listAvailableRoles,
+  listUsers,
+  updateUserRoles,
+} from '../services/adminService.js';
+import {
+  linkOfficeLicenseToUser,
+  listOfficeLicenses,
+  unlinkOfficeLicenseFromUser,
+} from '../../licenses/services/officeLicenseService.js';
+import { getApiErrorMessage, isUnauthorized } from '../../../shared/lib/apiErrors.js';
+import { getUserOfficeLicenseId, normalizeAdminUser, normalizeAdminUsers } from '../utils/adminUser.js';
+import { normalizeRoles } from '../../../shared/lib/roles.js';
+
+function Loader2() {
+  return (
+    <svg className="size-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  );
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function handleAuthFailure(logout, navigate) {
+  logout();
+  navigate('/Login', { replace: true });
+}
+
+const USERS_CSV_TEMPLATE = `nome,email,setor,roles,status
+João Silva,joao@email.com,TI,"USER,TI",ativo
+Maria Souza,maria@email.com,RH,SUPORTE,inativo
+Pedro Lima,pedro@email.com,Financeiro,USER,ativo
+`;
+
+const USERS_CSV_ERROR_COLUMNS = [
+  { key: 'linha', label: 'Linha' },
+  { key: 'nome', label: 'Nome' },
+  { key: 'email', label: 'E-mail' },
+  { key: 'motivo', label: 'Motivo' },
+];
+
+export default function AdminPage() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [licenses, setLicenses] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [pageLoading, setPageLoading] = useState(true);
+  const [actionId, setActionId] = useState(null);
+  const [licenseActionId, setLicenseActionId] = useState(null);
+  const [licenseSelect, setLicenseSelect] = useState({});
+  const [availableRoles, setAvailableRoles] = useState([]);
+  const [roleEdits, setRoleEdits] = useState({});
+  const [rolesActionId, setRolesActionId] = useState(null);
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  async function loadData() {
+
+    setPageLoading(true);
+    setError(null);
+
+    try {
+      const [usersData, licensesData, rolesData] = await Promise.all([
+        listUsers(),
+        listOfficeLicenses(),
+        listAvailableRoles(),
+      ]);
+      setUsers(normalizeAdminUsers(usersData));
+      setLicenses(Array.isArray(licensesData) ? licensesData : []);
+      setAvailableRoles(Array.isArray(rolesData) ? rolesData : []);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      if (err.code === 'ACESSO_NEGADO') {
+        navigate('/HomePage', { replace: true });
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível carregar os usuários.'));
+    } finally {
+      setPageLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const licensesById = useMemo(
+    () => Object.fromEntries(licenses.map((l) => [l.id, l])),
+    [licenses],
+  );
+
+  const availableLicenses = useMemo(
+    () => licenses.filter((l) => (l.vagasRestantes ?? 0) > 0),
+    [licenses],
+  );
+
+  const filteredUsers = useMemo(() => {
+    if (filter === 'pending') return users.filter((u) => !u.enabled);
+    if (filter === 'active') return users.filter((u) => u.enabled);
+    return users;
+  }, [users, filter]);
+
+  const stats = useMemo(
+    () => ({
+      total: users.length,
+      pending: users.filter((u) => !u.enabled).length,
+      active: users.filter((u) => u.enabled).length,
+    }),
+    [users],
+  );
+
+  async function refreshLicenses() {
+    const licensesData = await listOfficeLicenses();
+    setLicenses(Array.isArray(licensesData) ? licensesData : []);
+  }
+
+  async function handleToggleStatus(targetUser) {
+
+    if (targetUser.id === user?.id) {
+      setError('Você não pode alterar o status da sua própria conta.');
+      return;
+    }
+
+    setActionId(targetUser.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const updated = targetUser.enabled
+        ? await deactivateUser(targetUser.id)
+        : await activateUser(targetUser.id);
+
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)));
+      setSuccess(
+        updated.enabled
+          ? `Conta de ${updated.nome} ativada com sucesso.`
+          : `Conta de ${updated.nome} desativada com sucesso.`,
+      );
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível atualizar o usuário.'));
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  async function handleLinkLicense(targetUser) {
+
+    const officeLicenseId = Number(licenseSelect[targetUser.id]);
+    if (!officeLicenseId) {
+      setError('Selecione uma licença com vagas disponíveis.');
+      return;
+    }
+
+    setLicenseActionId(targetUser.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await linkOfficeLicenseToUser(targetUser.id, officeLicenseId);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === targetUser.id
+            ? normalizeAdminUser({ ...u, officeLicenseId })
+            : u,
+        ),
+      );
+      await refreshLicenses();
+      setLicenseSelect((prev) => ({ ...prev, [targetUser.id]: '' }));
+      setSuccess(`Licença Office vinculada a ${targetUser.nome}.`);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível vincular a licença.'));
+    } finally {
+      setLicenseActionId(null);
+    }
+  }
+
+  function startRoleEdit(targetUser) {
+    setRoleEdits((prev) => ({
+      ...prev,
+      [targetUser.id]: [...normalizeRoles(targetUser)],
+    }));
+    setError(null);
+    setSuccess(null);
+  }
+
+  function cancelRoleEdit(userId) {
+    setRoleEdits((prev) => {
+      const next = { ...prev };
+      delete next[userId];
+      return next;
+    });
+  }
+
+  function toggleRoleEdit(userId, role) {
+    setRoleEdits((prev) => {
+      const current = prev[userId] ?? [];
+      const nextRoles = current.includes(role)
+        ? current.filter((item) => item !== role)
+        : [...current, role];
+
+      return { ...prev, [userId]: nextRoles };
+    });
+  }
+
+  async function handleSaveRoles(targetUser) {
+
+    const roles = roleEdits[targetUser.id] ?? [];
+    if (roles.length === 0) {
+      setError('Selecione ao menos uma role para o usuário.');
+      return;
+    }
+
+    setRolesActionId(targetUser.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const updated = await updateUserRoles(targetUser.id, roles);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === updated.id ? normalizeAdminUser(updated) : u)),
+      );
+      cancelRoleEdit(targetUser.id);
+      setSuccess(`Roles de ${updated.nome} atualizadas com sucesso.`);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível atualizar as roles.'));
+    } finally {
+      setRolesActionId(null);
+    }
+  }
+
+  async function handleUnlinkLicense(targetUser) {
+
+    setLicenseActionId(targetUser.id);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await unlinkOfficeLicenseFromUser(targetUser.id);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === targetUser.id ? { ...u, officeLicenseId: null } : u,
+        ),
+      );
+      await refreshLicenses();
+      setSuccess(`Licença Office desvinculada de ${targetUser.nome}.`);
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível desvincular a licença.'));
+    } finally {
+      setLicenseActionId(null);
+    }
+  }
+
+  async function handleImportCsv(file) {
+
+    setImporting(true);
+    setError(null);
+    setSuccess(null);
+    setImportResult(null);
+
+    try {
+      const result = await importUsersCsv(file);
+      setImportResult(result);
+      setSuccess(
+        `${result.importados ?? 0} usuário(s) importado(s) com sucesso.` +
+          (result.ignorados > 0 ? ` ${result.ignorados} linha(s) ignorada(s).` : ''),
+      );
+      await loadData();
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        handleAuthFailure(logout, navigate);
+        return;
+      }
+      setError(getApiErrorMessage(err, 'Não foi possível importar o arquivo.'));
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  if (pageLoading) {
+    return (
+      <PageContainer>
+        <p className="text-sm text-ws-muted text-center py-16">Carregando usuários...</p>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer>
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Administração', 'Usuários']}
+        title="Painel de Usuários"
+        subtitle="Gerencie contas, ativações, roles e vínculos de licenças Office."
+        actions={
+          <button
+            type="button"
+            onClick={() => {
+              setShowImport((current) => !current);
+              setImportResult(null);
+            }}
+            className="btn-outline"
+          >
+            {showImport ? 'Fechar importação' : 'Importar CSV'}
+          </button>
+        }
+      />
+
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+      {success && <AlertBanner type="success">{success}</AlertBanner>}
+
+      {showImport && (
+        <CsvImportPanel
+          title="Importar usuários"
+          description="Envie um CSV para cadastrar vários usuários de uma vez. Usuários inativos recebem e-mail de ativação; ativos já entram habilitados. Senha temporária é gerada automaticamente."
+          templateFilename="modelo-usuarios.csv"
+          templateContent={USERS_CSV_TEMPLATE}
+          errorColumns={USERS_CSV_ERROR_COLUMNS}
+          importing={importing}
+          result={importResult}
+          onImport={handleImportCsv}
+        />
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <KpiCard label="Total" value={stats.total} accent="default" />
+        <KpiCard label="Pendentes" value={stats.pending} accent="amber" subtext="Aguardando ativação" />
+        <KpiCard label="Ativos" value={stats.active} accent="green" subtext="Contas habilitadas" />
+      </div>
+
+      <SectionCard title="Usuários cadastrados" noPadding bodyClassName="p-0">
+        <div className="px-6 py-4 border-b border-ws-border flex flex-wrap gap-2">
+          {[
+            { key: 'all', label: 'Todos' },
+            { key: 'pending', label: 'Pendentes' },
+            { key: 'active', label: 'Ativos' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilter(key)}
+              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
+                filter === key
+                  ? 'bg-primary text-white'
+                  : 'bg-ws-elevated text-ws-secondary hover:bg-ws-hover-strong'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="data-table w-full">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Empresa</th>
+                <th>Setor</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Licença Office</th>
+                <th>Cadastro</th>
+                <th className="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-6 py-10 text-center text-ws-muted">
+                    Nenhum usuário encontrado para este filtro.
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u) => {
+                  const isSelf = u.id === user?.id;
+                  const isStatusLoading = actionId === u.id;
+                  const isLicenseLoading = licenseActionId === u.id;
+                  const linkedLicense = getUserOfficeLicenseId(u)
+                    ? licensesById[getUserOfficeLicenseId(u)]
+                    : null;
+
+                  return (
+                    <tr key={u.id}>
+                      <td className="font-medium text-ws-bright">{u.nome}</td>
+                      <td className="text-ws-secondary">{u.email}</td>
+                      <td className="text-ws-secondary capitalize">{u.empresa || 'Não informada'}</td>
+                      <td className="text-ws-secondary">{u.setor || '—'}</td>
+                      <td className="px-6 py-4 min-w-[220px]">
+                        {roleEdits[u.id] ? (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              {availableRoles.map((role) => (
+                                <label
+                                  key={role}
+                                  className="inline-flex items-center gap-1.5 text-xs text-ws-secondary"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={roleEdits[u.id].includes(role)}
+                                    onChange={() => toggleRoleEdit(u.id, role)}
+                                    className="accent-green-700"
+                                  />
+                                  {role}
+                                </label>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={rolesActionId === u.id}
+                                onClick={() => handleSaveRoles(u)}
+                                className="btn-primary inline-flex items-center gap-2 disabled:opacity-50 text-[10px] px-3 py-1.5"
+                              >
+                                {rolesActionId === u.id && <Loader2 />}
+                                Salvar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => cancelRoleEdit(u.id)}
+                                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-ws-secondary hover:text-ws-bright"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-1">
+                              {normalizeRoles(u).map((role) => (
+                                <span
+                                  key={role}
+                                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
+                                    role === 'ADMIN'
+                                      ? 'bg-green-100 text-accent'
+                                      : 'bg-ws-elevated text-ws-secondary'
+                                  }`}
+                                >
+                                  {role}
+                                </span>
+                              ))}
+                            </div>
+                            {!isSelf && (
+                              <button
+                                type="button"
+                                onClick={() => startRoleEdit(u)}
+                                className="btn-ghost text-[10px]"
+                              >
+                                Editar roles
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 ${
+                            u.enabled
+                              ? 'bg-green-100 text-accent'
+                              : 'bg-amber-100 text-amber-400'
+                          }`}
+                        >
+                          {u.enabled ? 'Ativo' : 'Pendente'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-ws-secondary min-w-[180px]">
+                        {linkedLicense ? (
+                          <span className="text-sm">{linkedLicense.email}</span>
+                        ) : (
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-ws-muted">
+                            Sem licença
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-ws-muted">{formatDate(u.createdAt)}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex flex-col items-end gap-2 min-w-[220px]">
+                          {!isSelf && (
+                            <>
+                              {getUserOfficeLicenseId(u) ? (
+                                <button
+                                  type="button"
+                                  disabled={isLicenseLoading}
+                                  onClick={() => handleUnlinkLicense(u)}
+                                  className="px-4 py-2 text-xs font-bold uppercase tracking-widest bg-amber-100 hover:bg-amber-200 text-amber-300 disabled:opacity-50 inline-flex items-center gap-2"
+                                >
+                                  {isLicenseLoading && <Loader2 />}
+                                  Desvincular licença
+                                </button>
+                              ) : (
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                  <select
+                                    value={licenseSelect[u.id] || ''}
+                                    onChange={(e) =>
+                                      setLicenseSelect((prev) => ({
+                                        ...prev,
+                                        [u.id]: e.target.value,
+                                      }))
+                                    }
+                                    className="form-input text-xs min-w-[160px] py-2"
+                                  >
+                                    <option value="">Licença...</option>
+                                    {availableLicenses.map((license) => (
+                                      <option key={license.id} value={license.id}>
+                                        {license.email}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    type="button"
+                                    disabled={
+                                      isLicenseLoading ||
+                                      availableLicenses.length === 0 ||
+                                      !licenseSelect[u.id]
+                                    }
+                                    onClick={() => handleLinkLicense(u)}
+                                    className="btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-50 text-xs px-4 py-2"
+                                  >
+                                    {isLicenseLoading && <Loader2 />}
+                                    Vincular
+                                  </button>
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                disabled={isStatusLoading}
+                                onClick={() => handleToggleStatus(u)}
+                                className={`transition-colors inline-flex items-center gap-2 disabled:opacity-50 ${
+                                  u.enabled
+                                    ? 'btn-danger text-xs px-4 py-2'
+                                    : 'btn-primary text-xs px-4 py-2'
+                                }`}
+                              >
+                                {isStatusLoading && <Loader2 />}
+                                {u.enabled ? 'Desativar' : 'Ativar'}
+                              </button>
+                            </>
+                          )}
+                          {isSelf && (
+                            <span className="text-xs text-ws-muted">Sua conta</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
+    </PageContainer>
+  );
+}

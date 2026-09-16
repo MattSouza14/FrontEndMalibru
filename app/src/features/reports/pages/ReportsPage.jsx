@@ -1,0 +1,595 @@
+import SupportReportPanel from '../components/SupportReportPanel.jsx';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/context/AuthContext.js';
+import ExpiryReportPanel from '../components/ExpiryReportPanel.jsx';
+import ReportBarList from '../components/ReportBarList.jsx';
+import ReportPieChart from '../components/ReportPieChart.jsx';
+import AlertBanner from '../../../shared/ui/AlertBanner.jsx';
+import KpiCard from '../../../shared/ui/KpiCard.jsx';
+import PageContainer from '../../../shared/ui/PageContainer.jsx';
+import PageHeader from '../../../shared/ui/PageHeader.jsx';
+import SectionCard from '../../../shared/ui/SectionCard.jsx';
+import { listUsers } from '../../users/services/adminService.js';
+import { listAdminChamados, listMyChamados } from '../../support/services/chamadoService.js';
+import { listCertificates } from '../../licenses/services/certificateService.js';
+import { listEquipments } from '../../inventory/services/equipmentService.js';
+import { listOfficeLicenses } from '../../licenses/services/officeLicenseService.js';
+import { listPrinters } from '../../inventory/services/printerService.js';
+import { listSignedTerms } from '../../inventory/services/signedTermService.js';
+import { listSoftwareLicenses } from '../../licenses/services/softwareLicenseService.js';
+import { listToners } from '../../inventory/services/tonerService.js';
+import { getApiErrorMessage, isUnauthorized } from '../../../shared/lib/apiErrors.js';
+import { formatEmpresaLabel } from '../../inventory/utils/equipment.js';
+import {
+  buildCertificateStats,
+  buildChamadoStats,
+  buildEquipmentStats,
+  buildOfficeLicenseStats,
+  buildPrinterStats,
+  buildSignedTermStats,
+  buildSoftwareLicenseStats,
+  buildTonerStats,
+  buildUserStats,
+  formatBytes,
+} from '../utils/reportStats.js';
+import {
+  canAccessChamadosAdmin,
+  canAccessTiModules,
+  isAdmin,
+} from '../../../shared/lib/roles.js';
+
+function IconChart() {
+  return (
+    <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  );
+}
+
+export default function ReportsPage() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const showAdmin = isAdmin(user);
+  const showTi = canAccessTiModules(user);
+  const showChamadosAdmin = canAccessChamadosAdmin(user);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [chamados, setChamados] = useState([]);
+  const [officeLicenses, setOfficeLicenses] = useState([]);
+  const [softwareLicenses, setSoftwareLicenses] = useState([]);
+  const [certificates, setCertificates] = useState([]);
+  const [equipments, setEquipments] = useState([]);
+  const [printers, setPrinters] = useState([]);
+  const [toners, setToners] = useState([]);
+  const [termos, setTermos] = useState([]);
+  const [selectedEquipmentEmpresa, setSelectedEquipmentEmpresa] = useState(null);
+  const [selectedPrinterEmpresa, setSelectedPrinterEmpresa] = useState(null);
+
+  useEffect(() => {
+    async function loadReports() {
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const tasks = [];
+
+        if (showAdmin) {
+          tasks.push(listUsers().then((d) => setUsers(Array.isArray(d) ? d : [])));
+        }
+
+        if (showChamadosAdmin) {
+          tasks.push(
+            listAdminChamados().then((d) => setChamados(Array.isArray(d) ? d : [])),
+          );
+        } else {
+          tasks.push(
+            listMyChamados().then((d) => setChamados(Array.isArray(d) ? d : [])),
+          );
+        }
+
+        if (showTi) {
+          tasks.push(
+            Promise.all([
+              listOfficeLicenses(),
+              listSoftwareLicenses(),
+              listCertificates(),
+              listEquipments(),
+              listSignedTerms(),
+              listPrinters(),
+              listToners(),
+            ]).then(([office, software, certs, equips, signed, printerList, tonerList]) => {
+              setOfficeLicenses(Array.isArray(office) ? office : []);
+              setSoftwareLicenses(Array.isArray(software) ? software : []);
+              setCertificates(Array.isArray(certs) ? certs : []);
+              setEquipments(Array.isArray(equips) ? equips : []);
+              setTermos(Array.isArray(signed) ? signed : []);
+              setPrinters(Array.isArray(printerList) ? printerList : []);
+              setToners(Array.isArray(tonerList) ? tonerList : []);
+            }),
+          );
+        }
+
+        await Promise.all(tasks);
+      } catch (err) {
+        if (isUnauthorized(err)) {
+          logout();
+          navigate('/Login', { replace: true });
+          return;
+        }
+        setError(getApiErrorMessage(err, 'Não foi possível carregar os relatórios.'));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadReports();
+  }, [logout, navigate, showAdmin, showTi, showChamadosAdmin]);
+
+  const userStats = useMemo(() => buildUserStats(users), [users]);
+  const chamadoStats = useMemo(() => buildChamadoStats(chamados), [chamados]);
+  const officeStats = useMemo(() => buildOfficeLicenseStats(officeLicenses), [officeLicenses]);
+  const softwareStats = useMemo(
+    () => buildSoftwareLicenseStats(softwareLicenses),
+    [softwareLicenses],
+  );
+  const certificateStats = useMemo(
+    () => buildCertificateStats(certificates),
+    [certificates],
+  );
+  const equipmentStats = useMemo(() => buildEquipmentStats(equipments), [equipments]);
+  const printerStats = useMemo(() => buildPrinterStats(printers), [printers]);
+  const tonerStats = useMemo(() => buildTonerStats(toners), [toners]);
+  const termStats = useMemo(() => buildSignedTermStats(termos), [termos]);
+
+  const filteredEquipments = useMemo(() => {
+    if (selectedEquipmentEmpresa == null) return [];
+
+    if (selectedEquipmentEmpresa === 'Sem empresa') {
+      return equipments.filter((equipment) => !equipment.empresa);
+    }
+
+    return equipments.filter((equipment) => equipment.empresa === selectedEquipmentEmpresa);
+  }, [equipments, selectedEquipmentEmpresa]);
+
+  const filteredPrinters = useMemo(() => {
+    if (selectedPrinterEmpresa == null) return [];
+    if (selectedPrinterEmpresa === 'Sem empresa') {
+      return printers.filter((printer) => !printer.empresa);
+    }
+    return printers.filter((printer) => printer.empresa === selectedPrinterEmpresa);
+  }, [printers, selectedPrinterEmpresa]);
+
+  function handleEquipmentEmpresaClick(item) {
+    const empresaKey = item.key ?? item.label;
+    setSelectedEquipmentEmpresa((current) => (current === empresaKey ? null : empresaKey));
+    setSelectedPrinterEmpresa(null);
+  }
+
+  function handlePrinterEmpresaClick(item) {
+    const empresaKey = item.key ?? item.label;
+    setSelectedPrinterEmpresa((current) => (current === empresaKey ? null : empresaKey));
+    setSelectedEquipmentEmpresa(null);
+  }
+
+  const generatedAt = new Date().toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <p className="text-sm text-ws-muted text-center py-16">Gerando relatórios...</p>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer className="space-y-6">
+      <PageHeader
+        breadcrumbs={['Malibru Portal', 'Relatórios']}
+        title="Relatórios"
+        subtitle={`Visão consolidada com dados já cadastrados no portal · Atualizado em ${generatedAt}`}
+      />
+
+      {error && <AlertBanner type="error">{error}</AlertBanner>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard
+          icon={<IconChart />}
+          label="Chamados"
+          value={chamadoStats.total}
+          subtext={`${chamadoStats.open} em aberto`}
+          accent={chamadoStats.open > 0 ? 'amber' : 'default'}
+        />
+        {showTi && (
+          <>
+            <KpiCard
+              label="Licenças Office"
+              value={officeStats.total}
+              subtext={`${officeStats.availableSlots} vagas livres`}
+              accent="green"
+            />
+            <KpiCard
+              label="Equipamentos"
+              value={equipmentStats.total}
+              subtext={`${equipmentStats.linkRate}% vinculados`}
+              accent="blue"
+            />
+            <KpiCard
+              label="Certificados"
+              value={certificateStats.total}
+              subtext={`${certificateStats.expiry.find((e) => e.key === 'overdue')?.value ?? 0} vencidos`}
+              accent={
+                (certificateStats.expiry.find((e) => e.key === 'overdue')?.value ?? 0) > 0
+                  ? 'red'
+                  : 'default'
+              }
+            />
+          </>
+        )}
+        {showAdmin && !showTi && (
+          <>
+            <KpiCard label="Usuários" value={userStats.total} subtext={`${userStats.active} ativos`} />
+            <KpiCard
+              label="Pendentes"
+              value={userStats.pending}
+              accent="amber"
+              subtext="Aguardando ativação"
+            />
+          </>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <SectionCard
+          title={showChamadosAdmin ? 'Chamados de suporte' : 'Meus chamados'}
+          subtitle="Indicadores por empresa, tickets e atendimento"
+          icon={<IconChart />}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 -mt-2">
+            <div>
+              <p className="form-label mb-3">Por status</p>
+              <ReportBarList
+                items={chamadoStats.byStatus.map((s) => ({ ...s, color: 'bg-primary/150' }))}
+                emptyMessage="Nenhum chamado registrado."
+              />
+            </div>
+            <div>
+              <p className="form-label mb-3">Por ferramenta remota</p>
+              <ReportBarList
+                items={chamadoStats.byTool.map((t) => ({ ...t, color: 'bg-primary' }))}
+                emptyMessage="Sem ferramentas registradas."
+              />
+            </div>
+          </div>
+          <SupportReportPanel chamados={chamados} />
+        </SectionCard>
+
+        {showAdmin && (
+          <SectionCard title="Usuários" subtitle="Contas, perfis e setores">
+            <div className="grid grid-cols-3 gap-3 mb-6 -mt-2">
+              <div className="rounded-lg bg-ws-canvas border border-ws-border p-3 text-center">
+                <p className="text-2xl font-bold text-ws-bright font-mono">{userStats.total}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Total</p>
+              </div>
+              <div className="rounded-lg bg-emerald-950/30 border border-emerald-900/50 p-3 text-center">
+                <p className="text-2xl font-bold text-emerald-400 font-mono">{userStats.active}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Ativos</p>
+              </div>
+              <div className="rounded-lg bg-amber-950/25 border border-amber-900/50 p-3 text-center">
+                <p className="text-2xl font-bold text-amber-400 font-mono">{userStats.pending}</p>
+                <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Pendentes</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div>
+                <p className="form-label mb-3">Situação da conta</p>
+                <ReportPieChart
+                  items={userStats.status}
+                  centerLabel="contas"
+                  emptyMessage="Sem usuários cadastrados."
+                />
+              </div>
+              <div>
+                <p className="form-label mb-3">Por perfil (role)</p>
+                <ReportPieChart
+                  items={userStats.roles}
+                  centerLabel="atribuições"
+                  emptyMessage="Sem perfis atribuídos."
+                />
+              </div>
+              <div className="md:col-span-2 xl:col-span-1">
+                <p className="form-label mb-3">Por setor</p>
+                <ReportPieChart
+                  items={userStats.setores}
+                  centerLabel="usuários"
+                  emptyMessage="Sem setores informados."
+                />
+              </div>
+            </div>
+          </SectionCard>
+        )}
+
+        {showTi && (
+          <>
+            <SectionCard
+              title="Licenças Office"
+              subtitle={`${officeStats.usedSlots} de ${officeStats.totalSlots} vagas utilizadas · ${officeStats.full} licença(s) lotada(s)`}
+            >
+              <ExpiryReportPanel
+                segments={officeStats.expiry}
+                topItems={officeStats.topExpiring}
+                dateField="vencimento"
+                renderLabel={(item) => item.email}
+              />
+            </SectionCard>
+
+            <SectionCard
+              title="Licenças de software"
+              subtitle={`${softwareStats.total} licenças · ${softwareStats.totalSeats} assentos`}
+            >
+              <div className="space-y-6 -mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="form-label mb-3">Por software</p>
+                    <ReportPieChart
+                      items={softwareStats.bySoftware}
+                      centerLabel="licenças"
+                      emptyMessage="Nenhuma licença de software cadastrada."
+                    />
+                  </div>
+                  <div>
+                    <p className="form-label mb-3">Por vencimento</p>
+                    <ReportPieChart
+                      items={softwareStats.expiry}
+                      centerLabel="licenças"
+                      emptyMessage="Sem datas de vencimento."
+                    />
+                  </div>
+                </div>
+                <ExpiryReportPanel
+                  segments={softwareStats.expiry}
+                  topItems={softwareStats.topExpiring}
+                  dateField="dataVencimento"
+                  renderLabel={(item) => item.nome}
+                />
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Certificados digitais" subtitle={`${certificateStats.total} cadastrados`}>
+              <div className="space-y-5 -mt-2">
+                <ExpiryReportPanel
+                  segments={certificateStats.expiry}
+                  topItems={certificateStats.topExpiring}
+                  dateField="dataVencimento"
+                  renderLabel={(item) => item.nome}
+                />
+                {certificateStats.byEmpresa.length > 0 && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <p className="form-label mb-3">Por empresa</p>
+                    <ReportBarList
+                      items={certificateStats.byEmpresa.map((e) => ({ ...e, color: 'bg-teal-500' }))}
+                    />
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Equipamentos"
+              subtitle={`${equipmentStats.linked} vinculados · ${equipmentStats.available} disponíveis`}
+            >
+              <div className="space-y-4 -mt-2">
+                <div className="h-3 rounded-full bg-ws-elevated overflow-hidden flex">
+                  <div
+                    className="bg-primary h-full"
+                    style={{ width: `${equipmentStats.linkRate}%` }}
+                    title="Vinculados"
+                  />
+                  <div
+                    className="bg-ws-border-strong h-full flex-1"
+                    title="Disponíveis"
+                  />
+                </div>
+                <div className="flex gap-6 text-sm">
+                  <span className="inline-flex items-center gap-2 text-ws-secondary">
+                    <span className="size-2 rounded-full bg-primary" />
+                    Vinculados: {equipmentStats.linked}
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-ws-secondary">
+                    <span className="size-2 rounded-full bg-ws-border-strong" />
+                    Disponíveis: {equipmentStats.available}
+                  </span>
+                </div>
+                {equipmentStats.byEmpresa.length > 0 && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <p className="form-label mb-1">Por empresa</p>
+                    <p className="text-xs text-ws-muted mb-3">Clique em uma empresa para ver os equipamentos</p>
+                    <ReportBarList
+                      items={equipmentStats.byEmpresa.map((e) => ({ ...e, color: 'bg-primary' }))}
+                      onItemClick={handleEquipmentEmpresaClick}
+                      selectedKey={selectedEquipmentEmpresa}
+                    />
+                  </div>
+                )}
+                {selectedEquipmentEmpresa != null && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="form-label">
+                        Equipamentos —{' '}
+                        {selectedEquipmentEmpresa === 'Sem empresa'
+                          ? 'Sem empresa'
+                          : formatEmpresaLabel(selectedEquipmentEmpresa)}
+                        <span className="text-ws-muted font-normal ml-1">
+                          ({filteredEquipments.length})
+                        </span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedEquipmentEmpresa(null)}
+                        className="text-xs font-semibold text-ws-muted hover:text-ws-bright"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                    {filteredEquipments.length === 0 ? (
+                      <p className="text-sm text-ws-muted">Nenhum equipamento encontrado.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
+                        {filteredEquipments.map((equipment) => (
+                          <li
+                            key={equipment.id}
+                            className="flex items-start justify-between gap-3 rounded-lg border border-ws-border px-3 py-2.5 bg-ws-canvas/50"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium text-ws-bright">{equipment.nome}</p>
+                              <p className="text-xs text-ws-muted mt-0.5">
+                                Patrimônio: {equipment.patrimonio || '—'}
+                                {equipment.descricao ? ` · ${equipment.descricao}` : ''}
+                              </p>
+                            </div>
+                            <span
+                              className={`text-[10px] font-bold uppercase tracking-widest shrink-0 ${
+                                equipment.usuarioId ? 'text-primary' : 'text-ws-muted'
+                              }`}
+                            >
+                              {equipment.usuarioId ? 'Vinculado' : 'Disponível'}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Impressoras"
+              subtitle={`${printerStats.total} cadastradas · ${printerStats.fillRate}% dos slots ocupados · ${printerStats.full} lotada(s)`}
+            >
+              <div className="space-y-4 -mt-2">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-ws-canvas border border-ws-border p-3 text-center">
+                    <p className="text-2xl font-bold text-ws-bright">{printerStats.total}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Impressoras</p>
+                  </div>
+                  <div className="rounded-lg bg-primary/15 border border-blue-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-blue-700">{printerStats.usedTonerSlots}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">
+                      Slots / {printerStats.totalTonerSlots}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-red-950/30 border border-red-100 p-3 text-center">
+                    <p className="text-2xl font-bold text-ws-red">{printerStats.full}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-ws-muted mt-1">Lotadas</p>
+                  </div>
+                </div>
+                {printerStats.slotUsage.length > 0 && (
+                  <div>
+                    <p className="form-label mb-3">Ocupação de slots</p>
+                    <ReportBarList items={printerStats.slotUsage} />
+                  </div>
+                )}
+                {tonerStats.byCor.length > 0 && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <p className="form-label mb-3">Toners por cor</p>
+                    <ReportBarList items={tonerStats.byCor.map((item) => ({ ...item, color: 'bg-indigo-500' }))} />
+                  </div>
+                )}
+                {printerStats.byEmpresa.length > 0 && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <p className="form-label mb-1">Por empresa</p>
+                    <p className="text-xs text-ws-muted mb-3">Clique em uma empresa para ver as impressoras</p>
+                    <ReportBarList
+                      items={printerStats.byEmpresa.map((e) => ({ ...e, color: 'bg-indigo-500' }))}
+                      onItemClick={handlePrinterEmpresaClick}
+                      selectedKey={selectedPrinterEmpresa}
+                    />
+                  </div>
+                )}
+                {selectedPrinterEmpresa != null && (
+                  <div className="pt-3 border-t border-ws-border">
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <p className="form-label">
+                        Impressoras —{' '}
+                        {selectedPrinterEmpresa === 'Sem empresa'
+                          ? 'Sem empresa'
+                          : formatEmpresaLabel(selectedPrinterEmpresa)}
+                        <span className="text-ws-muted font-normal ml-1">({filteredPrinters.length})</span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPrinterEmpresa(null)}
+                        className="text-xs font-semibold text-ws-muted hover:text-ws-bright"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                    {filteredPrinters.length === 0 ? (
+                      <p className="text-sm text-ws-muted">Nenhuma impressora encontrada.</p>
+                    ) : (
+                      <ul className="space-y-2 text-sm max-h-72 overflow-y-auto pr-1">
+                        {filteredPrinters.map((printer) => (
+                          <li
+                            key={printer.id}
+                            className="flex items-start justify-between gap-3 rounded-lg border border-ws-border px-3 py-2.5 bg-ws-canvas/50"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium text-ws-bright font-mono">{printer.ip}</p>
+                              <p className="text-xs text-ws-muted mt-0.5">
+                                {printer.nome || '—'}
+                                {printer.localizacao ? ` · ${printer.localizacao}` : ''}
+                              </p>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest shrink-0 text-indigo-700">
+                              {printer.tonersVinculados ?? 0}/{printer.qtdToners ?? 0} toners
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Termos assinados"
+              subtitle={`${termStats.total} documentos · ${formatBytes(termStats.totalBytes)} armazenados`}
+            >
+              <div className="grid grid-cols-2 gap-4 -mt-2">
+                <div className="rounded-lg bg-ws-canvas border border-ws-border p-4">
+                  <p className="text-2xl font-bold text-ws-bright">{termStats.withUser}</p>
+                  <p className="text-xs text-ws-muted mt-1">Com usuário vinculado</p>
+                </div>
+                <div className="rounded-lg bg-ws-canvas border border-ws-border p-4">
+                  <p className="text-2xl font-bold text-ws-bright">{termStats.withoutUser}</p>
+                  <p className="text-xs text-ws-muted mt-1">Sem vínculo de usuário</p>
+                </div>
+              </div>
+            </SectionCard>
+          </>
+        )}
+      </div>
+
+      {!showTi && !showAdmin && (
+        <SectionCard title="Relatórios operacionais">
+          <p className="text-sm text-ws-secondary -mt-2">
+            Painéis de licenças, certificados, equipamentos e usuários ficam disponíveis para
+            perfis <strong>TI</strong> e <strong>ADMIN</strong>. Você já vê o resumo dos seus
+            chamados acima.
+          </p>
+        </SectionCard>
+      )}
+    </PageContainer>
+  );
+}

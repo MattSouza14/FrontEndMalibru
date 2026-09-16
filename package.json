@@ -1,0 +1,13 @@
+{
+  "name": "malibru-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix app run dev",
+    "build": "npm --prefix app run build",
+    "preview": "npm --prefix app run preview",
+    "test": "npm --prefix app test",
+    "lint": "npm --prefix app run lint",
+    "lint:check": "npm --prefix app run lint:check",
+    "check": "npm --prefix app run check"
+  }
+}

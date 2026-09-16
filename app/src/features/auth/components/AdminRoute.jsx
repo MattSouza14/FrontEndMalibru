@@ -1,0 +1,26 @@
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.js';
+import { isAdmin, normalizeUser } from '../../../shared/lib/roles.js';
+
+export default function AdminRoute() {
+  const { user, loading } = useAuth();
+  const normalizedUser = normalizeUser(user);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ws-elevated">
+        <p className="text-sm text-ws-muted">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!normalizedUser) {
+    return <Navigate to="/Login" replace />;
+  }
+
+  if (!isAdmin(normalizedUser)) {
+    return <Navigate to="/HomePage" replace />;
+  }
+
+  return <Outlet />;
+}

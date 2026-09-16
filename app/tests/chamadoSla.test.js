@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { slaLabel, supportDate } from '../src/utils/chamadoSla.js';
+import { slaLabel, supportDate } from '../src/features/support/utils/chamadoSla.js';
 test('datas do SLA usam Brasília independentemente do fuso do navegador', () => {
   assert.equal(supportDate('2026-09-15T10:00:00').toISOString(), '2026-09-15T13:00:00.000Z');
   assert.equal(supportDate('2026-09-15T13:00:00Z').toISOString(), '2026-09-15T13:00:00.000Z');
