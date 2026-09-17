@@ -17,3 +17,4 @@ if docker exec "$name" wget -q -O /dev/null http://127.0.0.1/assets/arquivo-inex
   printf 'Erro: asset inexistente retornou sucesso\n' >&2
   exit 1
 fi
+bash "$(dirname "$0")/dns-smoke.sh" "$image"
