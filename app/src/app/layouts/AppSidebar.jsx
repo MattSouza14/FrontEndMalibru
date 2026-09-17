@@ -4,6 +4,7 @@ import {
   canAccessChamadosAdmin,
   canAccessRhModules,
   canAccessTiModules,
+  canAccessMaintenance,
   isAdmin,
 } from '../../shared/lib/roles.js';
 
@@ -156,6 +157,7 @@ export default function AppSidebar() {
   const showChamadosAdmin = canAccessChamadosAdmin(user);
   const showRhModules = canAccessRhModules(user);
   const showTiModules = canAccessTiModules(user);
+  const showMaintenance = canAccessMaintenance(user);
 
   return (
     <aside className="w-[220px] min-h-screen bg-ws-elevated border-r border-ws-border flex flex-col shrink-0">
@@ -224,15 +226,18 @@ export default function AppSidebar() {
             <NavItem to="/admin/certificates" icon={IconCertificate}>
               Certificados
             </NavItem>
-            <NavItem to="/admin/equipamentos" icon={IconDevice}>
-              Equipamentos
-            </NavItem>
             <NavItem to="/admin/impressoras" icon={IconPrinter}>
               Impressoras
             </NavItem>
             <NavItem to="/admin/termos-assinados" icon={IconDocument}>
               Termos assinados
             </NavItem>
+          </NavSection>
+        )}
+        {showMaintenance && (
+          <NavSection label="Equipamentos">
+            {showTiModules && <NavItem to="/admin/equipamentos" end icon={IconDevice}>Cadastro</NavItem>}
+            <NavItem to="/admin/equipamentos/manutencoes" icon={IconDocument}>Manutenção</NavItem>
           </NavSection>
         )}
       </nav>

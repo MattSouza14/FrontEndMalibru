@@ -342,6 +342,7 @@ export default function EquipmentsPage() {
         subtitle="Cadastre equipamentos corporativos e vincule a usuários."
         actions={
           <>
+            <button type="button" onClick={() => navigate('/admin/equipamentos/manutencoes')} className="btn-secondary">Manutenções</button>
             <button
               type="button"
               onClick={() => {

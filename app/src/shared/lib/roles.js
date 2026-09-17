@@ -3,6 +3,7 @@ export const ROLES = {
   SUPORTE: 'SUPORTE',
   TI: 'TI',
   RH: 'RH',
+  COMPRAS: 'COMPRAS',
   ADMIN: 'ADMIN',
 };
 
@@ -54,6 +55,10 @@ export function canAccessTiModules(user) {
 
 export function canAccessRhModules(user) {
   return hasAnyRole(user, [ROLES.ADMIN, ROLES.RH]);
+}
+
+export function canAccessMaintenance(user) {
+  return hasAnyRole(user, [ROLES.ADMIN, ROLES.TI, ROLES.COMPRAS]);
 }
 
 export function formatRoles(user, separator = ', ') {

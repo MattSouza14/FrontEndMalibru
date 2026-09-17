@@ -16,6 +16,7 @@ const ChamadosPage = lazy(() => import('../../features/support/pages/ChamadosPag
 const AdminChamadosPage = lazy(() => import('../../features/support/pages/AdminChamadosPage.jsx'));
 const ActivateAccountPage = lazy(() => import('../../features/auth/pages/ActivateAccountPage.jsx'));
 const EquipmentsPage = lazy(() => import('../../features/inventory/pages/EquipmentsPage.jsx'));
+const MaintenancePage = lazy(() => import('../../features/inventory/pages/MaintenancePage.jsx'));
 const SoftwareLicensesPage = lazy(() => import('../../features/licenses/pages/SoftwareLicensesPage.jsx'));
 const SignedTermsPage = lazy(() => import('../../features/inventory/pages/SignedTermsPage.jsx'));
 const ReportsPage = lazy(() => import('../../features/reports/pages/ReportsPage.jsx'));
@@ -51,6 +52,9 @@ export default function AppRoutes() {
                   <Route path="/admin/equipamentos" element={<EquipmentsPage />} />
                   <Route path="/admin/termos-assinados" element={<SignedTermsPage />} />
                   <Route path="/admin/impressoras" element={<PrintersPage />} />
+                </Route>
+                <Route element={<RoleRoute roles={['ADMIN', 'TI', 'COMPRAS']} />}>
+                  <Route path="/admin/equipamentos/manutencoes" element={<MaintenancePage />} />
                 </Route>
                 <Route element={<RoleRoute roles={['ADMIN']} />}>
                   <Route path="/admin" element={<AdminPage />} />
